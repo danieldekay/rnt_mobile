@@ -1,13 +1,6 @@
 name = "rnt-mobile"
 compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
 
 [builds]
 command = "npm run build"
 directory = "build"
-
-[env.production]
-name = "rnt-mobile"
-routes = [
-  { pattern = "rnt.yourdomain.com", zone_name = "yourdomain.com" }
-]
