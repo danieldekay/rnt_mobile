@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--primary: #0ea5e9;
+	--coral: #FF6B6B;
+	--mint: #4ECDC4;
+	--amber: #FFB347;
+	--lavender: #9B7EDE;
+	--peach: #FFCDB2;
+}
+
+* {
+	-webkit-tap-highlight-color: transparent;
+}
+
+html {
+	font-family: 'Inter', system-ui, sans-serif;
+	scroll-behavior: smooth;
+}
+
+body {
+	@apply bg-gradient-to-b from-sky-50/50 to-white text-gray-900 antialiased;
+	min-height: 100dvh;
+}
+
+@layer components {
+	.btn-primary {
+		@apply bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-4 py-3 rounded-xl 
+			   hover:from-primary-600 hover:to-primary-700 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary-500/25;
+	}
+	
+	.card {
+		@apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/50 
+			   overflow-hidden transition-all duration-200 hover:shadow-xl hover:shadow-primary-500/5 hover:bg-white;
+	}
+	
+	.filter-chip {
+		@apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+			   border-2 cursor-pointer select-none;
+	}
+	
+	.filter-chip-active {
+		@apply bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-500 shadow-sm;
+	}
+	
+	.filter-chip-inactive {
+		@apply bg-white/80 text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-600 hover:bg-white;
+	}
+}
+
+@layer utilities {
+	.line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+}
