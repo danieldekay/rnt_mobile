@@ -15,6 +15,12 @@
 	const endDate = $derived(parseISO(event.end_date));
 	const dj = $derived(extractDjFromDescription(event));
 	
+	const eventImage = $derived.by(() => {
+		if (event.image && typeof event.image === 'string') return event.image;
+		const match = event.description?.match(/<img[^>]+src="([^"]+)"/);
+		return match ? match[1] : null;
+	});
+	
 	const dayName = $derived(format(startDate, 'EEE', { locale: de }));
 	const dayNumber = $derived(format(startDate, 'd'));
 	const monthName = $derived(format(startDate, 'MMM', { locale: de }));
@@ -42,10 +48,10 @@
 	href="/event/{event.id}" 
 	class="card block overflow-hidden hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 group"
 >
-	{#if event.image && showImage}
+	{#if eventImage && showImage}
 		<div class="relative h-36 overflow-hidden">
 			<img 
-				src={event.image} 
+				src={eventImage} 
 				alt=""
 				class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
 				loading="lazy"
@@ -64,9 +70,9 @@
 		</div>
 	{/if}
 	
-	<div class="p-4 {event.image && showImage ? '' : 'pt-5'}">
+	<div class="p-4 {eventImage && showImage ? '' : 'pt-5'}">
 		<div class="flex gap-3">
-			{#if !event.image || !showImage}
+			{#if !eventImage || !showImage}
 				<div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br {dateGradient} rounded-xl flex flex-col items-center justify-center text-white shadow-lg">
 					<span class="text-[10px] font-medium uppercase tracking-wide opacity-90">{dayName}</span>
 					<span class="text-xl font-bold leading-none">{dayNumber}</span>
@@ -75,7 +81,7 @@
 			{/if}
 
 			<div class="flex-1 min-w-0">
-				{#if event.image}
+				{#if eventImage}
 					<div class="flex items-center gap-2 mb-1.5">
 						<span class="px-2 py-0.5 bg-gradient-to-r {badgeGradient} {badgeColor} text-white text-[10px] font-bold rounded-full">
 							{isMilonga ? 'Milonga' : isPractica ? 'Practica' : isWorkshop ? 'Workshop' : 'Event'}
@@ -84,11 +90,11 @@
 					</div>
 				{/if}
 
-				<h3 class="font-bold text-gray-900 leading-tight mb-1.5 line-clamp-2 {(event.image && showImage) ? 'text-base' : 'text-base'}">
+				<h3 class="font-bold text-gray-900 leading-tight mb-1.5 line-clamp-2 {(eventImage && showImage) ? 'text-base' : 'text-base'}">
 					{event.title}
 				</h3>
 
-				{#if !event.image || !showImage}
+				{#if !eventImage || !showImage}
 					<div class="flex items-center gap-1 text-sm text-gray-500 mb-2">
 						<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -114,7 +120,7 @@
 				{/if}
 
 				<div class="flex items-center gap-3 text-sm">
-					<div class="flex items-center gap-1.5 {(event.image && showImage) ? 'text-gray-600' : 'text-gray-500'}">
+					<div class="flex items-center gap-1.5 {(eventImage && showImage) ? 'text-gray-600' : 'text-gray-500'}">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
 						</svg>

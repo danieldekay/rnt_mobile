@@ -81,6 +81,11 @@
 	const endDate = $derived(event ? parseISO(event.end_date) : null);
 	const dj = $derived(event ? extractDjFromDescription(event) : null);
 	const workshop = $derived(event ? extractWorkshopFromDescription(event) : null);
+	const detailImage = $derived.by(() => {
+		if (event?.image && typeof event.image === 'string') return event.image;
+		const match = event?.description?.match(/<img[^>]+src="([^"]+)"/);
+		return match ? match[1] : null;
+	});
 
 	const formattedDate = $derived(startDate ? format(startDate, 'EEEE, d. MMMM yyyy', { locale: de }) : '');
 	const startTime = $derived(startDate ? format(startDate, 'HH:mm') : '');
@@ -98,7 +103,6 @@
 
 <svelte:head>
 	<title>{event ? event.title : 'Veranstaltung'} - RNT Kalender</title>
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 </svelte:head>
 
 {#if loading}
@@ -129,11 +133,11 @@
 		</div>
 
 		<!-- Featured Image with overlay -->
-		{#if event.image}
+		{#if detailImage}
 			<div class="relative h-56 overflow-hidden">
 				<img 
-					src={event.image} 
-					alt={event.title}
+					src={detailImage} 
+					alt={event?.title}
 					class="w-full h-full object-cover"
 				/>
 				<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>

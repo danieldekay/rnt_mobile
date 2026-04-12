@@ -110,11 +110,11 @@ wrangler pages deploy build
 
 ## Custom Domain Setup
 
-### Using a Subdomain (e.g., events.rhein-neckar-tango.de)
+### Using a Subdomain (e.g., mobile.rhein-neckar-tango.de)
 
 1. In Cloudflare Dashboard, go to your **Pages** project
 2. Click **Custom domains**
-3. Enter your subdomain (e.g., `events.rhein-neckar-tango.de`)
+3. Enter your subdomain (e.g., `mobile.rhein-neckar-tango.de`)
 4. Click **Verify DNS record**
 5. Cloudflare will automatically add the necessary DNS record
 
@@ -140,7 +140,7 @@ The project already uses `@sveltejs/adapter-static` which works perfectly with C
 Create `wrangler.toml` in the root for custom configuration:
 
 ```toml
-name = "rnt-mobile"
+name = "rnt"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "./build"
 ```
@@ -224,6 +224,18 @@ This shouldn't happen with the static adapter, but if it does:
 ### Map Not Loading
 
 The Leaflet map requires HTTPS. Cloudflare Pages provides free SSL automatically.
+
+### Content Security Policy (CSP) Errors
+
+If you see CSP errors in the browser console about fonts or styles being blocked:
+
+1. Go to **Cloudflare Dashboard** → **Workers & Pages** → **rnt** (your project)
+2. Click **Settings** → **Security**
+3. Find the **Content Security Policy** section
+4. **Disable** the Cloudflare-managed CSP (or remove custom rules)
+5. The app's `static/_headers` file handles CSP instead
+
+**Important:** The `_headers` file already configures CSP properly. If Cloudflare's UI has its own CSP, it will override the file-based headers.
 
 ---
 
