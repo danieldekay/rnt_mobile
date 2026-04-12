@@ -11,25 +11,25 @@
 
 	let { event, showImage = true }: Props = $props();
 
-	const startDate = parseISO(event.start_date);
-	const endDate = parseISO(event.end_date);
-	const dj = extractDjFromDescription(event);
+	const startDate = $derived(parseISO(event.start_date));
+	const endDate = $derived(parseISO(event.end_date));
+	const dj = $derived(extractDjFromDescription(event));
 	
-	const dayName = format(startDate, 'EEE', { locale: de });
-	const dayNumber = format(startDate, 'd');
-	const monthName = format(startDate, 'MMM', { locale: de });
-	const startTime = format(startDate, 'HH:mm');
-	const endTime = format(endDate, 'HH:mm');
+	const dayName = $derived(format(startDate, 'EEE', { locale: de }));
+	const dayNumber = $derived(format(startDate, 'd'));
+	const monthName = $derived(format(startDate, 'MMM', { locale: de }));
+	const startTime = $derived(format(startDate, 'HH:mm'));
+	const endTime = $derived(format(endDate, 'HH:mm'));
 
-	const categoryNames = event.categories?.map((c) => c.name).filter((n) => n) ?? [];
+	const categoryNames = $derived(event.categories?.map((c) => c.name).filter((n) => n) ?? []);
 	
-	const isMilonga = categoryNames.some((c) => c.toLowerCase().includes('milonga'));
-	const isPractica = categoryNames.some((c) => c.toLowerCase().includes('practica'));
-	const isWorkshop = categoryNames.some((c) => c.toLowerCase().includes('workshop'));
+	const isMilonga = $derived(categoryNames.some((c) => c.toLowerCase().includes('milonga')));
+	const isPractica = $derived(categoryNames.some((c) => c.toLowerCase().includes('practica')));
+	const isWorkshop = $derived(categoryNames.some((c) => c.toLowerCase().includes('workshop')));
 	
-	const badgeColor = isMilonga ? 'bg-coral' : isPractica ? 'bg-mint' : isWorkshop ? 'bg-lavender' : 'bg-primary-500';
-	const badgeGradient = isMilonga ? 'from-coral/20 to-coral/5' : isPractica ? 'from-mint/20 to-mint/5' : isWorkshop ? 'from-lavender/20 to-lavender/5' : 'from-primary-500/20 to-primary-500/5';
-	const dateGradient = isMilonga ? 'from-coral to-rose-500' : isPractica ? 'from-mint to-teal-500' : isWorkshop ? 'from-lavender to-purple-500' : 'from-primary-500 to-primary-600';
+	const badgeColor = $derived(isMilonga ? 'bg-coral' : isPractica ? 'bg-mint' : isWorkshop ? 'bg-lavender' : 'bg-primary-500');
+	const badgeGradient = $derived(isMilonga ? 'from-coral/20 to-coral/5' : isPractica ? 'from-mint/20 to-mint/5' : isWorkshop ? 'from-lavender/20 to-lavender/5' : 'from-primary-500/20 to-primary-500/5');
+	const dateGradient = $derived(isMilonga ? 'from-coral to-rose-500' : isPractica ? 'from-mint to-teal-500' : isWorkshop ? 'from-lavender to-purple-500' : 'from-primary-500 to-primary-600');
 
 	function getPriceDisplay(cost: string): string {
 		if (!cost) return 'auf Anfrage';

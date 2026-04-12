@@ -42,7 +42,7 @@
 {#if selectedDate}
 	<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
 		<div class="flex items-center justify-between mb-3">
-			<button onclick={goToPrevDay} class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+			<button onclick={goToPrevDay} title="Vorheriger Tag" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
 				<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
 				</svg>
@@ -53,7 +53,7 @@
 				<p class="text-xs text-gray-400">{eventsForDate.length} Veranstaltungen</p>
 			</div>
 			
-			<button onclick={goToNextDay} class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+			<button onclick={goToNextDay} title="Nächster Tag" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
 				<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
 				</svg>
