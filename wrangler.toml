@@ -1,9 +1,5 @@
 name = "rnt"
 compatibility_date = "2024-01-01"
 
-[builds]
-command = "npm run build"
-directory = "build"
-
-[pages]
-build_output_dir = "build"
+[assets]
+directory = "./build"
