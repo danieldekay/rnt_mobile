@@ -56,7 +56,7 @@
 	const { days, monthName, year } = $derived(getMonthData(currentMonth));
 </script>
 
-<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+<div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
 		<h3 class="text-lg font-bold text-gray-900 capitalize">{monthName} {year}</h3>

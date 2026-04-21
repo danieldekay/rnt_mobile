@@ -40,7 +40,7 @@
 </script>
 
 {#if selectedDate}
-	<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+	<div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
 		<div class="flex items-center justify-between mb-3">
 			<button onclick={goToPrevDay} title="Vorheriger Tag" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
 				<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

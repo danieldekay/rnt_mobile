@@ -56,7 +56,7 @@
 				class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
 				loading="lazy"
 			/>
-			<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+			<div class="absolute inset-0 bg-linear-to-t from-black/40 to-transparent"></div>
 			{#if event.featured}
 				<div class="absolute top-3 left-3 px-2.5 py-1 bg-amber text-white text-[10px] font-bold rounded-full shadow-lg">
 					Empfohlen
@@ -73,7 +73,7 @@
 	<div class="p-4 {eventImage && showImage ? '' : 'pt-5'}">
 		<div class="flex gap-3">
 			{#if !eventImage || !showImage}
-				<div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br {dateGradient} rounded-xl flex flex-col items-center justify-center text-white shadow-lg">
+				<div class="shrink-0 w-14 h-14 bg-linear-to-br {dateGradient} rounded-xl flex flex-col items-center justify-center text-white shadow-lg">
 					<span class="text-[10px] font-medium uppercase tracking-wide opacity-90">{dayName}</span>
 					<span class="text-xl font-bold leading-none">{dayNumber}</span>
 					<span class="text-[10px] font-medium opacity-90">{monthName}</span>
@@ -83,7 +83,7 @@
 			<div class="flex-1 min-w-0">
 				{#if eventImage}
 					<div class="flex items-center gap-2 mb-1.5">
-						<span class="px-2 py-0.5 bg-gradient-to-r {badgeGradient} {badgeColor} text-white text-[10px] font-bold rounded-full">
+						<span class="px-2 py-0.5 bg-linear-to-r {badgeGradient} {badgeColor} text-white text-[10px] font-bold rounded-full">
 							{isMilonga ? 'Milonga' : isPractica ? 'Practica' : isWorkshop ? 'Workshop' : 'Event'}
 						</span>
 						<span class="text-[10px] text-gray-400 font-medium">{dayName}, {dayNumber}. {monthName}</span>
@@ -96,7 +96,7 @@
 
 				{#if !eventImage || !showImage}
 					<div class="flex items-center gap-1 text-sm text-gray-500 mb-2">
-						<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
 						</svg>
@@ -109,7 +109,7 @@
 					</div>
 				{:else}
 					<div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-						<svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
 						</svg>
@@ -159,7 +159,7 @@
 				{/if}
 			</div>
 
-			<div class="flex-shrink-0 self-center text-gray-300 group-hover:text-primary-400 transition-colors">
+			<div class="shrink-0 self-center text-gray-300 group-hover:text-primary-400 transition-colors">
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
 				</svg>
