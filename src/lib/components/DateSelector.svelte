@@ -40,21 +40,21 @@
 </script>
 
 {#if selectedDate}
-	<div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
+	<div class="card p-4">
 		<div class="flex items-center justify-between mb-3">
-			<button onclick={goToPrevDay} title="Vorheriger Tag" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-				<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<button onclick={goToPrevDay} title="Vorheriger Tag" aria-label="Vorherigen Tag auswählen" type="button" class="inline-flex min-h-12 min-w-12 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring/35">
+				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
 				</svg>
 			</button>
 			
 			<div class="text-center">
-				<p class="font-semibold text-gray-900 capitalize">{formatSelectedDate(selectedDate)}</p>
-				<p class="text-xs text-gray-400">{eventsForDate.length} Veranstaltungen</p>
+				<p class="font-display text-[1.125rem] font-semibold capitalize text-text-default">{formatSelectedDate(selectedDate)}</p>
+				<p class="meta-text" aria-live="polite">{eventsForDate.length} Veranstaltungen</p>
 			</div>
 			
-			<button onclick={goToNextDay} title="Nächster Tag" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-				<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<button onclick={goToNextDay} title="Nächster Tag" aria-label="Nächsten Tag auswählen" type="button" class="inline-flex min-h-12 min-w-12 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring/35">
+				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
 				</svg>
 			</button>
@@ -62,7 +62,8 @@
 		
 		<button 
 			onclick={goToToday}
-			class="w-full py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+			class="btn-secondary w-full"
+			type="button"
 		>
 			Heute
 		</button>

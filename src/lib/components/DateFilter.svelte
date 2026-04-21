@@ -16,11 +16,12 @@
 	];
 </script>
 
-<div class="flex gap-1 p-1 bg-gray-100 rounded-xl">
-	{#each options as option}
+<div class="grid grid-cols-4 gap-2 rounded-card border border-border-default bg-surface-subtle p-2">
+	{#each options as option (option.value)}
 		<button
 			onclick={() => onchange(option.value)}
-			class="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 {active === option.value ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-700'}"
+			class="inline-flex min-h-12 items-center justify-center rounded-control border px-3 py-2 text-sm font-medium transition-colors {active === option.value ? 'border-border-accent bg-surface-card text-text-default shadow-card' : 'border-transparent bg-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'}"
+			aria-pressed={active === option.value}
 		>
 			{option.label}
 		</button>

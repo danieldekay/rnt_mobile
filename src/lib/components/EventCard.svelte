@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { format, parseISO } from 'date-fns';
 	import { de } from 'date-fns/locale';
 	import type { TribeEvent } from '$lib/types';
-	import { extractDjFromDescription } from '$lib/api/tribe';
+	import { extractDjFromDescription, formatEventCost } from '$lib/api/tribe';
+	import { getEventAccentClass, getEventMusicBadgeClass, getEventMusicLabel, getEventTypeBadgeClass, getEventTypeLabel } from '$lib/utils/event-presentation';
 
 	interface Props {
 		event: TribeEvent;
@@ -27,129 +29,98 @@
 	const startTime = $derived(format(startDate, 'HH:mm'));
 	const endTime = $derived(format(endDate, 'HH:mm'));
 
-	const categoryNames = $derived(event.categories?.map((c) => c.name).filter((n) => n) ?? []);
-	
-	const isMilonga = $derived(categoryNames.some((c) => c.toLowerCase().includes('milonga')));
-	const isPractica = $derived(categoryNames.some((c) => c.toLowerCase().includes('practica')));
-	const isWorkshop = $derived(categoryNames.some((c) => c.toLowerCase().includes('workshop')));
-	
-	const badgeColor = $derived(isMilonga ? 'bg-coral' : isPractica ? 'bg-mint' : isWorkshop ? 'bg-lavender' : 'bg-primary-500');
-	const badgeGradient = $derived(isMilonga ? 'from-coral/20 to-coral/5' : isPractica ? 'from-mint/20 to-mint/5' : isWorkshop ? 'from-lavender/20 to-lavender/5' : 'from-primary-500/20 to-primary-500/5');
-	const dateGradient = $derived(isMilonga ? 'from-coral to-rose-500' : isPractica ? 'from-mint to-teal-500' : isWorkshop ? 'from-lavender to-purple-500' : 'from-primary-500 to-primary-600');
+	const eventTypeLabel = $derived(getEventTypeLabel(event));
+	const eventTypeBadgeClass = $derived(getEventTypeBadgeClass(event));
+	const musicLabel = $derived(getEventMusicLabel(event));
+	const musicBadgeClass = $derived(getEventMusicBadgeClass(event));
+	const accentClass = $derived(getEventAccentClass(event));
 
-	function getPriceDisplay(cost: string): string {
-		if (!cost) return 'auf Anfrage';
-		if (cost.includes('frei') || cost === '0') return 'frei';
-		return cost.includes('€') ? cost : `€${cost}`;
-	}
 </script>
 
 <a 
-	href="/event/{event.id}" 
-	class="card block overflow-hidden hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 group"
+	href={resolve(`/event/${event.id}`)} 
+	class="card group block overflow-hidden transition-colors duration-150 hover:border-border-strong hover:bg-surface-canvas"
 >
-	{#if eventImage && showImage}
-		<div class="relative h-36 overflow-hidden">
-			<img 
-				src={eventImage} 
-				alt=""
-				class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-				loading="lazy"
-			/>
-			<div class="absolute inset-0 bg-linear-to-t from-black/40 to-transparent"></div>
-			{#if event.featured}
-				<div class="absolute top-3 left-3 px-2.5 py-1 bg-amber text-white text-[10px] font-bold rounded-full shadow-lg">
-					Empfohlen
-				</div>
-			{/if}
-			<div class="absolute top-3 right-3">
-				<span class="px-2.5 py-1 {badgeColor} text-white text-[10px] font-bold rounded-full shadow-lg">
-					{isMilonga ? 'Milonga' : isPractica ? 'Practica' : isWorkshop ? 'Workshop' : 'Event'}
-				</span>
-			</div>
+	<div class="flex gap-4 p-4">
+		<div class="relative flex h-20 w-16 flex-shrink-0 flex-col items-center justify-center rounded-control border border-border-default bg-surface-subtle text-text-default">
+			<span class="absolute left-0 top-0 h-full w-1 rounded-l-control {accentClass}" aria-hidden="true"></span>
+			<span class="text-[0.75rem] font-medium uppercase tracking-wide text-text-muted">{dayName}</span>
+			<span class="font-display text-[1.5rem] font-semibold leading-none">{dayNumber}</span>
+			<span class="text-[0.75rem] font-medium text-text-muted">{monthName}</span>
 		</div>
-	{/if}
-	
-	<div class="p-4 {eventImage && showImage ? '' : 'pt-5'}">
-		<div class="flex gap-3">
-			{#if !eventImage || !showImage}
-				<div class="shrink-0 w-14 h-14 bg-linear-to-br {dateGradient} rounded-xl flex flex-col items-center justify-center text-white shadow-lg">
-					<span class="text-[10px] font-medium uppercase tracking-wide opacity-90">{dayName}</span>
-					<span class="text-xl font-bold leading-none">{dayNumber}</span>
-					<span class="text-[10px] font-medium opacity-90">{monthName}</span>
+
+		<div class="min-w-0 flex-1 space-y-3">
+			<div class="flex items-start justify-between gap-3">
+				<div class="min-w-0 space-y-2">
+					<div class="flex flex-wrap items-center gap-2">
+						{#if eventTypeLabel}
+							<span class="inline-flex min-h-8 items-center rounded-badge border px-2.5 py-1 text-[0.75rem] font-semibold {eventTypeBadgeClass}">
+								{eventTypeLabel}
+							</span>
+						{/if}
+						{#if musicLabel}
+							<span class="inline-flex min-h-8 items-center rounded-badge border px-2.5 py-1 text-[0.75rem] font-semibold {musicBadgeClass}">
+								{musicLabel}
+							</span>
+						{/if}
+					</div>
+					<h3 class="line-clamp-2 text-[1.125rem] font-semibold leading-tight text-text-default">
+						{event.title}
+					</h3>
 				</div>
-			{/if}
 
-			<div class="flex-1 min-w-0">
-				{#if eventImage}
-					<div class="flex items-center gap-2 mb-1.5">
-						<span class="px-2 py-0.5 bg-linear-to-r {badgeGradient} {badgeColor} text-white text-[10px] font-bold rounded-full">
-							{isMilonga ? 'Milonga' : isPractica ? 'Practica' : isWorkshop ? 'Workshop' : 'Event'}
-						</span>
-						<span class="text-[10px] text-gray-400 font-medium">{dayName}, {dayNumber}. {monthName}</span>
-					</div>
+				{#if eventImage && showImage}
+					<img
+						src={eventImage}
+						alt=""
+						width="320"
+						height="320"
+						class="h-20 w-20 rounded-control border border-border-default object-cover"
+						loading="lazy"
+					/>
 				{/if}
+			</div>
 
-				<h3 class="font-bold text-gray-900 leading-tight mb-1.5 line-clamp-2 {(eventImage && showImage) ? 'text-base' : 'text-base'}">
-					{event.title}
-				</h3>
+			<div class="space-y-2 text-[0.9375rem] text-text-muted">
+				<div class="flex items-start gap-2">
+					<svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+					</svg>
+					<span class="min-w-0 break-words">{event.venue?.city ?? 'Ort offen'}{event.venue?.venue ? ` · ${event.venue.venue}` : ''}</span>
+				</div>
 
-				{#if !eventImage || !showImage}
-					<div class="flex items-center gap-1 text-sm text-gray-500 mb-2">
-						<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-						</svg>
-						<span class="truncate">
-							{event.venue?.venue ?? 'Ort noch nicht angegeben'}
-							{#if event.venue?.city}
-								<span class="text-gray-400">· {event.venue.city}</span>
-							{/if}
-						</span>
-					</div>
-				{:else}
-					<div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-						<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-						</svg>
-						<span class="truncate">
-							{event.venue?.venue ?? 'Ort noch nicht angegeben'}{event.venue?.city ? ` · ${event.venue.city}` : ''}
-						</span>
-					</div>
-				{/if}
-
-				<div class="flex items-center gap-3 text-sm">
-					<div class="flex items-center gap-1.5 {(eventImage && showImage) ? 'text-gray-600' : 'text-gray-500'}">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+					<div class="flex items-center gap-2">
+						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
 						</svg>
-						<span>{startTime}{event.all_day ? '' : ` – ${endTime}`}</span>
+						<span>{event.all_day ? 'Ganztägig' : `${startTime} – ${endTime}`}</span>
 					</div>
-					
+
 					{#if event.cost}
-						<div class="flex items-center gap-1.5 font-semibold {event.cost.includes('frei') || event.cost === '0' ? 'text-mint' : 'text-primary-600'}">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<div class="flex items-center gap-2 font-medium text-text-default">
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
 							</svg>
-							<span>{getPriceDisplay(event.cost)}</span>
+							<span>{formatEventCost(event.cost)}</span>
 						</div>
 					{/if}
 				</div>
 
-				{#if (event.organizer?.length > 0 || dj) && !event.image}
-					<div class="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-gray-400">
+				{#if event.organizer?.length > 0 || dj}
+					<div class="flex flex-wrap gap-x-4 gap-y-1 text-[0.875rem] text-text-muted">
 						{#if event.organizer?.length > 0}
-							<span class="flex items-center gap-1">
-								<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<span class="flex items-center gap-1.5">
+								<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
 								</svg>
 								{event.organizer[0].organizer}
 							</span>
 						{/if}
 						{#if dj}
-							<span class="flex items-center gap-1">
-								<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<span class="flex items-center gap-1.5">
+								<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
 								</svg>
 								DJ {dj}
@@ -158,12 +129,12 @@
 					</div>
 				{/if}
 			</div>
+		</div>
 
-			<div class="shrink-0 self-center text-gray-300 group-hover:text-primary-400 transition-colors">
-				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div class="self-center text-text-muted transition-colors group-hover:text-text-default">
+			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
 				</svg>
 			</div>
 		</div>
-	</div>
 </a>

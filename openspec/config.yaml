@@ -1,0 +1,23 @@
+schema: spec-driven
+context: |
+  App: RNT Kalender
+  Stack: SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS, adapter-static
+  Domain: Mobile-first PWA for Rhein-Neckar tango events
+  Data source: https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1
+  Architecture: routes in src/routes, components in src/lib/components, API access in src/lib/api/tribe.ts, state in src/lib/stores/events.svelte.ts
+  Deployment: static build for Cloudflare Pages via adapter-static
+  Constraints: preserve static compatibility, keep changes mobile-first, and follow existing Svelte 5 rune patterns
+rules:
+  proposal:
+    - State the user-visible outcome and the affected routes or views.
+    - Note API, data-shape, or feed-availability implications.
+    - Mention any prerendering or Cloudflare Pages deployment impact.
+  specs:
+    - Describe behavior in user-visible terms, including loading, empty, and error states when relevant.
+    - Include responsive and mobile behavior for UI-facing changes.
+  design:
+    - Reference the concrete routes, components, store modules, and API modules that will change.
+    - Prefer minimal changes consistent with the current Svelte 5 and SvelteKit structure.
+  tasks:
+    - Keep tasks implementation-ready and file-scoped where possible.
+    - Include validation with npm run check, and add npm run build when routing or prerender behavior changes.

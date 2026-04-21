@@ -71,6 +71,10 @@ function createEventStore() {
 		setFilters({ music });
 	}
 
+	function toggleMusic(music: MusicType) {
+		setMusic(filters.music === music ? null : music);
+	}
+
 	function setDateFilter(date: DateFilter) {
 		setFilters({ date });
 	}
@@ -94,6 +98,7 @@ function createEventStore() {
 		setFilters,
 		toggleType,
 		setMusic,
+		toggleMusic,
 		setDateFilter,
 		setSearchQuery,
 		clearSearch

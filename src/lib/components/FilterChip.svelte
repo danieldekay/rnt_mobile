@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { EventType } from '$lib/types';
+	import { getEventTypeFilterClass } from '$lib/utils/event-presentation';
 
 	interface Props {
 		type: EventType;
@@ -26,10 +27,16 @@
 
 <button
 	{onclick}
-	class="filter-chip {active ? 'filter-chip-active' : 'filter-chip-inactive'}"
+	class="filter-chip {getEventTypeFilterClass(type, active)}"
+	aria-pressed={active}
 >
-	<svg class="w-4 h-4 mr-1.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icons[type]} />
 	</svg>
-	{labels[type]}
+	<span>{labels[type]}</span>
+	{#if active}
+		<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+		</svg>
+	{/if}
 </button>

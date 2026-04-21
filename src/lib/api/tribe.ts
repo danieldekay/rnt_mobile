@@ -15,6 +15,109 @@ const MUSIC_SLUGS: Record<MusicType, string> = {
 	neo: 'musik_neo-oder-non'
 };
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+	amp: '&',
+	lt: '<',
+	gt: '>',
+	quot: '"',
+	apos: "'",
+	nbsp: ' ',
+	ndash: '–',
+	mdash: '—',
+	hellip: '…',
+	rsquo: '’',
+	lsquo: '‘',
+	rdquo: '”',
+	ldquo: '“',
+	laquo: '«',
+	raquo: '»',
+	deg: '°',
+	euro: '€',
+	copy: '©',
+	reg: '®',
+	trade: '™',
+	uml: '¨',
+	auml: 'ä',
+	ouml: 'ö',
+	uuml: 'ü',
+	Auml: 'Ä',
+	Ouml: 'Ö',
+	Uuml: 'Ü',
+	szlig: 'ß'
+};
+
+function decodeHtmlEntities(value: string): string {
+	return value.replace(/&(#x?[\da-f]+|[a-z]+);/gi, (match, entity: string) => {
+		if (entity.startsWith('#x') || entity.startsWith('#X')) {
+			const codePoint = Number.parseInt(entity.slice(2), 16);
+			return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+		}
+
+		if (entity.startsWith('#')) {
+			const codePoint = Number.parseInt(entity.slice(1), 10);
+			return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+		}
+
+		return HTML_ENTITY_MAP[entity] ?? match;
+	});
+}
+
+function normalizeText(value: string | null | undefined): string {
+	if (!value) return '';
+
+	return decodeHtmlEntities(value)
+		.replace(/\u00a0/g, ' ')
+		.replace(/[ \t]{2,}/g, ' ')
+		.trim();
+}
+
+function normalizeHtml(value: string | null | undefined): string {
+	if (!value) return '';
+
+	return decodeHtmlEntities(value).replace(/\u00a0/g, ' ');
+}
+
+function normalizeEvent(event: TribeEvent): TribeEvent {
+	return {
+		...event,
+		title: normalizeText(event.title),
+		description: normalizeHtml(event.description),
+		cost: normalizeText(event.cost),
+		venue: event.venue
+			? {
+				...event.venue,
+				venue: normalizeText(event.venue.venue),
+				address: normalizeText(event.venue.address),
+				city: normalizeText(event.venue.city)
+			}
+			: event.venue,
+		organizer: event.organizer?.map((organizer) => ({
+			...organizer,
+			organizer: normalizeText(organizer.organizer)
+		})),
+		categories: event.categories?.map((category) => ({
+			...category,
+			name: normalizeText(category.name)
+		}))
+	};
+}
+
+export function formatEventCost(cost: string | null | undefined): string {
+	const normalizedCost = normalizeText(cost);
+	if (!normalizedCost) return 'auf Anfrage';
+
+	const lowerCost = normalizedCost.toLowerCase();
+	if (normalizedCost === '0' || lowerCost.includes('frei') || lowerCost.includes('kostenlos') || lowerCost.includes('free')) {
+		return 'Frei';
+	}
+
+	if (/^\d+(?:[.,]\d{1,2})?$/.test(normalizedCost)) {
+		return `${normalizedCost}\u00a0€`;
+	}
+
+	return normalizedCost;
+}
+
 function formatDate(date: Date): string {
 	return date.toISOString().split('T')[0];
 }
@@ -76,7 +179,11 @@ export async function fetchEvents(
 		throw new Error(`Failed to fetch events: ${response.status}`);
 	}
 
-	return response.json();
+	const data = (await response.json()) as EventsResponse;
+	return {
+		...data,
+		events: data.events.map(normalizeEvent)
+	};
 }
 
 export async function fetchAllEvents(
@@ -101,13 +208,13 @@ export async function fetchAllEvents(
 export function extractDjFromDescription(event: TribeEvent): string | null {
 	const description = event.description || '';
 	const djMatch = description.match(/DJ[:\s]+([^<,\n]+)/i);
-	return djMatch ? djMatch[1].trim() : null;
+	return djMatch ? normalizeText(djMatch[1]) : null;
 }
 
 export function extractWorkshopFromDescription(event: TribeEvent): string | null {
 	const description = event.description || '';
 	const workshopMatch = description.match(/Workshops?[:\s]+([^<,\n]+)/i);
-	return workshopMatch ? workshopMatch[1].trim() : null;
+	return workshopMatch ? normalizeText(workshopMatch[1]) : null;
 }
 
 export async function fetchEventById(id: number): Promise<TribeEvent> {
@@ -118,5 +225,5 @@ export async function fetchEventById(id: number): Promise<TribeEvent> {
 		throw new Error(`Failed to fetch event: ${response.status}`);
 	}
 
-	return response.json();
+	return normalizeEvent((await response.json()) as TribeEvent);
 }

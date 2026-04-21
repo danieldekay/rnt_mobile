@@ -1,13 +1,15 @@
 <script lang="ts">
 	import type { TribeEvent } from '$lib/types';
+	import { getEventAccentClass } from '$lib/utils/event-presentation';
 
 	interface Props {
 		events: TribeEvent[];
 		currentMonth: Date;
+		selectedDate?: Date | null;
 		onselectDate: (date: Date) => void;
 	}
 
-	let { events, currentMonth, onselectDate }: Props = $props();
+	let { events, currentMonth, selectedDate = null, onselectDate }: Props = $props();
 
 	const weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
@@ -49,44 +51,76 @@
 		return date.toDateString() === currentDate.toDateString();
 	}
 
+	function isSelected(date: Date): boolean {
+		return selectedDate ? date.toDateString() === selectedDate.toDateString() : false;
+	}
+
 	function isPast(date: Date): boolean {
-		return date < new Date(currentDate.setHours(0, 0, 0, 0));
+		const startOfToday = new Date(currentDate);
+		startOfToday.setHours(0, 0, 0, 0);
+		return date < startOfToday;
+	}
+
+	function getDateLabel(date: Date, eventCount: number): string {
+		const label = date.toLocaleDateString('de-DE', {
+			weekday: 'long',
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		});
+
+		if (eventCount === 0) {
+			return label;
+		}
+
+		return `${label}, ${eventCount} Veranstaltung${eventCount === 1 ? '' : 'en'}`;
 	}
 
 	const { days, monthName, year } = $derived(getMonthData(currentMonth));
 </script>
 
-<div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
+<div class="card p-4">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-lg font-bold text-gray-900 capitalize">{monthName} {year}</h3>
+		<h3 class="font-display text-[1.5rem] font-semibold capitalize text-text-default">{monthName} {year}</h3>
 	</div>
 
 	<!-- Week days header -->
 	<div class="grid grid-cols-7 gap-1 mb-2">
-		{#each weekDays as day}
-			<div class="text-center text-xs font-medium text-gray-400 py-1">{day}</div>
+		{#each weekDays as day (day)}
+			<div class="py-1 text-center text-[0.875rem] font-medium text-text-muted">{day}</div>
 		{/each}
 	</div>
 
 	<!-- Calendar grid -->
 	<div class="grid grid-cols-7 gap-1">
-		{#each days as day}
+		{#each days as day, index (day ? day.toISOString() : `empty-${index}`)}
 			{#if day}
 				{@const dayEvents = getEventsForDate(day)}
 				{@const hasEvents = dayEvents.length > 0}
 				{@const past = isPast(day)}
+				{@const selected = isSelected(day)}
 				<button
 					onclick={() => onselectDate(day)}
-					class="relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all duration-200 {isToday(day) ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30' : hasEvents ? 'bg-primary-50 text-primary-700 hover:bg-primary-100' : 'text-gray-600 hover:bg-gray-50'} {past && !isToday(day) ? 'opacity-40' : ''}"
+					type="button"
+					class="relative aspect-square flex flex-col items-center justify-center rounded-control border text-sm transition-colors duration-150 {selected ? 'border-border-accent bg-action-primary text-text-inverse' : isToday(day) ? 'border-border-accent bg-surface-card text-text-default' : hasEvents ? 'border-border-default bg-surface-subtle text-text-default hover:bg-action-secondary' : 'border-transparent bg-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'} {past && !isToday(day) && !selected ? 'opacity-50' : ''}"
+					aria-pressed={selected}
+					aria-label={getDateLabel(day, dayEvents.length)}
+					aria-current={isToday(day) ? 'date' : undefined}
 				>
+					{#if hasEvents}
+						<span class="absolute right-1.5 top-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[0.625rem] font-semibold leading-none {selected ? 'bg-white/18 text-text-inverse' : 'border border-border-default bg-surface-card text-text-default'}">
+							{dayEvents.length}
+						</span>
+					{/if}
+					{#if isToday(day) && !selected}
+						<span class="absolute left-1.5 top-1.5 h-2 w-2 rounded-full bg-focus-ring" aria-hidden="true"></span>
+					{/if}
 					<span class="font-medium">{day.getDate()}</span>
-					{#if hasEvents && !isToday(day)}
-						<div class="absolute bottom-1 flex gap-0.5">
-							{#each dayEvents.slice(0, 3) as event}
-								{@const isMilonga = event.categories?.some(c => c.name?.toLowerCase().includes('milonga'))}
-								{@const isPractica = event.categories?.some(c => c.name?.toLowerCase().includes('practica'))}
-								<div class="w-1.5 h-1.5 rounded-full {isMilonga ? 'bg-coral' : isPractica ? 'bg-mint' : 'bg-lavender'}"></div>
+					{#if hasEvents && !selected}
+						<div class="absolute bottom-1 flex gap-0.5" aria-hidden="true">
+							{#each dayEvents.slice(0, 3) as event (event.id)}
+								<div class="h-1.5 w-1.5 rounded-full {getEventAccentClass(event)}"></div>
 							{/each}
 						</div>
 					{/if}

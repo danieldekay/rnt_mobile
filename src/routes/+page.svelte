@@ -3,19 +3,21 @@
 	import { eventStore } from '$lib/stores/events.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import FilterChip from '$lib/components/FilterChip.svelte';
+	import MusicFilterChip from '$lib/components/MusicFilterChip.svelte';
 	import DateFilter from '$lib/components/DateFilter.svelte';
 	import Search from 'carbon-icons-svelte/lib/Search.svelte';
 	import Close from 'carbon-icons-svelte/lib/Close.svelte';
 	import Image from 'carbon-icons-svelte/lib/Image.svelte';
 	import Map from 'carbon-icons-svelte/lib/Map.svelte';
 	import List from 'carbon-icons-svelte/lib/List.svelte';
-	import type { EventType, TribeEvent } from '$lib/types';
+	import type { EventType, MusicType, TribeEvent } from '$lib/types';
 	import 'leaflet/dist/leaflet.css';
 
 	const eventTypes: EventType[] = ['milonga', 'practica', 'workshop', 'kurs'];
+	const musicTypes: MusicType[] = ['traditional', 'mixed', 'neo'];
 
 	let isRefreshing = $state(false);
-	let showImages = $state(true);
+	let showImages = $state(false);
 	let showMap = $state(false);
 	let mapContainer = $state<HTMLDivElement | null>(null);
 	let mapLoading = $state(false);
@@ -71,7 +73,7 @@
 			const venueName = event.venue?.venue ?? '';
 			const marker = L.marker([event.venue!.geo_lat!, event.venue!.geo_lng!], { icon: customIcon })
 				.addTo(map!)
-				.bindPopup(`<strong>${eventTitle}</strong><br/>${venueName}<br/><a href="/event/${eventId}">Mehr info</a>`);
+				.bindPopup(`<strong>${eventTitle}</strong><br/>${venueName}<br/><a href="/event/${eventId}">Details öffnen</a>`);
 			return marker;
 		});
 
@@ -93,6 +95,12 @@
 </svelte:head>
 
 <div class="space-y-4">
+	<section class="space-y-2">
+		<p class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted">Region Rhein-Neckar</p>
+		<h2 class="font-display text-[2rem] font-semibold text-text-default">Nächste Veranstaltungen</h2>
+		<p class="meta-text max-w-[36ch]">Datum, Ort und Format zuerst. Alles Wichtige bleibt auf dem Handy schnell lesbar.</p>
+	</section>
+
 	<!-- Filters -->
 	<div class="space-y-3">
 		<!-- Date filter -->
@@ -102,33 +110,54 @@
 		/>
 		
 		<!-- Search -->
-		<div class="relative">
-			<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+		<div class="space-y-2">
+			<label for="event-search" class="text-[0.9375rem] font-medium text-text-default">Suche</label>
+			<div class="relative">
+				<Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" aria-hidden="true" />
 			<input
-				type="text"
-				placeholder="Suchen nach Event, Ort, DJ..."
+				id="event-search"
+				type="search"
+				name="event-search"
+				autocomplete="off"
+				spellcheck={false}
+				enterkeyhint="search"
+				placeholder="Event, Ort oder DJ suchen…"
 				value={eventStore.searchQuery}
 				oninput={(e) => eventStore.setSearchQuery(e.currentTarget.value)}
-				class="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+				class="field-input pl-12 pr-12"
 			/>
-			{#if eventStore.searchQuery}
-				<button
-					onclick={() => eventStore.clearSearch()}
-					class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-				>
-					<Close class="w-4 h-4" />
-				</button>
-			{/if}
+				{#if eventStore.searchQuery}
+					<button
+						onclick={() => eventStore.clearSearch()}
+						class="absolute right-3 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-badge text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
+						aria-label="Suche leeren"
+						type="button"
+					>
+						<Close class="h-4 w-4" aria-hidden="true" />
+					</button>
+				{/if}
+			</div>
 		</div>
 		{#if eventStore.searchQuery && searchCount !== totalCount}
-			<p class="text-sm text-gray-500">
+			<p class="meta-text" aria-live="polite">
 				{searchCount} von {totalCount} Events
 			</p>
 		{/if}
 		
 		<!-- Type filters + toggles -->
-		<div class="flex flex-wrap gap-2 items-center">
-			{#each eventTypes as type}
+		<div class="space-y-3">
+			<p class="text-[0.9375rem] font-medium text-text-default">Filter und Ansicht</p>
+			<div class="flex flex-wrap gap-2 items-center">
+			{#each musicTypes as music (music)}
+				<MusicFilterChip
+					{music}
+					active={eventStore.filters.music === music}
+					onclick={() => eventStore.toggleMusic(music)}
+				/>
+			{/each}
+			</div>
+			<div class="flex flex-wrap gap-2 items-center">
+			{#each eventTypes as type (type)}
 				<FilterChip
 					{type}
 					active={eventStore.filters.types.includes(type)}
@@ -138,33 +167,38 @@
 			<div class="flex-1"></div>
 			<button
 				onclick={() => showImages = !showImages}
-				class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors {showImages ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'}"
+				class="inline-flex min-h-12 items-center gap-2 rounded-control border px-4 py-2 text-sm font-medium transition-colors {showImages ? 'border-border-accent bg-action-secondary text-text-default' : 'border-border-default bg-surface-card text-text-muted hover:bg-action-secondary hover:text-text-default'}"
 				title={showImages ? 'Bilder ausblenden' : 'Bilder anzeigen'}
+				aria-pressed={showImages}
+				type="button"
 			>
-				<Image class="w-4 h-4" />
-				<span class="hidden sm:inline">Bilder</span>
+				<Image class="h-4 w-4" aria-hidden="true" />
+				<span>Bilder</span>
 			</button>
 			<button
 				onclick={() => showMap = !showMap}
-				class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors {showMap ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'}"
+				class="inline-flex min-h-12 items-center gap-2 rounded-control border px-4 py-2 text-sm font-medium transition-colors {showMap ? 'border-border-accent bg-action-secondary text-text-default' : 'border-border-default bg-surface-card text-text-muted hover:bg-action-secondary hover:text-text-default'}"
 				title={showMap ? 'Zur Liste' : 'Zur Karte'}
+				aria-pressed={showMap}
+				type="button"
 			>
 				{#if showMap}
-					<List class="w-4 h-4" />
+					<List class="h-4 w-4" aria-hidden="true" />
 				{:else}
-					<Map class="w-4 h-4" />
+					<Map class="h-4 w-4" aria-hidden="true" />
 				{/if}
-				<span class="hidden sm:inline">{showMap ? 'Liste' : 'Karte'}</span>
+				<span>{showMap ? 'Liste' : 'Karte'}</span>
 			</button>
+			</div>
 		</div>
 	</div>
 
 	{#if showMap && eventStore.events.length > 0}
-		<div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+		<div class="card overflow-hidden">
 			{#if eventsWithGeo.length > 0}
 				<div bind:this={mapContainer} class="h-[60vh] w-full"></div>
 			{:else}
-				<div class="h-[60vh] flex items-center justify-center bg-gray-50 text-gray-400">
+				<div class="flex h-[60vh] items-center justify-center bg-surface-subtle px-6 text-center text-text-muted">
 					Keine Events mit Standortdaten
 				</div>
 			{/if}
@@ -173,30 +207,31 @@
 
 	<!-- Loading state -->
 	{#if eventStore.loading && eventStore.events.length === 0}
-		<div class="flex flex-col items-center justify-center py-12 text-center">
-			<div class="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mb-4"></div>
-			<p class="text-gray-500">Lade Events...</p>
+		<div class="card flex flex-col items-center justify-center py-12 text-center" role="status" aria-live="polite">
+			<div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-action-secondary border-t-action-primary"></div>
+			<p class="text-[1rem] font-medium text-text-default">Lade Veranstaltungen…</p>
 		</div>
 	{:else if eventStore.error}
 		<!-- Error state -->
-		<div class="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
-			<p class="text-red-600 font-medium">Fehler beim Laden</p>
-			<p class="text-red-500 text-sm mt-1">{eventStore.error}</p>
+		<div class="card space-y-3 p-5 text-center" role="alert">
+			<p class="font-display text-[1.25rem] font-semibold text-text-default">Fehler beim Laden</p>
+			<p class="meta-text">{eventStore.error}</p>
 			<button 
 				onclick={handleRefresh}
-				class="mt-3 btn-primary"
+				class="btn-primary"
+				type="button"
 			>
 				Erneut versuchen
 			</button>
 		</div>
 	{:else if eventStore.events.length === 0}
 		<!-- Empty state -->
-		<div class="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center">
-			<svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div class="card p-8 text-center">
+			<svg class="mx-auto mb-4 h-16 w-16 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
 			</svg>
-			<p class="text-gray-500 font-medium">Keine Events gefunden</p>
-			<p class="text-gray-400 text-sm mt-1">Versuche andere Filtereinstellungen</p>
+			<p class="text-[1rem] font-medium text-text-default">Keine Events gefunden</p>
+			<p class="meta-text mt-1">Versuche andere Filtereinstellungen</p>
 		</div>
 	{:else}
 		{#if !showMap}
@@ -205,7 +240,7 @@
 			<!-- Pull to refresh indicator -->
 			{#if isRefreshing}
 				<div class="absolute -top-8 left-0 right-0 flex justify-center">
-					<div class="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+					<div class="h-6 w-6 animate-spin rounded-full border-2 border-action-primary border-t-transparent"></div>
 				</div>
 			{/if}
 			
@@ -220,12 +255,13 @@
 				<button 
 					onclick={handleRefresh}
 					disabled={eventStore.loading}
-					class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+					class="btn-secondary gap-2 disabled:opacity-50"
+					type="button"
 				>
-					<svg class="w-4 h-4 {eventStore.loading ? 'animate-spin' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="h-4 w-4 {eventStore.loading ? 'animate-spin' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
 					</svg>
-					{eventStore.loading ? 'Lädt...' : 'Aktualisieren'}
+					{eventStore.loading ? 'Lädt…' : 'Aktualisieren'}
 				</button>
 			</div>
 		</div>
