@@ -20,7 +20,7 @@
 	{#each options as option}
 		<button
 			onclick={() => onchange(option.value)}
-			class="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 {active === option.value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
+			class="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 {active === option.value ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-700'}"
 		>
 			{option.label}
 		</button>

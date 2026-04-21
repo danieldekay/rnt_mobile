@@ -10,7 +10,7 @@
 		<div class="max-w-lg mx-auto px-4 py-3">
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+					<div class="w-10 h-10 bg-linear-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
 						<span class="text-white text-lg font-bold">R</span>
 					</div>
 					<div>
