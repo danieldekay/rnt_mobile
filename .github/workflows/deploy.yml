@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      cloudflare_account_id:
+        description: Cloudflare account ID override
+        required: false
+        type: string
+      cloudflare_pages_project:
+        description: Cloudflare Pages project name override
+        required: false
+        type: string
 
 concurrency:
   group: deploy-production
@@ -38,6 +47,8 @@ jobs:
         id: discover
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.cloudflare_account_id || '' }}
+          CLOUDFLARE_PAGES_PROJECT_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.cloudflare_pages_project || '' }}
         run: |
           set -euo pipefail
 
@@ -54,33 +65,44 @@ jobs:
           fallback_matches=()
           all_projects=()
 
-          for account_id in "${accounts[@]}"; do
-            projects_json=$(curl -fsSL "${auth[@]}" "${api}/accounts/${account_id}/pages/projects")
+          if [[ -n "${CLOUDFLARE_ACCOUNT_ID_OVERRIDE}" || -n "${CLOUDFLARE_PAGES_PROJECT_OVERRIDE}" ]]; then
+            if [[ -z "${CLOUDFLARE_ACCOUNT_ID_OVERRIDE}" || -z "${CLOUDFLARE_PAGES_PROJECT_OVERRIDE}" ]]; then
+              echo "Set both CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_PAGES_PROJECT, or neither." >&2
+              exit 1
+            fi
 
-            while IFS= read -r project; do
-              name=$(jq -r '.name // empty' <<<"${project}")
-              if [[ -z "${name}" ]]; then
-                continue
-              fi
+            chosen="${CLOUDFLARE_ACCOUNT_ID_OVERRIDE}:${CLOUDFLARE_PAGES_PROJECT_OVERRIDE}"
+          fi
 
-              all_projects+=("${account_id}:${name}")
+          if [[ -z "${chosen}" ]]; then
+            for account_id in "${accounts[@]}"; do
+              projects_json=$(curl -fsSL "${auth[@]}" "${api}/accounts/${account_id}/pages/projects")
 
-              case " ${FALLBACK_PROJECT_NAMES} " in
-                *" ${name} "*) fallback_matches+=("${account_id}:${name}") ;;
-              esac
-
-              detail_json=$(curl -fsSL "${auth[@]}" "${api}/accounts/${account_id}/pages/projects/${name}")
-              domains=$(jq -r '.result.domains[]? | if type == "object" then (.domain // .name // empty) else . end' <<<"${detail_json}")
-
-              if grep -Fxq "${TARGET_DOMAIN}" <<<"${domains}"; then
-                if [[ -n "${chosen}" ]]; then
-                  echo "Multiple Cloudflare Pages projects are attached to ${TARGET_DOMAIN}." >&2
-                  exit 1
+              while IFS= read -r project; do
+                name=$(jq -r '.name // empty' <<<"${project}")
+                if [[ -z "${name}" ]]; then
+                  continue
                 fi
-                chosen="${account_id}:${name}"
-              fi
-            done < <(jq -c '.result[]?' <<<"${projects_json}")
-          done
+
+                all_projects+=("${account_id}:${name}")
+
+                case " ${FALLBACK_PROJECT_NAMES} " in
+                  *" ${name} "*) fallback_matches+=("${account_id}:${name}") ;;
+                esac
+
+                detail_json=$(curl -fsSL "${auth[@]}" "${api}/accounts/${account_id}/pages/projects/${name}")
+                domains=$(jq -r '.result.domains[]? | if type == "object" then (.domain // .name // empty) else . end' <<<"${detail_json}")
+
+                if grep -Fxq "${TARGET_DOMAIN}" <<<"${domains}"; then
+                  if [[ -n "${chosen}" ]]; then
+                    echo "Multiple Cloudflare Pages projects are attached to ${TARGET_DOMAIN}." >&2
+                    exit 1
+                  fi
+                  chosen="${account_id}:${name}"
+                fi
+              done < <(jq -c '.result[]?' <<<"${projects_json}")
+            done
+          fi
 
           if [[ -z "${chosen}" ]]; then
             if [[ ${#fallback_matches[@]} -eq 1 ]]; then
