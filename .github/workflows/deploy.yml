@@ -4,15 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      cloudflare_account_id:
-        description: Cloudflare account ID override
-        required: false
-        type: string
-      cloudflare_pages_project:
-        description: Cloudflare Pages project name override
-        required: false
-        type: string
 
 concurrency:
   group: deploy-production
@@ -23,11 +14,10 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy to Cloudflare Pages
+    name: Deploy Worker Assets
     runs-on: ubuntu-24.04
     env:
-      TARGET_DOMAIN: mobile.rhein-neckar-tango.de
-      FALLBACK_PROJECT_NAMES: rnt-mobile rnt
+      WORKER_NAME: rnt
     steps:
       - uses: actions/checkout@v4
 
@@ -43,90 +33,16 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Discover Cloudflare Pages project
-        id: discover
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.cloudflare_account_id || '' }}
-          CLOUDFLARE_PAGES_PROJECT_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.cloudflare_pages_project || '' }}
-        run: |
-          set -euo pipefail
-
-          api="https://api.cloudflare.com/client/v4"
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-
-          mapfile -t accounts < <(curl -fsSL "${auth[@]}" "${api}/accounts" | jq -r '.result[]?.id')
-          if [[ ${#accounts[@]} -eq 0 ]]; then
-            echo "No Cloudflare accounts are accessible with the configured token." >&2
-            exit 1
-          fi
-
-          chosen=""
-          fallback_matches=()
-          all_projects=()
-
-          if [[ -n "${CLOUDFLARE_ACCOUNT_ID_OVERRIDE}" || -n "${CLOUDFLARE_PAGES_PROJECT_OVERRIDE}" ]]; then
-            if [[ -z "${CLOUDFLARE_ACCOUNT_ID_OVERRIDE}" || -z "${CLOUDFLARE_PAGES_PROJECT_OVERRIDE}" ]]; then
-              echo "Set both CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_PAGES_PROJECT, or neither." >&2
-              exit 1
-            fi
-
-            chosen="${CLOUDFLARE_ACCOUNT_ID_OVERRIDE}:${CLOUDFLARE_PAGES_PROJECT_OVERRIDE}"
-          fi
-
-          if [[ -z "${chosen}" ]]; then
-            for account_id in "${accounts[@]}"; do
-              projects_json=$(curl -fsSL "${auth[@]}" "${api}/accounts/${account_id}/pages/projects")
-
-              while IFS= read -r project; do
-                name=$(jq -r '.name // empty' <<<"${project}")
-                if [[ -z "${name}" ]]; then
-                  continue
-                fi
-
-                all_projects+=("${account_id}:${name}")
-
-                case " ${FALLBACK_PROJECT_NAMES} " in
-                  *" ${name} "*) fallback_matches+=("${account_id}:${name}") ;;
-                esac
-
-                detail_json=$(curl -fsSL "${auth[@]}" "${api}/accounts/${account_id}/pages/projects/${name}")
-                domains=$(jq -r '.result.domains[]? | if type == "object" then (.domain // .name // empty) else . end' <<<"${detail_json}")
-
-                if grep -Fxq "${TARGET_DOMAIN}" <<<"${domains}"; then
-                  if [[ -n "${chosen}" ]]; then
-                    echo "Multiple Cloudflare Pages projects are attached to ${TARGET_DOMAIN}." >&2
-                    exit 1
-                  fi
-                  chosen="${account_id}:${name}"
-                fi
-              done < <(jq -c '.result[]?' <<<"${projects_json}")
-            done
-          fi
-
-          if [[ -z "${chosen}" ]]; then
-            if [[ ${#fallback_matches[@]} -eq 1 ]]; then
-              chosen="${fallback_matches[0]}"
-            elif [[ ${#all_projects[@]} -eq 1 ]]; then
-              chosen="${all_projects[0]}"
-            else
-              echo "Could not uniquely determine the Cloudflare Pages project." >&2
-              echo "Discovered projects:" >&2
-              printf ' - %s\n' "${all_projects[@]}" >&2
-              exit 1
-            fi
-          fi
-
-          account_id=${chosen%%:*}
-          project_name=${chosen#*:}
-
-          echo "Using account ${account_id} and Pages project ${project_name}."
-          echo "account_id=${account_id}" >> "${GITHUB_OUTPUT}"
-          echo "project_name=${project_name}" >> "${GITHUB_OUTPUT}"
-
       - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ steps.discover.outputs.account_id }}
-          PROJECT_NAME: ${{ steps.discover.outputs.project_name }}
-        run: npx wrangler pages deploy build --project-name "${PROJECT_NAME}" --branch main
+        run: |
+          set -euo pipefail
+          pushd /tmp >/dev/null
+          npx wrangler deploy \
+            --name "${WORKER_NAME}" \
+            --assets "${GITHUB_WORKSPACE}/build" \
+            --compatibility-date 2024-01-01 \
+            --keep-vars \
+            --message "GitHub Actions deploy ${GITHUB_SHA}"
+          popd >/dev/null
