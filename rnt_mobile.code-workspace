@@ -7,5 +7,7 @@
 			"path": "../../../2ndBrain/projects"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"djlint.showInstallError": false
+	}
 }

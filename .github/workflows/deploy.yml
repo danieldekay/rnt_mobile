@@ -16,8 +16,6 @@ jobs:
   deploy:
     name: Deploy Worker Assets
     runs-on: ubuntu-24.04
-    env:
-      WORKER_NAME: rnt
     steps:
       - uses: actions/checkout@v4
 
@@ -38,11 +36,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
-          pushd /tmp >/dev/null
           npx wrangler deploy \
-            --name "${WORKER_NAME}" \
-            --assets "${GITHUB_WORKSPACE}/build" \
-            --compatibility-date 2024-01-01 \
-            --keep-vars \
             --message "GitHub Actions deploy ${GITHUB_SHA}"
-          popd >/dev/null

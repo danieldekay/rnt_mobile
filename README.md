@@ -19,8 +19,7 @@ Mobile PWA für Tango-Veranstaltungen im Raum Heidelberg/Mannheim/Ludwigshafen. 
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Leaflet](https://leafletjs.com/) (OpenStreetMap)
 - [@melt-ui/svelte](https://melt-ui.com/) (Accessible components)
-- [carbon-icons-svelte](https://github.com/IBM/carbon-icons-svelte)
-- Static Adapter → Cloudflare Pages
+- Static Adapter → Cloudflare Worker Assets
 
 ## Development
 
@@ -40,15 +39,18 @@ npm run build
 
 ## Deployment
 
-Deployed automatically to **Cloudflare Pages** via GitHub Actions on push to `main`.
+Deployed automatically via **GitHub Actions** to the Cloudflare Worker Assets service `rnt` on push to `main`.
 
-Custom Domain: `https://rnt.danieldekay.com`
+Live URLs:
+
+- `https://mobile.rhein-neckar-tango.de`
+- `https://rnt.daniel-1f6.workers.dev`
 
 ### Manual Deploy
 
 ```bash
 npm run build
-wrangler pages deploy build
+npx wrangler deploy --message "Manual deploy"
 ```
 
 ## API

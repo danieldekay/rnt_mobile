@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
+	import ConsentPlaceholder from '$lib/components/ConsentPlaceholder.svelte';
+	import { escapeHtml, sanitizeHtml } from '$lib/utils/html';
+	import { trackFeatureEvent } from '$lib/matomo';
+	import { consentStore } from '$lib/stores/consent.svelte';
 	import { page } from '$app/stores';
 	import { format, parseISO } from 'date-fns';
 	import { de } from 'date-fns/locale';
@@ -15,13 +19,13 @@
 	let mapContainer = $state<HTMLDivElement | null>(null);
 	let map: any = null;
 
-	const eventId = $derived(() => {
+	const eventId = $derived.by(() => {
 		const id = $page.params.id;
 		return id ? parseInt(id, 10) : null;
 	});
 
 	onMount(async () => {
-		const id = eventId();
+		const id = eventId;
 		if (!id) {
 			error = 'Ungültige Veranstaltungs-ID';
 			loading = false;
@@ -48,10 +52,20 @@
 	});
 
 	$effect(() => {
-		if (event?.venue?.geo_lat && event?.venue?.geo_lng && mapContainer && !map) {
+		if (event?.venue?.geo_lat && event?.venue?.geo_lng && mapConsentGranted && mapContainer && !map) {
 			initMap(event.venue.geo_lat, event.venue.geo_lng, event.venue.venue);
 		}
+
+		if (!mapConsentGranted && map) {
+			map.remove();
+			map = null;
+		}
 	});
+
+	function enableMaps() {
+		consentStore.savePreferences({ maps: true });
+		trackFeatureEvent('event-map', 'enable');
+	}
 
 	async function initMap(lat: number, lng: number, venueName: string) {
 		const L = await import('leaflet');
@@ -75,7 +89,7 @@
 
 		L.marker([lat, lng], { icon: customIcon })
 			.addTo(map)
-			.bindPopup(`<strong>${venueName}</strong>`)
+			.bindPopup(`<strong>${escapeHtml(venueName)}</strong>`)
 			.openPopup();
 	}
 
@@ -98,6 +112,8 @@
 	const musicLabel = $derived(event ? getEventMusicLabel(event) : null);
 	const musicBadgeClass = $derived(event ? getEventMusicBadgeClass(event) : 'music-badge-default');
 	const hasGeo = $derived(event?.venue?.geo_lat && event?.venue?.geo_lng);
+	const mapConsentGranted = $derived(consentStore.hasConsent('maps'));
+	const sanitizedDescription = $derived(event ? sanitizeHtml(event.description) : '');
 </script>
 
 <svelte:head>
@@ -286,7 +302,16 @@
 		{#if hasGeo}
 			<div>
 				<div class="card overflow-hidden">
-					<div bind:this={mapContainer} class="h-48 w-full"></div>
+					{#if mapConsentGranted}
+						<div bind:this={mapContainer} class="h-48 w-full"></div>
+					{:else}
+						<ConsentPlaceholder
+							title="Eingebettete Karte nur nach Zustimmung"
+							description="Die Veranstaltungsansicht laedt externe OpenStreetMap-Kacheln erst, wenn du Karten fuer die App aktivierst."
+							actionLabel="Karten aktivieren"
+							onEnable={enableMaps}
+						/>
+					{/if}
 				</div>
 				<a 
 					href="https://www.google.com/maps/search/?api=1&query={event.venue!.geo_lat},{event.venue!.geo_lng}"
@@ -307,7 +332,7 @@
 			<div class="card p-5">
 				<h2 class="section-title mb-3">Beschreibung</h2>
 				<div class="prose prose-sm max-w-none break-words text-text-default [&_a]:text-text-link [&_a]:underline [&_a]:underline-offset-4 [&_p]:text-[1.0625rem] [&_p]:leading-[1.6]">
-					{@html event.description}
+					{@html sanitizedDescription}
 				</div>
 			</div>
 		{/if}

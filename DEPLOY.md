@@ -1,259 +1,136 @@
 # RNT Mobile PWA - Deployment Guide
 
-## Prerequisites
+## Overview
 
-- Node.js 18+ installed
-- Cloudflare account (free tier works)
-- Git (for Git-based deployment)
+This repository deploys to a **Cloudflare Worker Assets** service named `rnt`.
+It does **not** deploy through Cloudflare Pages.
 
-## Local Development
+The recommended production route is:
 
-```bash
-# Install dependencies
-npm install
+1. push to `main`
+2. let GitHub Actions build the app
+3. let GitHub Actions run `wrangler deploy` using the repo's `wrangler.toml`
 
-# Start dev server
-npm run dev
-```
+Live URLs:
 
-Visit http://localhost:5173/
+- `https://mobile.rhein-neckar-tango.de`
+- `https://rnt.daniel-1f6.workers.dev`
 
-## Build for Production
+## Source Of Truth
 
-```bash
-npm run build
-```
+Deployment configuration lives in:
 
-Output is in the `build/` directory.
+- `.github/workflows/deploy.yml`
+- `wrangler.toml`
 
----
-
-## Deploy to Cloudflare Pages
-
-### Option 1: Git Integration (Recommended)
-
-This is the best approach for automatic deployments.
-
-**1. Push to GitHub/GitLab**
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/rnt-mobile.git
-git push -u origin main
-```
-
-**2. Connect to Cloudflare Pages**
-
-1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Go to **Workers & Pages** → **Create application**
-3. Click **Create Pages application**
-4. Select **Connect to Git**
-5. Authorize Cloudflare to access your GitHub/GitLab
-6. Select your repository
-7. Configure build settings:
-   - **Framework preset**: SvelteKit
-   - **Build command**: `npm run build`
-   - **Build output directory**: `build`
-   - **Root directory**: `./` (or `/`)
-
-**3. Environment Variables (Optional)**
-
-If you add environment variables later, go to Settings → Environment Variables.
-
-**4. Deploy**
-
-Click **Save and Deploy**. Your site will be live at `https://rnt-mobile.pages.dev/`
-
----
-
-### Option 2: Wrangler CLI
-
-**1. Install Wrangler**
-
-```bash
-npm install -g wrangler
-```
-
-**2. Login to Cloudflare**
-
-```bash
-wrangler login
-```
-
-**3. Deploy**
-
-```bash
-# Build first
-npm run build
-
-# Deploy
-wrangler pages deploy build
-
-# Or create a project first
-wrangler pages project create rnt-mobile
-wrangler pages deploy build
-```
-
----
-
-### Option 3: Direct Upload
-
-1. Build the project: `npm run build`
-2. Go to https://pages.cloudflare.com/
-3. Create a new project
-4. Select "Direct upload"
-5. Drag the `build/` folder into the upload area
-
----
-
-## Custom Domain Setup
-
-### Using a Subdomain (e.g., mobile.rhein-neckar-tango.de)
-
-1. In Cloudflare Dashboard, go to your **Pages** project
-2. Click **Custom domains**
-3. Enter your subdomain (e.g., `mobile.rhein-neckar-tango.de`)
-4. Click **Verify DNS record**
-5. Cloudflare will automatically add the necessary DNS record
-
-**Note:** Your domain must be registered with Cloudflare for automatic DNS setup.
-
-### Using Cloudflare Registrar (Recommended)
-
-If your domain is registered elsewhere, transfer it to Cloudflare Registrar for:
-- Free WHOIS privacy
-- Free Cloudflare proxy
-- Unified dashboard
-
----
-
-## Configuration for Cloudflare Pages
-
-### svelte.config.js
-
-The project already uses `@sveltejs/adapter-static` which works perfectly with Cloudflare Pages.
-
-### wrangler.toml (Optional)
-
-Create `wrangler.toml` in the root for custom configuration:
+Current Wrangler setup:
 
 ```toml
+"$schema" = "./node_modules/wrangler/config-schema.json"
+
 name = "rnt"
 compatibility_date = "2024-01-01"
-pages_build_output_dir = "./build"
+keep_vars = true
+
+[assets]
+directory = "./build"
+not_found_handling = "single-page-application"
 ```
 
----
+`keep_vars = true` is intentional so dashboard-managed environment variables stay in place on deploy.
 
-## CI/CD Pipeline
+## Prerequisites
 
-### GitHub Actions (Automatic Deploys)
+- Node version from `.nvmrc`
+- Cloudflare account access
+- GitHub repository access
+- A `CLOUDFLARE_API_TOKEN` secret configured in GitHub Actions
 
-Create `.github/workflows/deploy.yml`:
+## Local Build Validation
 
-```yaml
-name: Deploy to Cloudflare Pages
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: rnt-mobile
-          directory: build
+```bash
+npm install
+npm run check
+npm run build
 ```
 
-### Required Secrets
+Build output is written to `build/`.
 
-In your GitHub repository, add these secrets:
+## GitHub Actions Route
 
-1. **CLOUDFLARE_API_TOKEN**: 
-   - Go to Cloudflare Dashboard → Profile → API Tokens
-   - Click **Create Token** → **Edit Cloudflare Workers** template
-   - Or create a custom token with **Account** permissions: `Cloudflare Pages: Edit`
+The production workflow is `.github/workflows/deploy.yml`.
 
-2. **CLOUDFLARE_ACCOUNT_ID**:
-   - Found in Cloudflare Dashboard URL: `https://dash.cloudflare.com/ACCOUNT_ID/pages`
-   - Or in the Overview tab of any Workers & Pages project
+On every push to `main`, it does the following:
 
----
+1. checks out the repository
+2. installs the pinned Node version from `.nvmrc`
+3. runs `npm ci`
+4. runs `npm run build`
+5. runs:
+
+```bash
+npx wrangler deploy --message "GitHub Actions deploy ${GITHUB_SHA}"
+```
+
+Because the workflow deploys from the repository root, it uses the checked-in `wrangler.toml` directly.
+
+### Required GitHub Secret
+
+Add this repository secret:
+
+- `CLOUDFLARE_API_TOKEN`
+
+The token must be able to deploy Workers. In practice, the token used here also has broader account permissions, but the critical capability for this workflow is Workers write access.
+
+## Manual Emergency Deploy
+
+If GitHub Actions is unavailable, use the same path locally that the workflow now uses:
+
+```bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm use
+
+npm run build
+npx wrangler deploy --message "Manual deploy"
+```
+
+## Validation After Deploy
+
+Minimum smoke test:
+
+1. open `https://mobile.rhein-neckar-tango.de`
+2. confirm the home page renders without runtime errors
+3. confirm `/calendar` loads
+4. confirm one event detail page loads
+5. confirm legal links work
+6. confirm the footer shows the expected app version
 
 ## Troubleshooting
 
-### Build Fails
+### If `wrangler deploy` warns about Pages
 
-- Check Node version: `node --version` (needs 18+)
-- Clear cache: `rm -rf node_modules && npm install`
-- Check build output: `npm run build`
+That means the local configuration is stale or the command is being run against the wrong config. The repository should use Worker Assets config under `[assets]`, not `pages_build_output_dir`.
 
-### 404 on Subpages
+### If subroutes return the homepage incorrectly or 404
 
-This shouldn't happen with the static adapter, but if it does:
-1. Go to Pages project settings
-2. Enable "Serve static assets"
-3. Check build directory path is correct
+Check that `wrangler.toml` still contains:
 
-### Map Not Loading
+```toml
+[assets]
+not_found_handling = "single-page-application"
+```
 
-The Leaflet map requires HTTPS. Cloudflare Pages provides free SSL automatically.
+### If dashboard variables disappear after deploy
 
-### Content Security Policy (CSP) Errors
+Check that `keep_vars = true` is still present in `wrangler.toml`.
 
-If you see CSP errors in the browser console about fonts or styles being blocked:
+### If CSP errors show up in production
 
-1. Go to **Cloudflare Dashboard** → **Workers & Pages** → **rnt** (your project)
-2. Click **Settings** → **Security**
-3. Find the **Content Security Policy** section
-4. **Disable** the Cloudflare-managed CSP (or remove custom rules)
-5. The app's `static/_headers` file handles CSP instead
+Check `static/_headers`. That file is the intended CSP source for the deployed app.
 
-**Important:** The `_headers` file already configures CSP properly. If Cloudflare's UI has its own CSP, it will override the file-based headers.
+## Notes
 
----
-
-## PWA Features
-
-Users can install the app on their devices:
-
-- **iOS**: Tap Share → "Add to Home Screen"
-- **Android**: Chrome will prompt to install, or use menu → "Install app"
-
----
-
-## Features
-
-- Event list with filtering (Milonga, Practica, Workshop, Kurs)
-- Date filtering (Today, 7 days, Month, All)
-- Calendar view with event indicators
-- Venue map with OpenStreetMap
-- Event images from RNT WordPress
-- Pull-to-refresh
-- Offline-capable (PWA with service worker)
+- The app uses the SvelteKit static adapter, but hosting is through Cloudflare Worker Assets rather than Pages.
+- Custom domain routing is already attached to the `rnt` Worker in Cloudflare.
+- The current production flow has been validated locally by running `wrangler deploy` from the repository root with the checked-in config.

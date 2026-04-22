@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import ConsentPlaceholder from '$lib/components/ConsentPlaceholder.svelte';
+	import { escapeHtml } from '$lib/utils/html';
+	import { trackFeatureEvent } from '$lib/matomo';
+	import { consentStore } from '$lib/stores/consent.svelte';
 	import { eventStore } from '$lib/stores/events.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import FilterChip from '$lib/components/FilterChip.svelte';
 	import MusicFilterChip from '$lib/components/MusicFilterChip.svelte';
 	import DateFilter from '$lib/components/DateFilter.svelte';
-	import Search from 'carbon-icons-svelte/lib/Search.svelte';
-	import Close from 'carbon-icons-svelte/lib/Close.svelte';
-	import Image from 'carbon-icons-svelte/lib/Image.svelte';
-	import Map from 'carbon-icons-svelte/lib/Map.svelte';
-	import List from 'carbon-icons-svelte/lib/List.svelte';
 	import type { EventType, MusicType, TribeEvent } from '$lib/types';
 	import 'leaflet/dist/leaflet.css';
 
@@ -20,13 +19,12 @@
 	let showImages = $state(false);
 	let showMap = $state(false);
 	let mapContainer = $state<HTMLDivElement | null>(null);
-	let mapLoading = $state(false);
 	let map: any = null;
-	let mapMarkers: any[] = [];
 
 	const eventsWithGeo = $derived(
 		eventStore.allEvents.filter((e) => e.venue?.geo_lat && e.venue?.geo_lng)
 	);
+	const mapConsentGranted = $derived(consentStore.hasConsent('maps'));
 
 	const searchCount = $derived(eventStore.events.length);
 	const totalCount = $derived(eventStore.allEvents.length);
@@ -36,12 +34,12 @@
 	});
 
 	$effect(() => {
-		if (showMap && mapContainer) {
+		if (showMap && mapConsentGranted && mapContainer) {
 			if (!map && eventsWithGeo.length > 0) {
 				initMap();
 			}
 		}
-		if (!showMap && map) {
+		if ((!showMap || !mapConsentGranted) && map) {
 			map.remove();
 			map = null;
 		}
@@ -69,8 +67,8 @@
 
 		const markers = eventsWithGeo.map((event) => {
 			const eventId = event.id;
-			const eventTitle = event.title;
-			const venueName = event.venue?.venue ?? '';
+			const eventTitle = escapeHtml(event.title);
+			const venueName = escapeHtml(event.venue?.venue ?? '');
 			const marker = L.marker([event.venue!.geo_lat!, event.venue!.geo_lng!], { icon: customIcon })
 				.addTo(map!)
 				.bindPopup(`<strong>${eventTitle}</strong><br/>${venueName}<br/><a href="/event/${eventId}">Details öffnen</a>`);
@@ -87,6 +85,18 @@
 		isRefreshing = true;
 		await eventStore.loadEvents(true);
 		isRefreshing = false;
+	}
+
+	function handleMapToggle() {
+		showMap = !showMap;
+		if (showMap) {
+			trackFeatureEvent('home-map', 'open');
+		}
+	}
+
+	function enableMaps() {
+		consentStore.savePreferences({ maps: true });
+		trackFeatureEvent('home-map', 'enable');
 	}
 </script>
 
@@ -113,7 +123,9 @@
 		<div class="space-y-2">
 			<label for="event-search" class="text-[0.9375rem] font-medium text-text-default">Suche</label>
 			<div class="relative">
-				<Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" aria-hidden="true" />
+				<svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+					<path d="M29,27.5859l-7.5521-7.5521a11.0177,11.0177,0,1,0-1.4141,1.4141L27.5859,29ZM4,13a9,9,0,1,1,9,9A9.01,9.01,0,0,1,4,13Z"></path>
+				</svg>
 			<input
 				id="event-search"
 				type="search"
@@ -133,7 +145,9 @@
 						aria-label="Suche leeren"
 						type="button"
 					>
-						<Close class="h-4 w-4" aria-hidden="true" />
+						<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+							<path d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"></path>
+						</svg>
 					</button>
 				{/if}
 			</div>
@@ -172,20 +186,28 @@
 				aria-pressed={showImages}
 				type="button"
 			>
-				<Image class="h-4 w-4" aria-hidden="true" />
+				<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+					<path d="M28,26H4a2.0023,2.0023,0,0,1-2-2V8A2.0023,2.0023,0,0,1,4,6H28a2.0023,2.0023,0,0,1,2,2V24A2.0023,2.0023,0,0,1,28,26ZM4,8V24H28.0012L28,8Z"></path>
+					<path d="M8 12A2 2 0 1 0 10 14 2.0025 2.0025 0 0 0 8 12zM6 22l5-6 3 4 4-5 6 7H6z"></path>
+				</svg>
 				<span>Bilder</span>
 			</button>
 			<button
-				onclick={() => showMap = !showMap}
+				onclick={handleMapToggle}
 				class="inline-flex min-h-12 items-center gap-2 rounded-control border px-4 py-2 text-sm font-medium transition-colors {showMap ? 'border-border-accent bg-action-secondary text-text-default' : 'border-border-default bg-surface-card text-text-muted hover:bg-action-secondary hover:text-text-default'}"
 				title={showMap ? 'Zur Liste' : 'Zur Karte'}
 				aria-pressed={showMap}
 				type="button"
 			>
 				{#if showMap}
-					<List class="h-4 w-4" aria-hidden="true" />
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+					</svg>
 				{:else}
-					<Map class="h-4 w-4" aria-hidden="true" />
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+					</svg>
 				{/if}
 				<span>{showMap ? 'Liste' : 'Karte'}</span>
 			</button>
@@ -195,7 +217,14 @@
 
 	{#if showMap && eventStore.events.length > 0}
 		<div class="card overflow-hidden">
-			{#if eventsWithGeo.length > 0}
+			{#if !mapConsentGranted}
+				<ConsentPlaceholder
+					title="Karte erst nach Zustimmung"
+					description="Die Kartenansicht laedt externe OpenStreetMap-Kacheln. Aktiviere Karten nur, wenn du diese externen Anfragen zulassen willst."
+					actionLabel="Karten aktivieren"
+					onEnable={enableMaps}
+				/>
+			{:else if eventsWithGeo.length > 0}
 				<div bind:this={mapContainer} class="h-[60vh] w-full"></div>
 			{:else}
 				<div class="flex h-[60vh] items-center justify-center bg-surface-subtle px-6 text-center text-text-muted">

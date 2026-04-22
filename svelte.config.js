@@ -12,6 +12,9 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
+		version: {
+			pollInterval: 15 * 60 * 1000
+		},
 		prerender: {
 			handleHttpError: 'warn'
 		}

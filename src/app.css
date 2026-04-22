@@ -415,6 +415,61 @@ img {
 	.music-filter-inactive-neo:hover {
 		background: rgb(var(--music-type-neo) / 0.22);
 	}
+
+	.consent-panel {
+		@apply rounded-card border border-border-default bg-surface-card text-text-default shadow-card;
+	}
+
+	.consent-placeholder {
+		@apply flex min-h-48 flex-col justify-center gap-4 bg-surface-subtle p-6 text-left;
+	}
+
+	.legal-prose {
+		@apply text-[1rem] leading-[1.7] text-text-default;
+	}
+}
+
+.legal-prose :where(h1, h2, h3, h4) {
+	font-family: 'IBM Plex Sans Condensed', 'Atkinson Hyperlegible Next', sans-serif;
+	margin-top: 1.75rem;
+	margin-bottom: 0.75rem;
+	line-height: 1.2;
+	color: rgb(var(--text-default) / 1);
+}
+
+.legal-prose :where(p, ul, ol, table, blockquote) {
+	margin-bottom: 1rem;
+}
+
+.legal-prose :where(ul, ol) {
+	padding-left: 1.25rem;
+	line-height: 1.7;
+}
+
+.legal-prose :where(li + li) {
+	margin-top: 0.45rem;
+}
+
+.legal-prose :where(a) {
+	color: rgb(var(--text-link) / 1);
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+
+.legal-prose :where(strong, b) {
+	font-weight: 700;
+}
+
+.legal-prose :where(table) {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+
+.legal-prose :where(td, th) {
+	border: 1px solid rgb(var(--border-default) / 1);
+	padding: 0.6rem;
+	vertical-align: top;
 }
 
 .skip-link {
