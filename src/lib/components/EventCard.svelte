@@ -17,11 +17,7 @@
 	const endDate = $derived(parseISO(event.end_date));
 	const dj = $derived(extractDjFromDescription(event));
 	
-	const eventImage = $derived.by(() => {
-		if (event.image && typeof event.image === 'string') return event.image;
-		const match = event.description?.match(/<img[^>]+src="([^"]+)"/);
-		return match ? match[1] : null;
-	});
+	const eventImage = $derived(event.image && typeof event.image === 'string' ? event.image : null);
 	
 	const dayName = $derived(format(startDate, 'EEE', { locale: de }));
 	const dayNumber = $derived(format(startDate, 'd'));

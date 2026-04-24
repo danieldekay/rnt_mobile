@@ -15,7 +15,6 @@
 	const eventTypes: EventType[] = ['milonga', 'practica', 'workshop', 'kurs'];
 	const musicTypes: MusicType[] = ['traditional', 'mixed', 'neo'];
 
-	let isRefreshing = $state(false);
 	let showImages = $state(false);
 	let showMap = $state(false);
 	let mapContainer = $state<HTMLDivElement | null>(null);
@@ -28,6 +27,7 @@
 
 	const searchCount = $derived(eventStore.events.length);
 	const totalCount = $derived(eventStore.allEvents.length);
+	const showInlineLoading = $derived(eventStore.loading && totalCount > 0);
 
 	onMount(() => {
 		eventStore.loadEvents();
@@ -82,9 +82,7 @@
 	}
 
 	async function handleRefresh() {
-		isRefreshing = true;
 		await eventStore.loadEvents(true);
-		isRefreshing = false;
 	}
 
 	function handleMapToggle() {
@@ -215,6 +213,13 @@
 		</div>
 	</div>
 
+	{#if showInlineLoading}
+		<div class="card flex items-center gap-3 p-3" role="status" aria-live="polite">
+			<div class="h-4 w-4 animate-spin rounded-full border-2 border-action-secondary border-t-action-primary"></div>
+			<p class="meta-text">Aktualisiere Veranstaltungen…</p>
+		</div>
+	{/if}
+
 	{#if showMap && eventStore.events.length > 0}
 		<div class="card overflow-hidden">
 			{#if !mapConsentGranted}
@@ -266,13 +271,6 @@
 		{#if !showMap}
 		<!-- Event list -->
 		<div class="relative">
-			<!-- Pull to refresh indicator -->
-			{#if isRefreshing}
-				<div class="absolute -top-8 left-0 right-0 flex justify-center">
-					<div class="h-6 w-6 animate-spin rounded-full border-2 border-action-primary border-t-transparent"></div>
-				</div>
-			{/if}
-			
 			<div class="space-y-3">
 				{#each eventStore.events as event (event.id)}
 					<EventCard {event} showImage={showImages} />

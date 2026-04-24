@@ -7,9 +7,10 @@
 		currentMonth: Date;
 		selectedDate?: Date | null;
 		onselectDate: (date: Date) => void;
+		onmonthchange?: (date: Date) => void;
 	}
 
-	let { events, currentMonth, selectedDate = null, onselectDate }: Props = $props();
+	let { events, currentMonth, selectedDate = null, onselectDate, onmonthchange = () => {} }: Props = $props();
 
 	const weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
@@ -76,13 +77,37 @@
 		return `${label}, ${eventCount} Veranstaltung${eventCount === 1 ? '' : 'en'}`;
 	}
 
+	function changeMonth(offset: number) {
+		onmonthchange(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
+	}
+
 	const { days, monthName, year } = $derived(getMonthData(currentMonth));
 </script>
 
 <div class="card p-4">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
+		<button
+			onclick={() => changeMonth(-1)}
+			type="button"
+			class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary"
+			aria-label="Vorherigen Monat anzeigen"
+		>
+			<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+			</svg>
+		</button>
 		<h3 class="font-display text-[1.5rem] font-semibold capitalize text-text-default">{monthName} {year}</h3>
+		<button
+			onclick={() => changeMonth(1)}
+			type="button"
+			class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary"
+			aria-label="Nächsten Monat anzeigen"
+		>
+			<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+			</svg>
+		</button>
 	</div>
 
 	<!-- Week days header -->

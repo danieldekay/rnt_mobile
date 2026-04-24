@@ -1,6 +1,19 @@
 import { fetchAllEvents, extractDjFromDescription } from '$lib/api/tribe';
 import type { TribeEvent, EventType, MusicType, DateFilter, Filters } from '$lib/types';
 
+const EVENT_TYPE_CATEGORY_SLUGS: Record<EventType, string> = {
+	milonga: 'typ_milonga',
+	practica: 'typ_practica',
+	workshop: 'typ_workshop',
+	kurs: 'typ_kurs'
+};
+
+const MUSIC_CATEGORY_SLUGS: Record<MusicType, string> = {
+	traditional: 'musik_traditionell',
+	mixed: 'musik_gemischt',
+	neo: 'musik_neo-oder-non'
+};
+
 function createEventStore() {
 	let events = $state<TribeEvent[]>([]);
 	let loading = $state(false);
@@ -12,12 +25,34 @@ function createEventStore() {
 		date: 'week'
 	});
 
-	let lastFetchParams = $state<{ types: EventType[]; music: MusicType | null; date: DateFilter } | null>(null);
+	let lastFetchedDate = $state<DateFilter | null>(null);
+	let activeRequestId = 0;
+
+	function eventMatchesTypes(event: TribeEvent): boolean {
+		if (filters.types.length === 0) return true;
+
+		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
+		return filters.types.some((type) => categorySlugs.includes(EVENT_TYPE_CATEGORY_SLUGS[type]));
+	}
+
+	function eventMatchesMusic(event: TribeEvent): boolean {
+		if (!filters.music) return true;
+
+		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
+		return categorySlugs.includes(MUSIC_CATEGORY_SLUGS[filters.music]);
+	}
 
 	function getFilteredEvents(): TribeEvent[] {
-		if (!searchQuery.trim()) return events;
 		const query = searchQuery.toLowerCase();
 		return events.filter((event) => {
+			if (!eventMatchesTypes(event) || !eventMatchesMusic(event)) {
+				return false;
+			}
+
+			if (!searchQuery.trim()) {
+				return true;
+			}
+
 			const title = event.title?.toLowerCase() ?? '';
 			const venue = event.venue?.venue?.toLowerCase() ?? '';
 			const city = event.venue?.city?.toLowerCase() ?? '';
@@ -29,35 +64,40 @@ function createEventStore() {
 	}
 
 	async function loadEvents(forceRefresh = false) {
-		const currentParams = { ...filters };
+		const currentDate = filters.date;
 		
-		if (!forceRefresh && lastFetchParams && 
-			JSON.stringify(currentParams) === JSON.stringify(lastFetchParams) && 
-			events.length > 0) {
+		if (!forceRefresh && lastFetchedDate === currentDate && events.length > 0) {
 			return;
 		}
 
+		const requestId = ++activeRequestId;
 		loading = true;
 		error = null;
 
 		try {
-			const fetchedEvents = await fetchAllEvents(
-				currentParams.types,
-				currentParams.music,
-				currentParams.date
-			);
+			const fetchedEvents = await fetchAllEvents([], null, currentDate);
+
+			if (requestId !== activeRequestId) {
+				return;
+			}
+
 			events = fetchedEvents;
-			lastFetchParams = currentParams;
+			lastFetchedDate = currentDate;
 		} catch (e) {
+			if (requestId !== activeRequestId) {
+				return;
+			}
+
 			error = e instanceof Error ? e.message : 'Failed to load events';
 		} finally {
-			loading = false;
+			if (requestId === activeRequestId) {
+				loading = false;
+			}
 		}
 	}
 
 	function setFilters(newFilters: Partial<Filters>) {
 		filters = { ...filters, ...newFilters };
-		loadEvents(true);
 	}
 
 	function toggleType(type: EventType) {
@@ -76,7 +116,12 @@ function createEventStore() {
 	}
 
 	function setDateFilter(date: DateFilter) {
-		setFilters({ date });
+		if (filters.date === date) {
+			return;
+		}
+
+		filters = { ...filters, date };
+		void loadEvents();
 	}
 
 	function setSearchQuery(query: string) {

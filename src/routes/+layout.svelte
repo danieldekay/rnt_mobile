@@ -18,6 +18,7 @@
 	let isIOS = $state(false);
 	let stagedAnalytics = $state(false);
 	let stagedMaps = $state(false);
+	const currentYear = new Date().getFullYear();
 
 	$effect(() => {
 		if (consentStore.settingsOpen) {
@@ -128,19 +129,22 @@
 {#if showBanner}
 	<div class="fixed left-4 right-4 z-40 md:left-1/2 md:w-full md:max-w-lg md:-translate-x-1/2 {consentStore.shouldShowBanner ? 'bottom-64' : 'bottom-20'}" role="status" aria-live="polite">
 		<div class="card relative p-4">
-			<button
-				onclick={dismiss}
-				class="absolute right-3 top-3 rounded-badge p-2 text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
-				aria-label="Schließen"
-				type="button"
-			>
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-				</svg>
-			</button>
+			<div class="mb-3 flex justify-end">
+				<button
+					onclick={dismiss}
+					class="inline-flex min-h-10 items-center gap-2 rounded-badge border border-border-default bg-surface-card px-3 py-2 text-sm font-medium text-text-default shadow-card transition-colors hover:bg-action-secondary"
+					aria-label="Installationshinweis schließen"
+					type="button"
+				>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+					<span>Schließen</span>
+				</button>
+			</div>
 
 			{#if isIOS}
-				<div class="space-y-3 text-left pr-8">
+				<div class="space-y-3 text-left">
 					<p class="font-display text-xl font-semibold text-text-default">App installieren</p>
 					<p class="meta-text">
 						Teilen button → <span class="font-medium">"Zum Homebildschirm"</span>
@@ -341,6 +345,7 @@
 					rhein-neckar-tango.de
 				</a>
 			</p>
+			<p class="meta-text">© {currentYear} Rhein-Neckar-Tango</p>
 			<div class="space-y-2">
 				<p class="meta-text">App-Version {__APP_VERSION__}</p>
 				<p class="meta-text">{pwaUpdateStore.statusText}</p>

@@ -77,11 +77,31 @@ function normalizeHtml(value: string | null | undefined): string {
 	return decodeHtmlEntities(value).replace(/\u00a0/g, ' ');
 }
 
+function escapeHtmlAttribute(value: string): string {
+	return value
+		.replaceAll('&', '&amp;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#39;')
+		.trim();
+}
+
+function replaceObfuscatedEmailMarkup(value: string, websiteUrl: string): string {
+	const safeWebsiteUrl = escapeHtmlAttribute(websiteUrl);
+
+	return value.replace(
+		/<span\b[^>]*class=(['"])[^'"]*\bapbct-email-encoder\b[^'"]*\1[^>]*>(?:[\s\S]*?<span\b[^>]*class=(['"])[^'"]*\bapbct-blur\b[^'"]*\2[^>]*>[\s\S]*?<\/span>){1,4}[\s\S]*?<\/span>\s*\.?/gi,
+		`(siehe <a href="${safeWebsiteUrl}" target="_blank" rel="noopener noreferrer">Website für Details</a>)`
+	);
+}
+
 function normalizeEvent(event: TribeEvent): TribeEvent {
+	const normalizedDescription = normalizeHtml(event.description);
+	const description = replaceObfuscatedEmailMarkup(normalizedDescription, event.url);
+
 	return {
 		...event,
 		title: normalizeText(event.title),
-		description: normalizeHtml(event.description),
+		description,
 		cost: normalizeText(event.cost),
 		venue: event.venue
 			? {

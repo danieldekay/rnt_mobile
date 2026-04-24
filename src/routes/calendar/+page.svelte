@@ -13,10 +13,10 @@
 
 	let selectedDate = $state<Date | null>(null);
 	let currentMonth = $state(new Date());
+	const showInlineLoading = $derived(eventStore.loading);
 
 	onMount(() => {
 		eventStore.setDateFilter('all');
-		eventStore.loadEvents(true);
 	});
 
 	function getEventsForDate(date: Date): TribeEvent[] {
@@ -32,6 +32,17 @@
 		selectedDate = date;
 	}
 
+	function handleMonthChange(date: Date) {
+		currentMonth = date;
+
+		if (
+			selectedDate &&
+			(selectedDate.getFullYear() !== date.getFullYear() || selectedDate.getMonth() !== date.getMonth())
+		) {
+			selectedDate = null;
+		}
+	}
+
 	const eventsForSelectedDate = $derived(selectedDate ? getEventsForDate(selectedDate) : []);
 </script>
 
@@ -40,7 +51,7 @@
 </svelte:head>
 
 <div class="space-y-4">
-	<section class="space-y-2">
+	<section class="space-y-3">
 		<p class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted">Kalenderansicht</p>
 		<h2 class="font-display text-[2rem] font-semibold text-text-default">Monat im Überblick</h2>
 		<p class="meta-text max-w-[36ch]">Wähle einen Tag und springe direkt zu den Veranstaltungen, ohne die Chronologie der Liste zu verlieren.</p>
@@ -68,12 +79,20 @@
 		</div>
 	</section>
 
+	{#if showInlineLoading}
+		<div class="card flex items-center gap-3 p-3" role="status" aria-live="polite">
+			<div class="h-4 w-4 animate-spin rounded-full border-2 border-action-secondary border-t-action-primary"></div>
+			<p class="meta-text">Kalenderdaten werden aktualisiert…</p>
+		</div>
+	{/if}
+
 	<!-- Calendar -->
 	<Calendar 
 		events={eventStore.events}
 		{currentMonth}
 		{selectedDate}
 		onselectDate={handleDateSelect}
+		onmonthchange={handleMonthChange}
 	/>
 	
 	<!-- Date selector -->

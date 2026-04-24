@@ -97,11 +97,7 @@
 	const endDate = $derived(event ? parseISO(event.end_date) : null);
 	const dj = $derived(event ? extractDjFromDescription(event) : null);
 	const workshop = $derived(event ? extractWorkshopFromDescription(event) : null);
-	const detailImage = $derived.by(() => {
-		if (event?.image && typeof event.image === 'string') return event.image;
-		const match = event?.description?.match(/<img[^>]+src="([^"]+)"/);
-		return match ? match[1] : null;
-	});
+	const detailImage = $derived(event?.image && typeof event.image === 'string' ? event.image : null);
 
 	const formattedDate = $derived(startDate ? format(startDate, 'EEEE, d. MMMM yyyy', { locale: de }) : '');
 	const startTime = $derived(startDate ? format(startDate, 'HH:mm') : '');
