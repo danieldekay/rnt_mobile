@@ -35,9 +35,40 @@ keep_vars = true
 [assets]
 directory = "./build"
 not_found_handling = "single-page-application"
+
+[vars]
+PUBLIC_MATOMO_URL = "https://statistics.tangoparty.net"
+PUBLIC_MATOMO_SITE_ID = "15"
 ```
 
 `keep_vars = true` is intentional so dashboard-managed environment variables stay in place on deploy.
+
+The `[vars]` block exposes Matomo configuration to the SvelteKit client bundle via
+`$env/dynamic/public`. These values are **not secrets** — they are embedded in the public
+client JavaScript and match the tracker snippet Matomo generates for copy-paste install.
+Keeping them in `wrangler.toml` lets CI builds pick them up without extra GitHub Actions
+variables, and mirrors `.env.example` for local development.
+
+## Matomo Analytics
+
+The app loads Matomo only after the user grants analytics consent. Configuration comes
+from `PUBLIC_MATOMO_URL` and `PUBLIC_MATOMO_SITE_ID`. The `vite build` step reads these
+from the environment (CI) or `.env` / `.env.local` (local dev). If either value is
+missing, the Matomo module stays dormant and no requests are made — useful for forks
+and PR previews that should not pollute production stats.
+
+Tracked dimensions specific to PWA mode:
+
+- `display_mode` — `standalone`, `minimal-ui`, `fullscreen`, or `browser`. Lets you split
+  PWA-installed usage from browser usage in Matomo reports.
+- `app_version` — bundled as a custom suffix on every event so release regressions are
+  attributable to a specific deploy.
+
+To reconfigure Matomo later:
+
+1. Update `[vars]` in `wrangler.toml` (and `.env.example` if the value is new).
+2. Commit and push. GitHub Actions will redeploy with the new values baked into the
+   client bundle.
 
 ## Prerequisites
 

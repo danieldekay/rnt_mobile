@@ -57,17 +57,14 @@
 	});
 
 	$effect(() => {
-		syncMatomoConsent(
-			consentStore.hasConsent('analytics'),
-			`${$page.url.pathname}${$page.url.search}`,
-			document.title
-		);
+		syncMatomoConsent(consentStore.hasConsent('analytics'));
 	});
 
 	afterNavigate((navigation) => {
 		if (!navigation.to) return;
+		if (!consentStore.hasConsent('analytics')) return;
 		syncMatomoConsent(
-			consentStore.hasConsent('analytics'),
+			true,
 			`${navigation.to.url.pathname}${navigation.to.url.search}`,
 			document.title
 		);

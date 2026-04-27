@@ -7,3 +7,11 @@ keep_vars = true
 [assets]
 directory = "./build"
 not_found_handling = "single-page-application"
+
+# Public build-time vars for the SvelteKit client bundle.
+# Referenced via `$env/dynamic/public` as PUBLIC_MATOMO_URL / PUBLIC_MATOMO_SITE_ID.
+# These are embedded in the client JS (not secrets) — duplicating them here keeps
+# CI builds self-contained without needing extra GitHub Actions inputs.
+[vars]
+PUBLIC_MATOMO_URL = "https://statistics.tangoparty.net"
+PUBLIC_MATOMO_SITE_ID = "15"
