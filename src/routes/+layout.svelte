@@ -5,17 +5,15 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import PwaUpdateBanner from '$lib/components/PwaUpdateBanner.svelte';
+	import PwaInstallButton from '$lib/components/PwaInstallButton.svelte';
+	import PwaInstallModal from '$lib/components/PwaInstallModal.svelte';
 	import { syncMatomoConsent, trackFeatureEvent } from '$lib/matomo';
 	import { consentStore } from '$lib/stores/consent.svelte';
 	import { pwaUpdateStore } from '$lib/stores/pwa-update.svelte';
-	import { on } from 'svelte/events';
+	import { pwaInstallStore } from '$lib/stores/pwa-install.svelte';
 
 	let { children } = $props();
 
-	let deferredPrompt = $state<Event | null>(null);
-	let isInstallable = $state(false);
-	let showBanner = $state(false);
-	let isIOS = $state(false);
 	let stagedAnalytics = $state(false);
 	let stagedMaps = $state(false);
 	const currentYear = new Date().getFullYear();
@@ -32,28 +30,8 @@
 	});
 
 	$effect(() => {
-		const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-		const dismissed = localStorage.getItem('pwa-install-dismissed');
-		if (isStandalone || dismissed) return;
-
-		isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(navigator as any).standalone;
-
-		const handler = (e: Event) => {
-			e.preventDefault();
-			deferredPrompt = e;
-			isInstallable = true;
-			showBanner = true;
-		};
-
-		const offBeforeInstallPrompt = on(window, 'beforeinstallprompt', handler);
-		
-		if (!isIOS && !isInstallable) {
-			setTimeout(() => { showBanner = true; }, 2000);
-		} else if (isIOS) {
-			showBanner = true;
-		}
-
-		return () => offBeforeInstallPrompt();
+		pwaInstallStore.start();
+		return () => pwaInstallStore.stop();
 	});
 
 	$effect(() => {
@@ -69,22 +47,6 @@
 			document.title
 		);
 	});
-
-	async function install() {
-		if (!deferredPrompt) return;
-		const prompt = deferredPrompt as any;
-		prompt.prompt();
-		const { outcome } = await prompt.userChoice;
-		if (outcome === 'accepted') {
-			showBanner = false;
-			deferredPrompt = null;
-		}
-	}
-
-	function dismiss() {
-		localStorage.setItem('pwa-install-dismissed', 'true');
-		showBanner = false;
-	}
 
 	function openConsentSettings() {
 		consentStore.openSettings();
@@ -123,54 +85,7 @@
 
 <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
 
-{#if showBanner}
-	<div class="fixed left-4 right-4 z-40 md:left-1/2 md:w-full md:max-w-lg md:-translate-x-1/2 {consentStore.shouldShowBanner ? 'bottom-64' : 'bottom-20'}" role="status" aria-live="polite">
-		<div class="card relative p-4">
-			<div class="mb-3 flex justify-end">
-				<button
-					onclick={dismiss}
-					class="inline-flex min-h-10 items-center gap-2 rounded-badge border border-border-default bg-surface-card px-3 py-2 text-sm font-medium text-text-default shadow-card transition-colors hover:bg-action-secondary"
-					aria-label="Installationshinweis schließen"
-					type="button"
-				>
-					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-					</svg>
-					<span>Schließen</span>
-				</button>
-			</div>
-
-			{#if isIOS}
-				<div class="space-y-3 text-left">
-					<p class="font-display text-xl font-semibold text-text-default">App installieren</p>
-					<p class="meta-text">
-						Teilen button → <span class="font-medium">"Zum Homebildschirm"</span>
-					</p>
-					<div class="flex flex-wrap items-center gap-2 text-sm text-text-muted">
-						<span>1. Tippe auf</span>
-						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 3c1.1 0 2 .9 2 2v3h2V5c0-1.1-.9-2-2-2H9zM6 9h12v8H6V9z"/></svg>
-						<span>2. Wähle</span>
-						<span class="font-medium text-text-default">Zum Homebildschirm</span>
-					</div>
-				</div>
-			{:else}
-				<button
-					onclick={install}
-					class="btn-primary w-full gap-2"
-					type="button"
-				>
-					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-					</svg>
-					App installieren
-				</button>
-				<p class="meta-text mt-2 text-center">
-					Offline nutzen &amp; zum Homebildschirm hinzufügen
-				</p>
-			{/if}
-		</div>
-	</div>
-{/if}
+<PwaInstallModal />
 
 {#if consentStore.shouldShowBanner}
 	<div class="fixed bottom-4 left-4 right-4 z-50 md:left-1/2 md:w-full md:max-w-xl md:-translate-x-1/2">
@@ -290,6 +205,7 @@
 						</svg>
 						<span>Kalender</span>
 					</a>
+					<PwaInstallButton />
 				</nav>
 			</div>
 		</div>
