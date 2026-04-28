@@ -160,6 +160,7 @@ function getFeatureContext(pathname: string): string {
 	if (pathname.startsWith('/impressum')) return 'legal-impressum';
 	if (pathname.startsWith('/datenschutz')) return 'legal-datenschutz';
 	if (pathname.startsWith('/cookie-richtlinie')) return 'legal-cookie-richtlinie';
+	if (pathname.startsWith('/was-ist-neu')) return 'app-release-notes';
 	return 'app';
 }
 

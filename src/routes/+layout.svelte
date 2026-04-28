@@ -235,6 +235,9 @@
 	<footer class="mt-auto border-t border-border-default py-5">
 		<div class="mx-auto max-w-xl space-y-2 px-4 text-center md:px-5">
 			<p class="meta-text flex flex-wrap justify-center gap-x-4 gap-y-2">
+				<a href={resolve('/was-ist-neu')} class="underline decoration-border-default underline-offset-4 transition-colors hover:text-text-default">
+					Was ist neu?
+				</a>
 				<a href={resolve('/impressum')} class="underline decoration-border-default underline-offset-4 transition-colors hover:text-text-default">
 					Impressum
 				</a>
