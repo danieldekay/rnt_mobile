@@ -1,5 +1,9 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
+	import { format, parseISO } from 'date-fns';
+	import { de } from 'date-fns/locale';
+	import { formatEventCost } from '$lib/api/tribe';
 	import ConsentPlaceholder from '$lib/components/ConsentPlaceholder.svelte';
 	import { escapeHtml } from '$lib/utils/html';
 	import { trackFeatureEvent } from '$lib/matomo';
@@ -19,65 +23,173 @@
 	let showMap = $state(false);
 	let mapContainer = $state<HTMLDivElement | null>(null);
 	let map: any = null;
+	let markerLayer: any = null;
+	let leaflet: any = null;
 
 	const eventsWithGeo = $derived(
-		eventStore.allEvents.filter((e) => e.venue?.geo_lat && e.venue?.geo_lng)
+		$eventStore.events.filter((e) => e.venue?.geo_lat && e.venue?.geo_lng)
 	);
+	const groupedEventsWithGeo = $derived.by(() => groupEventsByLocation(eventsWithGeo));
 	const mapConsentGranted = $derived(consentStore.hasConsent('maps'));
 
-	const searchCount = $derived(eventStore.events.length);
-	const totalCount = $derived(eventStore.allEvents.length);
-	const showInlineLoading = $derived(eventStore.loading && totalCount > 0);
+	const searchCount = $derived($eventStore.events.length);
+	const totalCount = $derived($eventStore.allEvents.length);
+	const showInlineLoading = $derived($eventStore.loading && totalCount > 0);
 
 	onMount(() => {
 		eventStore.loadEvents();
+
+		return () => {
+			destroyMap();
+		};
 	});
 
 	$effect(() => {
-		if (showMap && mapConsentGranted && mapContainer) {
-			if (!map && eventsWithGeo.length > 0) {
-				initMap();
-			}
+		if (showMap && mapConsentGranted && mapContainer && groupedEventsWithGeo.length > 0) {
+			void ensureMap();
+			return;
 		}
-		if ((!showMap || !mapConsentGranted) && map) {
-			map.remove();
-			map = null;
-		}
+
+		destroyMap();
 	});
 
-	async function initMap() {
-		const L = await import('leaflet');
-		
-		map = L.map(mapContainer!).setView([49.4, 8.6], 10);
-		
-		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+ 	type GroupedMapEvents = {
+		key: string;
+		lat: number;
+		lng: number;
+		events: TribeEvent[];
+		venueName: string;
+	};
+
+	function groupEventsByLocation(events: TribeEvent[]): GroupedMapEvents[] {
+		const groups: Record<string, GroupedMapEvents> = {};
+
+		for (const event of events) {
+			if (!event.venue?.geo_lat || !event.venue?.geo_lng) {
+				continue;
+			}
+
+			const key = `${event.venue.geo_lat}:${event.venue.geo_lng}`;
+			const existing = groups[key];
+
+			if (existing) {
+				existing.events.push(event);
+				continue;
+			}
+
+			groups[key] = {
+				key,
+				lat: event.venue.geo_lat,
+				lng: event.venue.geo_lng,
+				events: [event],
+				venueName: event.venue.venue ?? ''
+			};
+		}
+
+		return Object.values(groups);
+	}
+
+	function getPopupDate(event: TribeEvent): string {
+		return format(parseISO(event.start_date), 'EEE, d. MMM', { locale: de });
+	}
+
+	function getPopupTime(event: TribeEvent): string {
+		if (event.all_day) {
+			return 'Ganztägig';
+		}
+
+		const start = format(parseISO(event.start_date), 'HH:mm');
+		const end = format(parseISO(event.end_date), 'HH:mm');
+
+		return end ? `${start} - ${end}` : start;
+	}
+
+	function buildPopupContent(group: GroupedMapEvents): string {
+		const heading = escapeHtml(group.venueName || 'Veranstaltungen an diesem Ort');
+		const items = group.events
+			.map((event) => {
+				const detailUrl = resolve(`/event/${event.id}`);
+				const title = escapeHtml(event.title);
+				const date = escapeHtml(getPopupDate(event));
+				const time = escapeHtml(getPopupTime(event));
+				const price = escapeHtml(formatEventCost(event.cost));
+
+				return `<li class="map-popup__item"><a class="map-popup__title" href="${detailUrl}">${title}</a><div class="map-popup__meta">${date}</div><div class="map-popup__meta">${time}</div><div class="map-popup__meta">${price}</div></li>`;
+			})
+			.join('');
+
+		return `<div class="map-popup"><p class="map-popup__heading">${heading}</p><ul class="map-popup__list">${items}</ul></div>`;
+	}
+
+	async function getLeaflet() {
+		if (!leaflet) {
+			leaflet = await import('leaflet');
+		}
+
+		return leaflet;
+	}
+
+	async function ensureMap() {
+		const L = await getLeaflet();
+
+		if (!map) {
+			map = L.map(mapContainer!).setView([49.4, 8.6], 10);
+
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-		}).addTo(map);
+			}).addTo(map);
+		}
 
-		const customIcon = L.divIcon({
+		renderMarkers(L);
+	}
+
+	function createSingleMarkerIcon(L: any) {
+		return L.divIcon({
 			className: 'custom-marker',
-			html: `<div style="background: #0ea5e9; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
-				<svg style="transform: rotate(45deg); width: 14px; height: 14px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-				</svg>
-			</div>`,
+			html: `<div style="background: #0ea5e9; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"><svg style="transform: rotate(45deg); width: 14px; height: 14px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>`,
 			iconSize: [28, 28],
-			iconAnchor: [14, 28]
+			iconAnchor: [14, 28],
+			popupAnchor: [0, -24]
+		});
+	}
+
+	function createGroupMarkerIcon(L: any, count: number) {
+		return L.divIcon({
+			className: 'custom-marker custom-marker--group',
+			html: `<div class="map-cluster-marker"><span>${count}</span></div>`,
+			iconSize: [36, 36],
+			iconAnchor: [18, 18],
+			popupAnchor: [0, -18]
+		});
+	}
+
+	function renderMarkers(L: any) {
+		if (!map) {
+			return;
+		}
+
+		markerLayer?.remove();
+
+		const markers = groupedEventsWithGeo.map((group) => {
+			const icon = group.events.length > 1 ? createGroupMarkerIcon(L, group.events.length) : createSingleMarkerIcon(L);
+
+			return L.marker([group.lat, group.lng], { icon }).bindPopup(buildPopupContent(group));
 		});
 
-		const markers = eventsWithGeo.map((event) => {
-			const eventId = event.id;
-			const eventTitle = escapeHtml(event.title);
-			const venueName = escapeHtml(event.venue?.venue ?? '');
-			const marker = L.marker([event.venue!.geo_lat!, event.venue!.geo_lng!], { icon: customIcon })
-				.addTo(map!)
-				.bindPopup(`<strong>${eventTitle}</strong><br/>${venueName}<br/><a href="/event/${eventId}">Details öffnen</a>`);
-			return marker;
-		});
+		markerLayer = L.featureGroup(markers).addTo(map);
 
 		if (markers.length > 0) {
-			const group = L.featureGroup(markers);
-			map.fitBounds(group.getBounds().pad(0.1));
+			map.fitBounds(markerLayer.getBounds().pad(0.1), { maxZoom: 13 });
+		}
+	}
+
+	function destroyMap() {
+		markerLayer?.remove();
+		markerLayer = null;
+
+		if (map) {
+			map.remove();
+			map = null;
 		}
 	}
 
@@ -113,7 +225,7 @@
 	<div class="space-y-3">
 		<!-- Date filter -->
 		<DateFilter 
-			active={eventStore.filters.date} 
+			active={$eventStore.filters.date} 
 			onchange={(date) => eventStore.setDateFilter(date)} 
 		/>
 		
@@ -132,11 +244,11 @@
 				spellcheck={false}
 				enterkeyhint="search"
 				placeholder="Event, Ort oder DJ suchen…"
-				value={eventStore.searchQuery}
+				value={$eventStore.searchQuery}
 				oninput={(e) => eventStore.setSearchQuery(e.currentTarget.value)}
 				class="field-input pl-12 pr-12"
 			/>
-				{#if eventStore.searchQuery}
+				{#if $eventStore.searchQuery}
 					<button
 						onclick={() => eventStore.clearSearch()}
 						class="absolute right-3 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-badge text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
@@ -150,7 +262,7 @@
 				{/if}
 			</div>
 		</div>
-		{#if eventStore.searchQuery && searchCount !== totalCount}
+		{#if $eventStore.searchQuery && searchCount !== totalCount}
 			<p class="meta-text" aria-live="polite">
 				{searchCount} von {totalCount} Events
 			</p>
@@ -163,7 +275,7 @@
 			{#each musicTypes as music (music)}
 				<MusicFilterChip
 					{music}
-					active={eventStore.filters.music === music}
+					active={$eventStore.filters.music === music}
 					onclick={() => eventStore.toggleMusic(music)}
 				/>
 			{/each}
@@ -172,7 +284,7 @@
 			{#each eventTypes as type (type)}
 				<FilterChip
 					{type}
-					active={eventStore.filters.types.includes(type)}
+					active={$eventStore.filters.types.includes(type)}
 					onclick={() => eventStore.toggleType(type)}
 				/>
 			{/each}
@@ -220,7 +332,7 @@
 		</div>
 	{/if}
 
-	{#if showMap && eventStore.events.length > 0}
+	{#if showMap && $eventStore.events.length > 0}
 		<div class="card overflow-hidden">
 			{#if !mapConsentGranted}
 				<ConsentPlaceholder
@@ -240,16 +352,16 @@
 	{/if}
 
 	<!-- Loading state -->
-	{#if eventStore.loading && eventStore.events.length === 0}
+	{#if $eventStore.loading && $eventStore.events.length === 0}
 		<div class="card flex flex-col items-center justify-center py-12 text-center" role="status" aria-live="polite">
 			<div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-action-secondary border-t-action-primary"></div>
 			<p class="text-[1rem] font-medium text-text-default">Lade Veranstaltungen…</p>
 		</div>
-	{:else if eventStore.error}
+	{:else if $eventStore.error}
 		<!-- Error state -->
 		<div class="card space-y-3 p-5 text-center" role="alert">
 			<p class="font-display text-[1.25rem] font-semibold text-text-default">Fehler beim Laden</p>
-			<p class="meta-text">{eventStore.error}</p>
+			<p class="meta-text">{$eventStore.error}</p>
 			<button 
 				onclick={handleRefresh}
 				class="btn-primary"
@@ -258,7 +370,7 @@
 				Erneut versuchen
 			</button>
 		</div>
-	{:else if eventStore.events.length === 0}
+	{:else if $eventStore.events.length === 0}
 		<!-- Empty state -->
 		<div class="card p-8 text-center">
 			<svg class="mx-auto mb-4 h-16 w-16 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,7 +384,7 @@
 		<!-- Event list -->
 		<div class="relative">
 			<div class="space-y-3">
-				{#each eventStore.events as event (event.id)}
+				{#each $eventStore.events as event (event.id)}
 					<EventCard {event} showImage={showImages} />
 				{/each}
 			</div>
@@ -281,17 +393,76 @@
 			<div class="mt-6 flex justify-center">
 				<button 
 					onclick={handleRefresh}
-					disabled={eventStore.loading}
+					disabled={$eventStore.loading}
 					class="btn-secondary gap-2 disabled:opacity-50"
 					type="button"
 				>
-					<svg class="h-4 w-4 {eventStore.loading ? 'animate-spin' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+					<svg class="h-4 w-4 {$eventStore.loading ? 'animate-spin' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
 					</svg>
-					{eventStore.loading ? 'Lädt…' : 'Aktualisieren'}
+					{$eventStore.loading ? 'Lädt…' : 'Aktualisieren'}
 				</button>
 			</div>
 		</div>
 		{/if}
 	{/if}
 </div>
+
+<style>
+	:global(.map-cluster-marker) {
+		display: flex;
+		height: 36px;
+		width: 36px;
+		align-items: center;
+		justify-content: center;
+		border: 2px solid rgba(255, 255, 255, 0.95);
+		border-radius: 999px;
+		background: #0f766e;
+		box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+		color: #fff;
+		font-size: 0.875rem;
+		font-weight: 700;
+	}
+
+	:global(.map-popup) {
+		min-width: 180px;
+	}
+
+	:global(.map-popup__heading) {
+		margin: 0 0 0.5rem;
+		font-size: 0.9375rem;
+		font-weight: 700;
+		color: #111827;
+	}
+
+	:global(.map-popup__list) {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	:global(.map-popup__item + .map-popup__item) {
+		margin-top: 0.625rem;
+		padding-top: 0.625rem;
+		border-top: 1px solid #e5e7eb;
+	}
+
+	:global(.map-popup__title) {
+		display: inline-block;
+		margin-bottom: 0.125rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: #0f172a;
+		text-decoration: none;
+	}
+
+	:global(.map-popup__title:hover) {
+		text-decoration: underline;
+	}
+
+	:global(.map-popup__meta) {
+		font-size: 0.8125rem;
+		line-height: 1.35;
+		color: #4b5563;
+	}
+</style>

@@ -24,6 +24,9 @@ Mobile PWA für Tango-Veranstaltungen im Raum Heidelberg/Mannheim/Ludwigshafen. 
 ## Development
 
 ```bash
+# Match the repo Node version
+nvm use
+
 # Install
 npm install
 

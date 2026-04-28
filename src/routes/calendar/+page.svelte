@@ -13,14 +13,14 @@
 
 	let selectedDate = $state<Date | null>(null);
 	let currentMonth = $state(new Date());
-	const showInlineLoading = $derived(eventStore.loading);
+	const showInlineLoading = $derived($eventStore.loading);
 
 	onMount(() => {
 		eventStore.setDateFilter('all');
 	});
 
 	function getEventsForDate(date: Date): TribeEvent[] {
-		return eventStore.events.filter((event) => {
+		return $eventStore.events.filter((event) => {
 			const eventDate = new Date(event.start_date);
 			return eventDate.getFullYear() === date.getFullYear() &&
 				eventDate.getMonth() === date.getMonth() &&
@@ -63,7 +63,7 @@
 			{#each musicTypes as music (music)}
 				<MusicFilterChip
 					{music}
-					active={eventStore.filters.music === music}
+					active={$eventStore.filters.music === music}
 					onclick={() => eventStore.toggleMusic(music)}
 				/>
 			{/each}
@@ -72,7 +72,7 @@
 			{#each eventTypes as type (type)}
 				<FilterChip
 					{type}
-					active={eventStore.filters.types.includes(type)}
+					active={$eventStore.filters.types.includes(type)}
 					onclick={() => eventStore.toggleType(type)}
 				/>
 			{/each}
@@ -88,7 +88,7 @@
 
 	<!-- Calendar -->
 	<Calendar 
-		events={eventStore.events}
+		events={$eventStore.events}
 		{currentMonth}
 		{selectedDate}
 		onselectDate={handleDateSelect}

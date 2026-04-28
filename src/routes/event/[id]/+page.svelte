@@ -10,6 +10,7 @@
 	import { de } from 'date-fns/locale';
 	import { fetchEventById, extractDjFromDescription, extractWorkshopFromDescription, formatEventCost } from '$lib/api/tribe';
 	import type { TribeEvent } from '$lib/types';
+	import { createEventCalendarIcs, getEventCalendarFileName, getEventShareData } from '$lib/utils/event-actions';
 	import { getEventMusicBadgeClass, getEventMusicLabel, getEventTypeBadgeClass, getEventTypeLabel } from '$lib/utils/event-presentation';
 	import 'leaflet/dist/leaflet.css';
 
@@ -18,6 +19,8 @@
 	let error = $state<string | null>(null);
 	let mapContainer = $state<HTMLDivElement | null>(null);
 	let map: any = null;
+	let shareState = $state<'idle' | 'copied' | 'error'>('idle');
+	let calendarState = $state<'idle' | 'saved' | 'error'>('idle');
 
 	const eventId = $derived.by(() => {
 		const id = $page.params.id;
@@ -110,6 +113,78 @@
 	const hasGeo = $derived(event?.venue?.geo_lat && event?.venue?.geo_lng);
 	const mapConsentGranted = $derived(consentStore.hasConsent('maps'));
 	const sanitizedDescription = $derived(event ? sanitizeHtml(event.description) : '');
+	const shareData = $derived(event ? getEventShareData(event) : null);
+	const calendarFileName = $derived(event ? getEventCalendarFileName(event) : 'rnt-event.ics');
+
+	function resetShareState() {
+		window.setTimeout(() => {
+			shareState = 'idle';
+		}, 2200);
+	}
+
+	function resetCalendarState() {
+		window.setTimeout(() => {
+			calendarState = 'idle';
+		}, 2200);
+	}
+
+	async function handleShare() {
+		if (!event || !shareData) {
+			return;
+		}
+
+		try {
+			if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+				await navigator.share(shareData);
+				trackFeatureEvent('event-share', 'native', String(event.id));
+				return;
+			}
+		} catch (shareError) {
+			if (shareError instanceof DOMException && shareError.name === 'AbortError') {
+				trackFeatureEvent('event-share', 'cancelled', String(event.id));
+				return;
+			}
+		}
+
+		try {
+			await navigator.clipboard.writeText([shareData.text, shareData.url].join('\n'));
+			shareState = 'copied';
+			trackFeatureEvent('event-share', 'copy_link', String(event.id));
+			resetShareState();
+		} catch {
+			shareState = 'error';
+			trackFeatureEvent('event-share', 'copy_failed', String(event.id));
+			resetShareState();
+		}
+	}
+
+	function handleCalendarSave() {
+		if (!event) {
+			return;
+		}
+
+		try {
+			const ics = createEventCalendarIcs(event);
+			const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+
+			link.href = url;
+			link.download = calendarFileName;
+			document.body.append(link);
+			link.click();
+			link.remove();
+			URL.revokeObjectURL(url);
+
+			calendarState = 'saved';
+			trackFeatureEvent('event-calendar', 'download_ics', String(event.id));
+			resetCalendarState();
+		} catch {
+			calendarState = 'error';
+			trackFeatureEvent('event-calendar', 'download_failed', String(event.id));
+			resetCalendarState();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -174,6 +249,45 @@
 				</h1>
 				<p class="meta-text max-w-[40ch]">Zeit, Ort und Zugang zuerst. Weitere Details folgen darunter in klar getrennten Abschnitten.</p>
 			</div>
+		</section>
+
+		<section class="card p-4">
+			<p class="meta-text">Schnellaktionen</p>
+			<div class="mt-3 grid gap-3 sm:grid-cols-2">
+				<button
+					type="button"
+					onclick={handleShare}
+					class="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-border-default bg-surface-card px-4 py-2 text-sm font-medium text-text-default transition-colors hover:bg-action-secondary"
+				>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C9.314 12.955 10.055 12.73 10.848 12.73c.793 0 1.534.225 2.164.612m-4.328 0a3 3 0 10-2.165-2.91m6.493 2.91a3 3 0 112.164-2.91m-8.657 2.91l8.657-5.82"/>
+					</svg>
+					{shareState === 'copied' ? 'Link kopiert' : shareState === 'error' ? 'Teilen fehlgeschlagen' : 'Teilen'}
+				</button>
+
+				<button
+					type="button"
+					onclick={handleCalendarSave}
+					class="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-border-default bg-surface-card px-4 py-2 text-sm font-medium text-text-default transition-colors hover:bg-action-secondary"
+				>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+					</svg>
+					{calendarState === 'saved' ? 'Kalenderdatei geladen' : calendarState === 'error' ? 'Kalender fehlgeschlagen' : 'In Kalender speichern'}
+				</button>
+			</div>
+
+			{#if shareState === 'copied'}
+				<p class="meta-text mt-3">Den Veranstaltungslink kannst du jetzt in Messenger oder Mail einfuegen.</p>
+			{:else if shareState === 'error'}
+				<p class="meta-text mt-3">Teilen war in diesem Browser nicht moeglich.</p>
+			{/if}
+
+			{#if calendarState === 'saved'}
+				<p class="meta-text mt-3">Die `.ics`-Datei wurde fuer deinen Kalender heruntergeladen.</p>
+			{:else if calendarState === 'error'}
+				<p class="meta-text mt-3">Die Kalenderdatei konnte nicht erstellt werden.</p>
+			{/if}
 		</section>
 
 		<!-- Info cards -->

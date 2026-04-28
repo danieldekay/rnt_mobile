@@ -1,5 +1,6 @@
 import { fetchAllEvents, extractDjFromDescription } from '$lib/api/tribe';
 import type { TribeEvent, EventType, MusicType, DateFilter, Filters } from '$lib/types';
+import { get, writable } from 'svelte/store';
 
 const EVENT_TYPE_CATEGORY_SLUGS: Record<EventType, string> = {
 	milonga: 'typ_milonga',
@@ -14,42 +15,57 @@ const MUSIC_CATEGORY_SLUGS: Record<MusicType, string> = {
 	neo: 'musik_neo-oder-non'
 };
 
-function createEventStore() {
-	let events = $state<TribeEvent[]>([]);
-	let loading = $state(false);
-	let error = $state<string | null>(null);
-	let searchQuery = $state('');
-	let filters = $state<Filters>({
+interface EventStoreState {
+	events: TribeEvent[];
+	allEvents: TribeEvent[];
+	loading: boolean;
+	error: string | null;
+	searchQuery: string;
+	filters: Filters;
+}
+
+const INITIAL_STATE: EventStoreState = {
+	events: [],
+	allEvents: [],
+	loading: false,
+	error: null,
+	searchQuery: '',
+	filters: {
 		types: [],
 		music: null,
 		date: 'week'
-	});
+	}
+};
 
-	let lastFetchedDate = $state<DateFilter | null>(null);
+function createEventStore() {
+	const store = writable<EventStoreState>(INITIAL_STATE);
+	const { subscribe, update } = store;
+
+	let lastFetchedDate: DateFilter | null = null;
 	let activeRequestId = 0;
 
-	function eventMatchesTypes(event: TribeEvent): boolean {
+	function eventMatchesTypes(event: TribeEvent, filters: Filters): boolean {
 		if (filters.types.length === 0) return true;
 
 		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
 		return filters.types.some((type) => categorySlugs.includes(EVENT_TYPE_CATEGORY_SLUGS[type]));
 	}
 
-	function eventMatchesMusic(event: TribeEvent): boolean {
+	function eventMatchesMusic(event: TribeEvent, filters: Filters): boolean {
 		if (!filters.music) return true;
 
 		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
 		return categorySlugs.includes(MUSIC_CATEGORY_SLUGS[filters.music]);
 	}
 
-	function getFilteredEvents(): TribeEvent[] {
-		const query = searchQuery.toLowerCase();
-		return events.filter((event) => {
-			if (!eventMatchesTypes(event) || !eventMatchesMusic(event)) {
+	function withFilteredEvents(state: EventStoreState): EventStoreState {
+		const query = state.searchQuery.toLowerCase();
+		const events = state.allEvents.filter((event) => {
+			if (!eventMatchesTypes(event, state.filters) || !eventMatchesMusic(event, state.filters)) {
 				return false;
 			}
 
-			if (!searchQuery.trim()) {
+			if (!state.searchQuery.trim()) {
 				return true;
 			}
 
@@ -61,18 +77,27 @@ function createEventStore() {
 			const organizer = event.organizer?.[0]?.organizer?.toLowerCase() ?? '';
 			return title.includes(query) || venue.includes(query) || city.includes(query) || description.includes(query) || dj.includes(query) || organizer.includes(query);
 		});
+
+		return {
+			...state,
+			events
+		};
 	}
 
 	async function loadEvents(forceRefresh = false) {
-		const currentDate = filters.date;
+		const currentDate = get(store).filters.date;
 		
-		if (!forceRefresh && lastFetchedDate === currentDate && events.length > 0) {
+		if (!forceRefresh && lastFetchedDate === currentDate && get(store).allEvents.length > 0) {
+			update(withFilteredEvents);
 			return;
 		}
 
 		const requestId = ++activeRequestId;
-		loading = true;
-		error = null;
+		update((state) => ({
+			...state,
+			loading: true,
+			error: null
+		}));
 
 		try {
 			const fetchedEvents = await fetchAllEvents([], null, currentDate);
@@ -81,29 +106,42 @@ function createEventStore() {
 				return;
 			}
 
-			events = fetchedEvents;
 			lastFetchedDate = currentDate;
+			update((state) =>
+				withFilteredEvents({
+					...state,
+					allEvents: fetchedEvents,
+					loading: false,
+					error: null
+				})
+			);
 		} catch (e) {
 			if (requestId !== activeRequestId) {
 				return;
 			}
 
-			error = e instanceof Error ? e.message : 'Failed to load events';
-		} finally {
-			if (requestId === activeRequestId) {
-				loading = false;
-			}
+			update((state) => ({
+				...state,
+				loading: false,
+				error: e instanceof Error ? e.message : 'Failed to load events'
+			}));
 		}
 	}
 
 	function setFilters(newFilters: Partial<Filters>) {
-		filters = { ...filters, ...newFilters };
+		update((state) =>
+			withFilteredEvents({
+				...state,
+				filters: { ...state.filters, ...newFilters }
+			})
+		);
 	}
 
 	function toggleType(type: EventType) {
-		const types = filters.types.includes(type)
-			? filters.types.filter((t) => t !== type)
-			: [...filters.types, type];
+		const currentFilters = get(store).filters;
+		const types = currentFilters.types.includes(type)
+			? currentFilters.types.filter((t) => t !== type)
+			: [...currentFilters.types, type];
 		setFilters({ types });
 	}
 
@@ -112,33 +150,31 @@ function createEventStore() {
 	}
 
 	function toggleMusic(music: MusicType) {
-		setMusic(filters.music === music ? null : music);
+		setMusic(get(store).filters.music === music ? null : music);
 	}
 
 	function setDateFilter(date: DateFilter) {
-		if (filters.date === date) {
+		if (get(store).filters.date === date) {
 			return;
 		}
 
-		filters = { ...filters, date };
+		update((state) => ({
+			...state,
+			filters: { ...state.filters, date }
+		}));
 		void loadEvents();
 	}
 
 	function setSearchQuery(query: string) {
-		searchQuery = query;
+		update((state) => withFilteredEvents({ ...state, searchQuery: query }));
 	}
 
 	function clearSearch() {
-		searchQuery = '';
+		update((state) => withFilteredEvents({ ...state, searchQuery: '' }));
 	}
 
 	return {
-		get events() { return getFilteredEvents(); },
-		get allEvents() { return events; },
-		get loading() { return loading; },
-		get error() { return error; },
-		get filters() { return filters; },
-		get searchQuery() { return searchQuery; },
+		subscribe,
 		loadEvents,
 		setFilters,
 		toggleType,

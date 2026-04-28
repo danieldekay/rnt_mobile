@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import { updated } from '$app/state';
 	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -29,7 +30,7 @@
 		pwaUpdateStore.syncFromKit(updated.current);
 	});
 
-	$effect(() => {
+	onMount(() => {
 		pwaInstallStore.start();
 		return () => pwaInstallStore.stop();
 	});
