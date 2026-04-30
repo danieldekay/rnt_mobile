@@ -29,6 +29,7 @@ Current Wrangler setup:
 "$schema" = "./node_modules/wrangler/config-schema.json"
 
 name = "rnt"
+main = "./worker.ts"
 compatibility_date = "2024-01-01"
 keep_vars = true
 
@@ -39,6 +40,8 @@ not_found_handling = "single-page-application"
 [vars]
 PUBLIC_MATOMO_URL = "https://statistics.tangoparty.net"
 PUBLIC_MATOMO_SITE_ID = "15"
+SENDY_BASE_URL = "https://newsletter.rheinneckartango.de"
+SENDY_LIST_ID = "P04CWhVSOHvpkRVhqCvYKA"
 ```
 
 `keep_vars = true` is intentional so dashboard-managed environment variables stay in place on deploy.
@@ -48,6 +51,10 @@ The `[vars]` block exposes Matomo configuration to the SvelteKit client bundle v
 client JavaScript and match the tracker snippet Matomo generates for copy-paste install.
 Keeping them in `wrangler.toml` lets CI builds pick them up without extra GitHub Actions
 variables, and mirrors `.env.example` for local development.
+
+The same file now also defines the Worker entrypoint and server-side Sendy settings used
+by the footer newsletter form. `SENDY_BASE_URL` and `SENDY_LIST_ID` stay on the Worker side
+and are not read by the browser bundle.
 
 ## Matomo Analytics
 
@@ -136,6 +143,7 @@ Minimum smoke test:
 4. confirm one event detail page loads
 5. confirm legal links work
 6. confirm the footer shows the expected app version
+7. submit the newsletter form and confirm the inline success message appears
 
 ## Troubleshooting
 

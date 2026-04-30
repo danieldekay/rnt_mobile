@@ -1,6 +1,7 @@
 "$schema" = "./node_modules/wrangler/config-schema.json"
 
 name = "rnt"
+main = "./worker.ts"
 compatibility_date = "2024-01-01"
 keep_vars = true
 
@@ -15,3 +16,5 @@ not_found_handling = "single-page-application"
 [vars]
 PUBLIC_MATOMO_URL = "https://statistics.tangoparty.net"
 PUBLIC_MATOMO_SITE_ID = "15"
+SENDY_BASE_URL = "https://newsletter.rheinneckartango.de"
+SENDY_LIST_ID = "P04CWhVSOHvpkRVhqCvYKA"

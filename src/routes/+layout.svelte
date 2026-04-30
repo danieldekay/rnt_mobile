@@ -8,6 +8,7 @@
 	import PwaUpdateBanner from '$lib/components/PwaUpdateBanner.svelte';
 	import PwaInstallButton from '$lib/components/PwaInstallButton.svelte';
 	import PwaInstallModal from '$lib/components/PwaInstallModal.svelte';
+	import NewsletterSignup from '$lib/components/NewsletterSignup.svelte';
 	import { syncMatomoConsent, trackFeatureEvent } from '$lib/matomo';
 	import { consentStore } from '$lib/stores/consent.svelte';
 	import { pwaUpdateStore } from '$lib/stores/pwa-update.svelte';
@@ -234,6 +235,7 @@
 	<!-- Footer -->
 	<footer class="mt-auto border-t border-border-default py-5">
 		<div class="mx-auto max-w-xl space-y-2 px-4 text-center md:px-5">
+			<NewsletterSignup />
 			<p class="meta-text flex flex-wrap justify-center gap-x-4 gap-y-2">
 				<a href={resolve('/was-ist-neu')} class="underline decoration-border-default underline-offset-4 transition-colors hover:text-text-default">
 					Was ist neu?

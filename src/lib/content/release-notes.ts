@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
 	{
+		version: '0.1.6',
+		releasedAt: '2026-04-30',
+		headline: 'Newsletter-Anmeldung direkt in der App',
+		summary:
+			'Dieses Patch-Release bringt eine neue Newsletter-Anmeldung im Footer, die ohne Seitenwechsel funktioniert und ueber den RNT-Worker sicher an Sendy weitergeleitet wird.',
+		highlights: [
+			'Neuer Newsletter-Bereich im Footer auf allen Seiten der App.',
+			'Die Anmeldung laeuft ohne Neuladen der Seite und zeigt Rueckmeldungen direkt im Formular an.',
+			'Der Browser sendet die Anmeldung an einen gleichnamigen RNT-Endpunkt, der sie serverseitig an Sendy weiterleitet.',
+			'E-Mail-Pruefung und Honeypot-Schutz reduzieren fehlerhafte oder automatisierte Eintraege.',
+			'Deployment- und Worker-Konfiguration wurden um die Sendy-Anbindung erweitert.'
+		]
+	},
+	{
 		version: '0.1.5',
 		releasedAt: '2026-04-28',
 		headline: 'Teilen, speichern und besser orientieren',
