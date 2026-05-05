@@ -1,19 +1,10 @@
+import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from '$lib/constants';
 import { fetchAllEvents, extractDjFromDescription } from '$lib/api/tribe';
+import { trackFeatureEvent } from '$lib/matomo';
 import type { TribeEvent, EventType, MusicType, DateFilter, Filters } from '$lib/types';
 import { get, writable } from 'svelte/store';
 
-const EVENT_TYPE_CATEGORY_SLUGS: Record<EventType, string> = {
-	milonga: 'typ_milonga',
-	practica: 'typ_practica',
-	workshop: 'typ_workshop',
-	kurs: 'typ_kurs'
-};
 
-const MUSIC_CATEGORY_SLUGS: Record<MusicType, string> = {
-	traditional: 'musik_traditionell',
-	mixed: 'musik_gemischt',
-	neo: 'musik_neo-oder-non'
-};
 
 interface EventStoreState {
 	events: TribeEvent[];
@@ -48,14 +39,14 @@ function createEventStore() {
 		if (filters.types.length === 0) return true;
 
 		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
-		return filters.types.some((type) => categorySlugs.includes(EVENT_TYPE_CATEGORY_SLUGS[type]));
+		return filters.types.some((type) => categorySlugs.includes(EVENT_TYPE_SLUGS[type]));
 	}
 
 	function eventMatchesMusic(event: TribeEvent, filters: Filters): boolean {
 		if (!filters.music) return true;
 
 		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
-		return categorySlugs.includes(MUSIC_CATEGORY_SLUGS[filters.music]);
+		return categorySlugs.includes(MUSIC_SLUGS[filters.music]);
 	}
 
 	function withFilteredEvents(state: EventStoreState): EventStoreState {
@@ -125,6 +116,7 @@ function createEventStore() {
 				loading: false,
 				error: e instanceof Error ? e.message : 'Failed to load events'
 			}));
+			trackFeatureEvent('events', 'api_error', e instanceof Error ? 'fail' : 'fetch_error');
 		}
 	}
 
@@ -163,6 +155,7 @@ function createEventStore() {
 			filters: { ...state.filters, date }
 		}));
 		void loadEvents();
+		trackFeatureEvent('events', 'date_filter_changed', date);
 	}
 
 	function setSearchQuery(query: string) {

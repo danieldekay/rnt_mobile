@@ -2,7 +2,9 @@ import DOMPurify from 'dompurify';
 
 export function sanitizeHtml(html: string) {
 	return DOMPurify.sanitize(html, {
-		USE_PROFILES: { html: true }
+		USE_PROFILES: { html: true },
+		FORBID_TAGS: ['svg', 'math'],
+		FORBID_ATTR: ['on*']
 	});
 }
 

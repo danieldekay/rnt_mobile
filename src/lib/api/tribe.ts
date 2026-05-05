@@ -1,19 +1,10 @@
+import {
+	EVENT_TYPE_SLUGS,
+	MUSIC_SLUGS
+} from '$lib/constants';
 import type { TribeEvent, EventsResponse, EventType, MusicType } from '$lib/types';
 
 const BASE_URL = 'https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1';
-
-const TYPE_SLUGS: Record<EventType, string> = {
-	milonga: 'typ_milonga',
-	practica: 'typ_practica',
-	workshop: 'typ_workshop',
-	kurs: 'typ_kurs'
-};
-
-const MUSIC_SLUGS: Record<MusicType, string> = {
-	traditional: 'musik_traditionell',
-	mixed: 'musik_gemischt',
-	neo: 'musik_neo-oder-non'
-};
 
 const HTML_ENTITY_MAP: Record<string, string> = {
 	amp: '&',
@@ -109,7 +100,7 @@ function normalizeEvent(event: TribeEvent): TribeEvent {
 				venue: normalizeText(event.venue.venue),
 				address: normalizeText(event.venue.address),
 				city: normalizeText(event.venue.city)
-			}
+				}
 			: event.venue,
 		organizer: event.organizer?.map((organizer) => ({
 			...organizer,
@@ -132,7 +123,7 @@ export function formatEventCost(cost: string | null | undefined): string {
 	}
 
 	if (/^\d+(?:[.,]\d{1,2})?$/.test(normalizedCost)) {
-		return `${normalizedCost}\u00a0€`;
+		return `${normalizedCost} €`;
 	}
 
 	return normalizedCost;
@@ -164,7 +155,7 @@ function getDateRange(filter: string): { start: Date; end: Date } {
 			end.setMonth(end.getMonth() + 1);
 			break;
 		case 'all':
-			end.setFullYear(end.getFullYear() + 2);
+			end.setFullYear(end.getFullYear() + 3);
 			break;
 	}
 
@@ -176,7 +167,8 @@ export async function fetchEvents(
 	music: MusicType | null = null,
 	dateFilter: string = 'week',
 	page: number = 1,
-	perPage: number = 50
+	perPage: number = 50,
+	signal?: AbortSignal
 ): Promise<EventsResponse> {
 	const { start, end } = getDateRange(dateFilter);
 	const params = new URLSearchParams({
@@ -188,7 +180,7 @@ export async function fetchEvents(
 	});
 
 	if (types.length > 0) {
-		const typeTerms = types.map((t) => TYPE_SLUGS[t]).join(',');
+		const typeTerms = types.map((t) => EVENT_TYPE_SLUGS[t]).join(',');
 		params.append('categories', typeTerms);
 	}
 
@@ -197,7 +189,7 @@ export async function fetchEvents(
 	}
 
 	const url = `${BASE_URL}/events?${params.toString()}`;
-	const response = await fetch(url);
+	const response = await fetch(url, signal ? { signal } : undefined);
 
 	if (!response.ok) {
 		throw new Error(`Failed to fetch events: ${response.status}`);
@@ -215,17 +207,35 @@ export async function fetchAllEvents(
 	music: MusicType | null = null,
 	dateFilter: string = 'all'
 ): Promise<TribeEvent[]> {
+	const controller = new AbortController();
+	const { signal } = controller;
+
+	// Cap at 10 pages (500 events at 50 per page)
+	const MAX_PAGES = 10;
 	const allEvents: TribeEvent[] = [];
 	let page = 1;
 	let hasMore = true;
 
+	// Safety timeout: 2 minutes
+	const timeout = setTimeout(() => controller.abort(), 2 * 60 * 1000);
+
 	while (hasMore) {
-		const data = await fetchEvents(types, music, dateFilter, page);
-		allEvents.push(...data.events);
-		hasMore = page < data.total_pages;
-		page++;
+		try {
+			const data = await fetchEvents(types, music, dateFilter, page, 50, signal);
+			allEvents.push(...data.events);
+			hasMore = page < data.total_pages;
+			page++;
+			if (page > MAX_PAGES) break;
+		} catch (error) {
+			if (error instanceof DOMException && error.name === 'AbortError') {
+				console.warn('fetchAllEvents aborted after timeout or cancellation');
+				break;
+			}
+			throw error;
+		}
 	}
 
+	clearTimeout(timeout);
 	return allEvents;
 }
 
