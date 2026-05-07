@@ -8,7 +8,7 @@
 	import { page } from '$app/stores';
 	import { format, parseISO } from 'date-fns';
 	import { de } from 'date-fns/locale';
-	import { fetchEventById, extractDjFromDescription, extractWorkshopFromDescription, formatEventCost } from '$lib/api/tribe';
+	import { fetchEventById, EventFetchError, extractDjFromDescription, extractWorkshopFromDescription, formatEventCost } from '$lib/api/tribe';
 	import type { TribeEvent } from '$lib/types';
 	import { createEventCalendarIcs, getEventCalendarFileName, getEventShareData } from '$lib/utils/event-actions';
 	import { getEventMusicBadgeClass, getEventMusicLabel, getEventTypeBadgeClass, getEventTypeLabel } from '$lib/utils/event-presentation';
@@ -38,9 +38,19 @@
 		try {
 			event = await fetchEventById(id);
 		} catch (e) {
-			error = 'Veranstaltung nicht gefunden';
+			if (e instanceof EventFetchError) {
+				if (e.status === 404) {
+					error = 'Veranstaltung nicht gefunden';
+					trackFeatureEvent('event_detail', 'fetch_error', 'not_found');
+				} else {
+					error = 'Laden fehlgeschlagen';
+					trackFeatureEvent('event_detail', 'fetch_error', 'server_error');
+				}
+			} else {
+error = 'Laden fehlgeschlagen';
+				trackFeatureEvent('event_detail', 'fetch_error', 'network');
+			}
 			console.error(e);
-		} finally {
 			loading = false;
 		}
 	});

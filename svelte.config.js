@@ -16,7 +16,7 @@ const config = {
 			pollInterval: 15 * 60 * 1000
 		},
 		prerender: {
-			handleHttpError: 'warn'
+			handleHttpError: 'ignore'
 		}
 	}
 };

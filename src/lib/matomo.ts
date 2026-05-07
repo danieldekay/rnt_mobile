@@ -332,10 +332,129 @@ export function getMatomoDisplayMode(): DisplayMode {
 	return currentDisplayMode;
 }
 
+
 export function cleanup() {
 	teardownOnlineListener();
 	unwatchDisplayMode();
 	analyticsEnabled = false;
 	initialized = false;
 	scriptInjected = false;
+	teardownErrorTracking();
+	teardownPerformanceTracking();
+}
+
+// ─── Error Tracking ───────────────────────────────────────────────
+
+export function trackError(
+	category: 'js-error' | 'fetch-error' | 'promise-rejection' | 'component-error',
+	message: string,
+	detail?: Record<string, string>
+): void {
+	const queue = getQueue();
+	if (!ensureMatomo() || !queue) return;
+
+	const detailStr = detail
+			? Object.entries(detail).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('|')
+			: '';
+
+	queue.push(['trackEvent', 'app', 'error', `${category}${detailStr ? `|${detailStr}` : ''}${'@' + __APP_VERSION__}`]);
+	queue.push(['setCustomDimension', 2, `${category}:${message.slice(0, 100)}`]);
+
+	if (offlineMode) addPendingEvent(['trackEvent', 'app', 'error', `${category}${detailStr ? `|${detailStr}` : ''}${'@' + __APP_VERSION__}`]);
+}
+
+export function setupErrorTracking(): void {
+	if (!browser) return;
+	if ((typeof (window as any).__rntErrorTrackingSetup === 'undefined')) {
+		(window as any).__rntErrorTrackingSetup = true;
+	} else {
+		return;
+	}
+
+	// Uncaught JS errors
+	window.addEventListener('error', (event: ErrorEvent) => {
+		const message = event.message ?? 'unknown error';
+		trackError('js-error', message, {
+			filename: event.filename ?? '',
+			lineno: String(event.lineno ?? 0),
+			colno: String(event.colno ?? 0)
+		});
+	});
+
+	// Unhandled promise rejections
+	window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+		const message = (event.reason?.message ?? String(event.reason))?.slice(0, 500) ?? 'unhandled rejection';
+		trackError('promise-rejection', message, {
+			type: String((event.reason as any)?.constructor?.name ?? 'unknown')
+		});
+	});
+}
+
+// ─── Performance Tracking ─────────────────────────────────────────
+
+interface PerfMetrics {
+	lcp: number | null;
+	cls: number | null;
+}
+
+let perfMetrics: PerfMetrics = { lcp: null, cls: null };
+let _lcpObs: PerformanceObserver | null = null;
+let _clsObs: PerformanceObserver | null = null;
+
+export function trackPerformance(): void {
+	if (!browser || !analyticsEnabled) return;
+
+	if ('PerformanceObserver' in window) {
+		try {
+			_lcpObs = new PerformanceObserver((list) => {
+				const entries = list.getEntries();
+				if (entries.length > 0) {
+					perfMetrics.lcp = entries[entries.length - 1].startTime;
+				}
+			});
+			_lcpObs.observe({ type: 'largest-contentful-paint' });
+		} catch {
+			// silently fail
+		}
+	}
+
+	if ('PerformanceObserver' in window) {
+		try {
+			_clsObs = new PerformanceObserver((list) => {
+				let clsValue = 0;
+				for (const entry of list.getEntries()) {
+					if (!entry.hadRecentInput) clsValue += entry.value;
+				}
+				perfMetrics.cls = clsValue;
+			});
+			_clsObs.observe({ type: 'layout-shift' });
+		} catch {
+			// silently fail
+		}
+	}
+
+	sendPerformanceMetrics();
+}
+
+export function sendPerformanceMetrics(): void {
+	const queue = getQueue();
+	if (!ensureMatomo() || !queue) return;
+
+	if (perfMetrics.lcp !== null) {
+		queue.push(['trackEvent', 'app', 'performance_lcp', `${Math.round(perfMetrics.lcp)}ms@${__APP_VERSION__}:${currentDisplayMode}`]);
+	}
+
+	if (perfMetrics.cls !== null) {
+		queue.push(['trackEvent', 'app', 'performance_cls', `${perfMetrics.cls.toFixed(3)}@${__APP_VERSION__}:${currentDisplayMode}`]);
+	}
+}
+
+export function teardownErrorTracking(): void {
+	if (_lcpObs) { _lcpObs.disconnect(); _lcpObs = null; }
+	if (_clsObs) { _clsObs.disconnect(); _clsObs = null; }
+	perfMetrics = { lcp: null, cls: null };
+}
+
+function teardownPerformanceTracking(): void {
+	teardownErrorTracking();
 }

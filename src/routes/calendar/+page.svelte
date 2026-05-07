@@ -7,6 +7,7 @@
 	import FilterChip from '$lib/components/FilterChip.svelte';
 	import MusicFilterChip from '$lib/components/MusicFilterChip.svelte';
 	import type { EventType, MusicType, TribeEvent } from '$lib/types';
+	import { trackFeatureEvent } from '$lib/matomo';
 
 	const eventTypes: EventType[] = ['milonga', 'practica', 'workshop', 'kurs'];
 	const musicTypes: MusicType[] = ['traditional', 'mixed', 'neo'];
@@ -29,11 +30,13 @@
 	}
 
 	function handleDateSelect(date: Date) {
+		trackFeatureEvent('calendar', 'date_select', date.toLocaleDateString('de-DE'));
 		selectedDate = date;
 	}
 
 	function handleMonthChange(date: Date) {
 		currentMonth = date;
+		trackFeatureEvent('calendar', 'month_change', date.toLocaleDateString('de-DE'));
 
 		if (
 			selectedDate &&

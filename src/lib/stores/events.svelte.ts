@@ -1,10 +1,14 @@
-import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from '$lib/constants';
-import { fetchAllEvents, extractDjFromDescription } from '$lib/api/tribe';
-import { trackFeatureEvent } from '$lib/matomo';
-import type { TribeEvent, EventType, MusicType, DateFilter, Filters } from '$lib/types';
-import { get, writable } from 'svelte/store';
-
-
+import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
+import { fetchAllEvents, extractDjFromDescription } from "$lib/api/tribe";
+import { trackFeatureEvent } from "$lib/matomo";
+import type {
+	TribeEvent,
+	EventType,
+	MusicType,
+	DateFilter,
+	Filters,
+} from "$lib/types";
+import { get, writable } from "svelte/store";
 
 interface EventStoreState {
 	events: TribeEvent[];
@@ -20,12 +24,12 @@ const INITIAL_STATE: EventStoreState = {
 	allEvents: [],
 	loading: false,
 	error: null,
-	searchQuery: '',
+	searchQuery: "",
 	filters: {
 		types: [],
 		music: null,
-		date: 'week'
-	}
+		date: "week",
+	},
 };
 
 function createEventStore() {
@@ -38,21 +42,28 @@ function createEventStore() {
 	function eventMatchesTypes(event: TribeEvent, filters: Filters): boolean {
 		if (filters.types.length === 0) return true;
 
-		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
-		return filters.types.some((type) => categorySlugs.includes(EVENT_TYPE_SLUGS[type]));
+		const categorySlugs =
+			event.categories?.map((category) => category.slug) ?? [];
+		return filters.types.some((type) =>
+			categorySlugs.includes(EVENT_TYPE_SLUGS[type]),
+		);
 	}
 
 	function eventMatchesMusic(event: TribeEvent, filters: Filters): boolean {
 		if (!filters.music) return true;
 
-		const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
+		const categorySlugs =
+			event.categories?.map((category) => category.slug) ?? [];
 		return categorySlugs.includes(MUSIC_SLUGS[filters.music]);
 	}
 
 	function withFilteredEvents(state: EventStoreState): EventStoreState {
 		const query = state.searchQuery.toLowerCase();
 		const events = state.allEvents.filter((event) => {
-			if (!eventMatchesTypes(event, state.filters) || !eventMatchesMusic(event, state.filters)) {
+			if (
+				!eventMatchesTypes(event, state.filters) ||
+				!eventMatchesMusic(event, state.filters)
+			) {
 				return false;
 			}
 
@@ -60,25 +71,36 @@ function createEventStore() {
 				return true;
 			}
 
-			const title = event.title?.toLowerCase() ?? '';
-			const venue = event.venue?.venue?.toLowerCase() ?? '';
-			const city = event.venue?.city?.toLowerCase() ?? '';
-			const description = event.description?.toLowerCase() ?? '';
-			const dj = extractDjFromDescription(event)?.toLowerCase() ?? '';
-			const organizer = event.organizer?.[0]?.organizer?.toLowerCase() ?? '';
-			return title.includes(query) || venue.includes(query) || city.includes(query) || description.includes(query) || dj.includes(query) || organizer.includes(query);
+			const title = event.title?.toLowerCase() ?? "";
+			const venue = event.venue?.venue?.toLowerCase() ?? "";
+			const city = event.venue?.city?.toLowerCase() ?? "";
+			const description = event.description?.toLowerCase() ?? "";
+			const dj = extractDjFromDescription(event)?.toLowerCase() ?? "";
+			const organizer = event.organizer?.[0]?.organizer?.toLowerCase() ?? "";
+			return (
+				title.includes(query) ||
+				venue.includes(query) ||
+				city.includes(query) ||
+				description.includes(query) ||
+				dj.includes(query) ||
+				organizer.includes(query)
+			);
 		});
 
 		return {
 			...state,
-			events
+			events,
 		};
 	}
 
 	async function loadEvents(forceRefresh = false) {
 		const currentDate = get(store).filters.date;
-		
-		if (!forceRefresh && lastFetchedDate === currentDate && get(store).allEvents.length > 0) {
+
+		if (
+			!forceRefresh &&
+			lastFetchedDate === currentDate &&
+			get(store).allEvents.length > 0
+		) {
 			update(withFilteredEvents);
 			return;
 		}
@@ -87,7 +109,7 @@ function createEventStore() {
 		update((state) => ({
 			...state,
 			loading: true,
-			error: null
+			error: null,
 		}));
 
 		try {
@@ -103,8 +125,8 @@ function createEventStore() {
 					...state,
 					allEvents: fetchedEvents,
 					loading: false,
-					error: null
-				})
+					error: null,
+				}),
 			);
 		} catch (e) {
 			if (requestId !== activeRequestId) {
@@ -114,9 +136,13 @@ function createEventStore() {
 			update((state) => ({
 				...state,
 				loading: false,
-				error: e instanceof Error ? e.message : 'Failed to load events'
+				error: e instanceof Error ? e.message : "Failed to load events",
 			}));
-			trackFeatureEvent('events', 'api_error', e instanceof Error ? 'fail' : 'fetch_error');
+			trackFeatureEvent(
+				"events",
+				"api_error",
+				e instanceof Error ? "fail" : "fetch_error",
+			);
 		}
 	}
 
@@ -124,8 +150,8 @@ function createEventStore() {
 		update((state) =>
 			withFilteredEvents({
 				...state,
-				filters: { ...state.filters, ...newFilters }
-			})
+				filters: { ...state.filters, ...newFilters },
+			}),
 		);
 	}
 
@@ -152,10 +178,10 @@ function createEventStore() {
 
 		update((state) => ({
 			...state,
-			filters: { ...state.filters, date }
+			filters: { ...state.filters, date },
 		}));
 		void loadEvents();
-		trackFeatureEvent('events', 'date_filter_changed', date);
+		trackFeatureEvent("events", "date_filter_changed", date);
 	}
 
 	function setSearchQuery(query: string) {
@@ -163,7 +189,7 @@ function createEventStore() {
 	}
 
 	function clearSearch() {
-		update((state) => withFilteredEvents({ ...state, searchQuery: '' }));
+		update((state) => withFilteredEvents({ ...state, searchQuery: "" }));
 	}
 
 	return {
@@ -175,7 +201,7 @@ function createEventStore() {
 		toggleMusic,
 		setDateFilter,
 		setSearchQuery,
-		clearSearch
+		clearSearch,
 	};
 }
 

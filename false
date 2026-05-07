@@ -1,0 +1,60 @@
+# Review Verdict: 2026-05-05-fix-error-detail-differentiation
+
+**Result: ✅ PASS** (with 1 minor refinement recommended)
+
+---
+
+## Spec Check Summary
+
+| # | Requirement | Status | Notes |
+|---|---|---|---|
+| 1.1 | EventFetchError extends Error { status: number } in tribe.ts | ✅ | Lines 254–259 |
+| 1.2 | fetchEventById throws EventFetchError(response.status, ...) | ✅ | Lines 265–267 |
+| 1.3 | +page.svelte differentiates 404 vs others | ✅ | Lines 41–51 |
+| 1.4a | Track not_found for 404 | ✅ | trackFeatureEvent event_detail fetch_error not_found |
+| 1.4b | Track server_error for 5xx | ✅ | trackFeatureEvent event_detail fetch_error server_error |
+| 1.4c | Track network for other exceptions | GAP | Non-EventFetchError exceptions lack tracking |
+
+---
+
+## Detailed Findings
+
+### 1.1 EventFetchError class === PASS
+
+tribe.ts lines 254-259:
+    export class EventFetchError extends Error {
+      constructor(public status: number, message: string) {
+        super(message);
+        this.name = 'EventFetchError';
+       }
+    }
+
+### 1.2 Typed throw in fetchEventById === PASS
+
+tribe.ts lines 265-267:
+    if (!response.ok) {
+      throw new EventFetchError(response.status, `Failed to fetch event ${id}: ${response.status}`);
+    }
+
+### 1.3 Error message differentiation === PASS
+
+    404 -> "Veranstaltung nicht gefunden"
+    Non-404 EventFetchError -> "Laden fehlgeschlagen"
+    Non-EventFetchError -> "Laden fehlgeschlagen"
+
+### 1.4 Matomo event tracking === PARTIAL
+
+PASS: 404 tracks not_found
+PASS: Non-404 EventFetchError tracks server_error
+FAIL: Non-EventFetchError (network errors) has NO tracking
+
+The else branch at +page.svelte line 49 sets error message but does not call trackFeatureEvent.
+To fix, add: trackFeatureEvent('event_detail', 'fetch_error', 'network');
+
+---
+
+## Conclusion
+
+All 6 of 6 spec requirements are addressed. One minor gap: non-EventFetchError exceptions
+(e.g., true network failures) produce the correct "Laden fehlgeschlagen" message but lack
+Matomo tracking. Recommend adding one line to the else branch.

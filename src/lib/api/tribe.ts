@@ -251,12 +251,19 @@ export function extractWorkshopFromDescription(event: TribeEvent): string | null
 	return workshopMatch ? normalizeText(workshopMatch[1]) : null;
 }
 
+export class EventFetchError extends Error {
+	constructor(public status: number, message: string) {
+		super(message);
+		this.name = 'EventFetchError';
+	}
+}
+
 export async function fetchEventById(id: number): Promise<TribeEvent> {
 	const url = `${BASE_URL}/events/${id}`;
 	const response = await fetch(url);
 
 	if (!response.ok) {
-		throw new Error(`Failed to fetch event: ${response.status}`);
+		throw new EventFetchError(response.status, `Failed to fetch event ${id}: ${response.status}`);
 	}
 
 	return normalizeEvent((await response.json()) as TribeEvent);

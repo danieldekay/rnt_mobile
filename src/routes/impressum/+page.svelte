@@ -1,9 +1,9 @@
 <script lang="ts">
-	import LegalDocument from '$lib/components/LegalDocument.svelte';
+	import LegalPage from '$lib/components/LegalPage.svelte';
 </script>
 
 <svelte:head>
 	<title>Impressum - RNT Kalender</title>
 </svelte:head>
 
-<LegalDocument pageKey="impressum" />
+<LegalPage pageKey="impressum" />

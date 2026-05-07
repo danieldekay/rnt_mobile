@@ -1,9 +1,9 @@
 <script lang="ts">
-	import LegalDocument from '$lib/components/LegalDocument.svelte';
+	import LegalPage from '$lib/components/LegalPage.svelte';
 </script>
 
 <svelte:head>
-	<title>Datenschutzerklaerung - RNT Kalender</title>
+	<title>Datenschutzerklärung - RNT Kalender</title>
 </svelte:head>
 
-<LegalDocument pageKey="datenschutz" />
+<LegalPage pageKey="datenschutz" />
