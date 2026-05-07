@@ -2,26 +2,50 @@ interface Env {
 	ASSETS: Fetcher;
 	SENDY_BASE_URL?: string;
 	SENDY_LIST_ID?: string;
+	SENDY_API_KEY?: string;
 }
+
+type Fetcher = {
+	fetch(request: Request): Promise<Response>;
+};
+
+type ExportedHandler<TEnv> = {
+	fetch(request: Request, env: TEnv): Promise<Response>;
+};
 
 type JsonBody = {
 	ok: boolean;
 	message: string;
+	[key: string]: unknown;
 };
 
-const NEWSLETTER_PATH = '/api/newsletter/subscribe';
+const NEWSLETTER_SUBSCRIBE_PATH = '/api/newsletter/subscribe';
+const NEWSLETTER_UNSUBSCRIBE_PATH = '/api/newsletter/unsubscribe';
+const NEWSLETTER_UNSUBSCRIBE_ALIAS_PATH = '/api/newsletter/unsub';
+const NEWSLETTER_STATUS_PATH = '/api/newsletter/status';
 const REQUEST_TIMEOUT_MS = 8000;
 const GENERIC_ERROR_MESSAGE =
 	'Die Anmeldung war gerade nicht moeglich. Bitte versuche es spaeter erneut.';
 const SUCCESS_MESSAGE =
-	'Danke. Bitte pruefe dein Postfach, falls deine Anmeldung bestaetigt werden muss.';
+	'Vielen Dank! Du erhaeltst gleich eine Bestaetigungs-E-Mail – bitte klicke dort auf den Bestaetigungs-Link, um deine Anmeldung abzuschliessen.';
 
 export default {
-	async fetch(request, env): Promise<Response> {
+	async fetch(request: Request, env: Env): Promise<Response> {
 		const url = new URL(request.url);
 
-		if (url.pathname === NEWSLETTER_PATH) {
+		if (url.pathname === NEWSLETTER_SUBSCRIBE_PATH) {
 			return handleNewsletterSubscribe(request, env);
+		}
+
+		if (
+			url.pathname === NEWSLETTER_UNSUBSCRIBE_PATH ||
+			url.pathname === NEWSLETTER_UNSUBSCRIBE_ALIAS_PATH
+		) {
+			return handleNewsletterUnsubscribe(request, env);
+		}
+
+		if (url.pathname === NEWSLETTER_STATUS_PATH) {
+			return handleNewsletterStatus(request, env);
 		}
 
 		return env.ASSETS.fetch(request);
@@ -53,12 +77,17 @@ async function handleNewsletterSubscribe(request: Request, env: Env): Promise<Re
 		return json({ ok: true, message: SUCCESS_MESSAGE }, 200);
 	}
 
-	const sendyBody = new URLSearchParams({
+	const sendyParams: Record<string, string> = {
 		email: payload.email,
 		list: config.listId,
 		gdpr: 'true',
-		hp: ''
-	});
+		hp: '',
+		boolean: 'true'
+	};
+	if (config.apiKey) {
+		sendyParams['api_key'] = config.apiKey;
+	}
+	const sendyBody = new URLSearchParams(sendyParams);
 
 	try {
 		const response = await fetchWithTimeout(new URL('/subscribe', config.baseUrl).toString(), {
@@ -82,11 +111,118 @@ async function handleNewsletterSubscribe(request: Request, env: Env): Promise<Re
 	}
 }
 
+async function handleNewsletterUnsubscribe(request: Request, env: Env): Promise<Response> {
+	if (request.method !== 'POST') {
+		return json({ ok: false, message: 'Methode nicht erlaubt.' }, 405);
+	}
+
+	const requestUrl = new URL(request.url);
+	const origin = request.headers.get('origin');
+	if (origin && origin !== requestUrl.origin) {
+		return json({ ok: false, message: 'Ungueltige Herkunft.' }, 403);
+	}
+
+	const config = getSendyConfig(env);
+	if (!config.ok) {
+		return json({ ok: false, message: config.message }, 500);
+	}
+
+	const payload = await parseRequestPayload(request);
+	if (!payload.ok) {
+		return json({ ok: false, message: payload.message }, 400);
+	}
+
+	try {
+		const response = await fetchWithTimeout(new URL('/unsubscribe', config.baseUrl).toString(), {
+			method: 'POST',
+			headers: {
+				accept: 'text/plain',
+				'content-type': 'application/x-www-form-urlencoded'
+			},
+		body: (() => {
+			const p: Record<string, string> = { email: payload.email, list: config.listId, boolean: 'true' };
+			if (config.apiKey) p['api_key'] = config.apiKey;
+			return new URLSearchParams(p).toString();
+		})()
+		});
+
+		const sendyText = (await response.text()).trim();
+		const normalized = normalizeSendyUnsubscribeResponse(response.ok, sendyText);
+		return json(normalized.body, normalized.status);
+	} catch (error) {
+		const message = isAbortError(error)
+			? 'Die Abmeldung hat zu lange gedauert. Bitte versuche es erneut.'
+			: 'Die Abmeldung war gerade nicht moeglich. Bitte versuche es spaeter erneut.';
+		const status = isAbortError(error) ? 504 : 502;
+		return json({ ok: false, message }, status);
+	}
+}
+
+async function handleNewsletterStatus(request: Request, env: Env): Promise<Response> {
+	if (request.method !== 'POST') {
+		return json({ ok: false, message: 'Methode nicht erlaubt.' }, 405);
+	}
+
+	const requestUrl = new URL(request.url);
+	const origin = request.headers.get('origin');
+	if (origin && origin !== requestUrl.origin) {
+		return json({ ok: false, message: 'Ungueltige Herkunft.' }, 403);
+	}
+
+	const config = getSendyConfigInternal(env, true);
+	if (!config.ok) {
+		return json({ ok: false, message: config.message, available: false }, 503);
+	}
+
+	const payload = await parseRequestPayload(request);
+	if (!payload.ok) {
+		return json({ ok: false, message: payload.message, available: true }, 400);
+	}
+
+	try {
+		const response = await fetchWithTimeout(
+			new URL('/api/subscribers/subscription-status.php', config.baseUrl).toString(),
+			{
+				method: 'POST',
+				headers: {
+					accept: 'text/plain',
+					'content-type': 'application/x-www-form-urlencoded'
+				},
+				body: new URLSearchParams({
+					api_key: config.apiKey,
+					email: payload.email,
+					list_id: config.listId
+				}).toString()
+			}
+		);
+
+		const sendyText = (await response.text()).trim();
+		const normalized = normalizeSendyStatusResponse(response.ok, sendyText);
+		return json(normalized.body, normalized.status);
+	} catch (error) {
+		const message = isAbortError(error)
+			? 'Die Status-Pruefung hat zu lange gedauert. Bitte versuche es erneut.'
+			: 'Der Newsletter-Status ist derzeit nicht verfuegbar.';
+		const status = isAbortError(error) ? 504 : 502;
+		return json({ ok: false, message, available: true }, status);
+	}
+}
+
 function getSendyConfig(env: Env):
-	| { ok: true; baseUrl: string; listId: string }
+	| { ok: true; baseUrl: string; listId: string; apiKey: string }
+	| { ok: false; message: string } {
+	return getSendyConfigInternal(env, false);
+}
+
+function getSendyConfigInternal(
+	env: Env,
+	requireApiKey: boolean
+):
+	| { ok: true; baseUrl: string; listId: string; apiKey: string }
 	| { ok: false; message: string } {
 	const baseUrl = env.SENDY_BASE_URL?.trim().replace(/\/$/, '');
 	const listId = env.SENDY_LIST_ID?.trim();
+	const apiKey = env.SENDY_API_KEY?.trim() ?? '';
 
 	if (!baseUrl || !listId) {
 		return {
@@ -95,7 +231,14 @@ function getSendyConfig(env: Env):
 		};
 	}
 
-	return { ok: true, baseUrl, listId };
+	if (requireApiKey && !apiKey) {
+		return {
+			ok: false,
+			message: 'Die Status-Pruefung ist derzeit nicht verfuegbar.'
+		};
+	}
+
+	return { ok: true, baseUrl, listId, apiKey };
 }
 
 async function parseRequestPayload(request: Request): Promise<
@@ -164,7 +307,7 @@ function normalizeSendyResponse(responseOk: boolean, sendyText: string): {
 	if (lower.includes('already subscribed')) {
 		return {
 			status: 200,
-			body: { ok: true, message: 'Diese Adresse ist bereits fuer den Newsletter eingetragen.' }
+			body: { ok: true, message: 'Diese Adresse ist bereits fuer den Newsletter eingetragen.', already_subscribed: true }
 		};
 	}
 
@@ -182,10 +325,148 @@ function normalizeSendyResponse(responseOk: boolean, sendyText: string): {
 		};
 	}
 
-	return {
-		status: responseOk ? 502 : 500,
-		body: { ok: false, message: GENERIC_ERROR_MESSAGE }
-	};
+	if (lower.includes('api key not passed') || lower.includes('invalid api key')) {
+		return {
+			status: 500,
+			body: { ok: false, message: 'Newsletter-Konfiguration fehlt auf dem Server.' }
+		};
+	}
+
+	{
+		const userMessage = normalizedText && !/^[01]$/.test(normalizedText) ? normalizedText : GENERIC_ERROR_MESSAGE;
+		return {
+			status: responseOk ? 502 : 500,
+			body: { ok: false, message: userMessage }
+		};
+	}
+}
+
+function normalizeSendyUnsubscribeResponse(responseOk: boolean, sendyText: string): {
+	status: number;
+	body: JsonBody;
+} {
+	const normalizedText = sendyText.trim();
+	const lower = normalizedText.toLowerCase();
+
+	if (responseOk && (normalizedText === 'true' || normalizedText === '1')) {
+		return {
+			status: 200,
+			body: { ok: true, message: 'Du wurdest erfolgreich vom Newsletter abgemeldet.' }
+		};
+	}
+
+	if (lower.includes('invalid email')) {
+		return {
+			status: 400,
+			body: { ok: false, message: 'Bitte pruefe die E-Mail-Adresse.' }
+		};
+	}
+
+	if (lower.includes('email does not exist')) {
+		return {
+			status: 404,
+			body: { ok: false, message: 'Diese Adresse ist in der Liste derzeit nicht eingetragen.' }
+		};
+	}
+
+	if (lower.includes('some fields are missing')) {
+		return {
+			status: 400,
+			body: { ok: false, message: 'Bitte gib eine E-Mail-Adresse ein.' }
+		};
+	}
+
+	{
+		const UNSUB_GENERIC = 'Die Abmeldung war gerade nicht moeglich. Bitte versuche es spaeter erneut.';
+		const userMessage = normalizedText && !/^(true|false|1|0)$/i.test(normalizedText) ? normalizedText : UNSUB_GENERIC;
+		return {
+			status: responseOk ? 502 : 500,
+			body: { ok: false, message: userMessage }
+		};
+	}
+}
+
+function normalizeSendyStatusResponse(responseOk: boolean, sendyText: string): {
+	status: number;
+	body: JsonBody & { status?: 'subscribed' | 'unsubscribed' | 'unconfirmed' | 'bounced' | 'soft-bounced' | 'complained' | 'unknown'; available: boolean };
+} {
+	const normalizedText = sendyText.trim();
+	const lower = normalizedText.toLowerCase();
+
+	if (responseOk) {
+		if (lower === 'subscribed') {
+			return {
+				status: 200,
+				body: { ok: true, message: 'Diese Adresse ist aktiv eingetragen.', status: 'subscribed', available: true }
+			};
+		}
+
+		if (lower === 'unsubscribed') {
+			return {
+				status: 200,
+				body: { ok: true, message: 'Diese Adresse ist abgemeldet.', status: 'unsubscribed', available: true }
+			};
+		}
+
+		if (lower === 'unconfirmed') {
+			return {
+				status: 200,
+				body: { ok: true, message: 'Diese Adresse wartet noch auf Bestaetigung.', status: 'unconfirmed', available: true }
+			};
+		}
+
+		if (lower === 'bounced') {
+			return {
+				status: 200,
+				body: { ok: true, message: 'Diese Adresse ist als Bounce markiert.', status: 'bounced', available: true }
+			};
+		}
+
+		if (lower === 'soft bounced') {
+			return {
+				status: 200,
+				body: { ok: true, message: 'Diese Adresse ist als Soft Bounce markiert.', status: 'soft-bounced', available: true }
+			};
+		}
+
+		if (lower === 'complained') {
+			return {
+				status: 200,
+				body: { ok: true, message: 'Diese Adresse hat sich ueber eine Nachricht beschwert.', status: 'complained', available: true }
+			};
+		}
+	}
+
+	if (lower.includes('email does not exist')) {
+		return {
+			status: 404,
+			body: { ok: false, message: 'Diese Adresse wurde in der Liste nicht gefunden.', status: 'unknown', available: true }
+		};
+	}
+
+	if (lower.includes('invalid api key') || lower.includes('api key not passed')) {
+		return {
+			status: 503,
+			body: { ok: false, message: 'Die Status-Pruefung ist derzeit nicht verfuegbar.', status: 'unknown', available: false }
+		};
+	}
+
+	if (lower.includes('email not passed') || lower.includes('list id not passed') || lower.includes('no data passed')) {
+		return {
+			status: 400,
+			body: { ok: false, message: 'Bitte gib eine E-Mail-Adresse ein.', status: 'unknown', available: true }
+		};
+	}
+
+	{
+		const STATUS_KNOWN_CODES = /^(subscribed|unsubscribed|unconfirmed|bounced|soft bounced|complained|true|false|1|0)$/i;
+		const STATUS_GENERIC = 'Der Newsletter-Status ist derzeit nicht verfuegbar.';
+		const userMessage = normalizedText && !STATUS_KNOWN_CODES.test(normalizedText) ? normalizedText : STATUS_GENERIC;
+		return {
+			status: responseOk ? 502 : 500,
+			body: { ok: false, message: userMessage, status: 'unknown', available: true }
+		};
+	}
 }
 
 function isAbortError(error: unknown): boolean {
