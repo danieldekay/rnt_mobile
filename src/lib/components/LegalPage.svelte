@@ -33,8 +33,10 @@
 		headings.forEach((heading) => {
 			const text = heading.textContent?.trim() || `heading-${sections.length + 1}`;
 			const clean = text
-					.replace(/[^a-zA-Z0-9äöüÄÖÜß]/g, '')
-					.replace(/\s+/g, '-');
+				.toLowerCase()
+				.replace(/[^a-z0-9äöüß\s-]/g, '')
+				.trim()
+				.replace(/\s+/g, '-');
 			const id = `section-${clean || `heading-${sections.length + 1}`}`;
 			heading.setAttribute('id', id);
 			sections.push({ id, title: text });
@@ -108,12 +110,17 @@
 		color: var(--color-text-default, #1a1a2e);
 		text-decoration: underline;
 	}
+	.legal-print-button {
+		display: inline-flex;
+	}
 
 	/* Print media queries */
 	@media print {
-                .legal-header-inline {
-                        display: none !important;
-                }
+		.legal-header-inline,
+		:global(.legal-nav),
+		.legal-print-button {
+			display: none !important;
+		}
 			.legal-page {
 			background: none !important;
 			color: #000 !important;
@@ -132,6 +139,9 @@
 			.legal-prose :global(img) {
 			page-break-inside: avoid;
 			}
+			.legal-prose {
+				max-width: none !important;
+			}
 		}
 </style>
 
@@ -140,7 +150,7 @@
 			<main class="mx-auto flex-1 w-full max-w-xl px-4 py-5 md:px-5">
 				<div class="card flex flex-col items-center justify-center py-12 text-center" role="status" aria-live="polite">
 					<div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-action-secondary border-t-action-primary"></div>
-					<p class="text-[1rem] font-medium text-text-default">Lade Rechtsinformationen&roelig;</p>
+					<p class="text-[1rem] font-medium text-text-default">Lade Rechtsinformationen...</p>
 				</div>
 			</main>
 	{:else if error}
@@ -154,7 +164,7 @@
 						Zurück
 						</a>
 					</div>
-					<section class="card space-y-4 p-5" role="alert">
+					<section class="card space-y-4 p-5" role="alert" aria-live="polite">
 						<p class="font-display text-[1.5rem] font-semibold text-text-default">Rechtsseite nicht verfügbar</p>
 						<p class="meta-text">{error}</p>
 						<div class="flex flex-wrap gap-3">
@@ -172,9 +182,11 @@
 			<main id="main-content" class="relative mx-auto flex-1 w-full max-w-xl px-4 py-5 md:px-5" tabindex="-1">
 				<div class="flex flex-col lg:flex-row gap-6">
 					<!-- Desktop: sticky TOC sidebar -->
-					<div class="hidden lg:block min-w-[200px]">
-						<LegalNav sections={tocSections} />
-					</div>
+					{#if tocSections.length > 1}
+						<div class="hidden lg:block min-w-[200px]">
+							<LegalNav sections={tocSections} />
+						</div>
+					{/if}
 					<div class="flex-1">
 						<!-- Mobile: inline header with TOC above content -->
 						{#if tocSections.length > 1}
@@ -191,7 +203,7 @@
 									</h1>
 									<button
 									type="button"
-									class="flex min-h-12 shrink-0 items-center gap-2 rounded-control border border-border-default bg-surface-card px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface-card hover:text-text-default"
+									class="legal-print-button flex min-h-12 shrink-0 items-center gap-2 rounded-control border border-border-default bg-surface-card px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface-card hover:text-text-default"
 									aria-label="Seite drucken oder als PDF speichern"
 									onclick={handlePrint}
 									>

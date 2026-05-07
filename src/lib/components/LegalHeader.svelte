@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-
 	export let title: string = '';
 	export let sections: Array<{ id: string; title: string }> = [];
 
@@ -10,9 +8,9 @@
 <header class="space-y-3" aria-labelledby="legal-title">
 	<div class="flex items-start justify-between gap-4">
 		<div class="space-y-1">
-			<h1 id="legal-title" class="font-display text-[2rem] font-semibold text-text-default">
+			<p class="font-display text-[1.5rem] font-semibold text-text-default">
 				{title}
-			</h1>
+			</p>
 			<p class="meta-text max-w-[42ch]">
 				In-App-Spiegel der rechtlich massgeblichen Originalseite von Rhein-Neckar-Tango.
 			</p>
@@ -39,6 +37,7 @@
 						<a
 							href="#{section.id}"
 							class="block py-0.5 text-text-muted transition-colors hover:text-text-default"
+							aria-label="Zu {section.title} springen"
 						>
 							{section.title}
 						</a>

@@ -7,6 +7,7 @@
 	import FilterChip from '$lib/components/FilterChip.svelte';
 	import MusicFilterChip from '$lib/components/MusicFilterChip.svelte';
 	import type { EventType, MusicType, TribeEvent } from '$lib/types';
+	import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from '$lib/constants';
 	import { trackFeatureEvent } from '$lib/matomo';
 
 	const eventTypes: EventType[] = ['milonga', 'practica', 'workshop', 'kurs'];
@@ -15,6 +16,28 @@
 	let selectedDate = $state<Date | null>(null);
 	let currentMonth = $state(new Date());
 	const showInlineLoading = $derived($eventStore.loading);
+
+	const typeCounts = $derived.by(() => {
+		const counts: Record<EventType, number> = { milonga: 0, practica: 0, workshop: 0, kurs: 0 };
+		for (const event of $eventStore.allEvents) {
+			const slugs = event.categories?.map((c) => c.slug) ?? [];
+			for (const type of eventTypes) {
+				if (slugs.includes(EVENT_TYPE_SLUGS[type])) counts[type]++;
+			}
+		}
+		return counts;
+	});
+
+	const musicCounts = $derived.by(() => {
+		const counts: Record<MusicType, number> = { traditional: 0, mixed: 0, neo: 0 };
+		for (const event of $eventStore.allEvents) {
+			const slugs = event.categories?.map((c) => c.slug) ?? [];
+			for (const music of musicTypes) {
+				if (slugs.includes(MUSIC_SLUGS[music])) counts[music]++;
+			}
+		}
+		return counts;
+	});
 
 	onMount(() => {
 		eventStore.setDateFilter('all');
@@ -68,6 +91,7 @@
 					{music}
 					active={$eventStore.filters.music === music}
 					onclick={() => eventStore.toggleMusic(music)}
+					count={musicCounts[music]}
 				/>
 			{/each}
 		</div>
@@ -77,6 +101,7 @@
 					{type}
 					active={$eventStore.filters.types.includes(type)}
 					onclick={() => eventStore.toggleType(type)}
+					count={typeCounts[type]}
 				/>
 			{/each}
 		</div>

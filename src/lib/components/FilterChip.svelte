@@ -6,9 +6,10 @@
 		type: EventType;
 		active: boolean;
 		onclick: () => void;
+		count?: number;
 	}
 
-	let { type, active, onclick }: Props = $props();
+	let { type, active, onclick, count }: Props = $props();
 
 	const labels: Record<EventType, string> = {
 		milonga: 'Milongas',
@@ -34,6 +35,9 @@
 		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icons[type]} />
 	</svg>
 	<span>{labels[type]}</span>
+	{#if !active && count !== undefined}
+		<span class="rounded-full bg-current/15 px-1.5 py-0.5 text-[0.6875rem] font-semibold leading-none">{count}</span>
+	{/if}
 	{#if active}
 		<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />

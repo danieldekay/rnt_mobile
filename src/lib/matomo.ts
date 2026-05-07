@@ -28,9 +28,20 @@ declare global {
 }
 
 const PENDING_EVENTS_KEY = 'matomo-pending-events';
-const MAX_PENDING_EVENTS = 100;
+const MAX_PENDING_EVENTS = 50;
+const ERROR_SESSION_LIMIT = 10;
 
 type DisplayMode = 'standalone' | 'minimal-ui' | 'fullscreen' | 'browser';
+
+interface LayoutShiftEntry extends PerformanceEntry {
+	hadRecentInput: boolean;
+	value: number;
+}
+
+interface FirstInputEntry extends PerformanceEntry {
+	processingStart: number;
+	startTime: number;
+}
 
 let initialized = false;
 let scriptInjected = false;
@@ -40,6 +51,9 @@ let offlineMode = false;
 let onlineListener: (() => void) | null = null;
 let displayModeListeners: Array<() => void> = [];
 let currentDisplayMode: DisplayMode = 'browser';
+let errorListener: ((event: ErrorEvent) => void) | null = null;
+let rejectionListener: ((event: PromiseRejectionEvent) => void) | null = null;
+let trackedErrorsThisSession = 0;
 
 function normalizeBaseUrl(value: string | undefined): string | null {
 	if (!value) return null;
@@ -155,7 +169,7 @@ function clearPendingEvents() {
 
 function getFeatureContext(pathname: string): string {
 	if (pathname === '/') return 'home';
-	if (pathname.startsWith('/calendar')) return 'calendar';
+	if (pathname.startsWith('/kalender')) return 'calendar';
 	if (pathname.startsWith('/event/')) return 'event-detail';
 	if (pathname.startsWith('/impressum')) return 'legal-impressum';
 	if (pathname.startsWith('/datenschutz')) return 'legal-datenschutz';
@@ -264,12 +278,17 @@ export function syncMatomoConsent(enabled: boolean, url?: string, title?: string
 		lastTrackedUrl = '';
 		teardownOnlineListener();
 		unwatchDisplayMode();
+		teardownErrorTracking();
+		teardownPerformanceTracking();
 		return false;
 	}
 
 	if (!ensureMatomo()) {
 		return false;
 	}
+
+	setupErrorTracking();
+	setupPerformanceTracking();
 
 	if (url) {
 		trackPageView(url, title);
@@ -352,42 +371,52 @@ export function trackError(
 ): void {
 	const queue = getQueue();
 	if (!ensureMatomo() || !queue) return;
+	if (trackedErrorsThisSession >= ERROR_SESSION_LIMIT) return;
 
 	const detailStr = detail
-			? Object.entries(detail).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('|')
-			: '';
+		? Object.entries(detail)
+				.map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+				.join('|')
+		: '';
+	const url = browser ? `${window.location.pathname}${window.location.search}` : '';
+	const label = [
+		`message=${encodeURIComponent(message.slice(0, 160))}`,
+		`mode=${currentDisplayMode}`,
+		`url=${encodeURIComponent(url)}`,
+		detailStr
+	]
+		.filter(Boolean)
+		.join('|');
+	const command: MatomoCommand = ['trackEvent', 'errors', category, label];
 
-	queue.push(['trackEvent', 'app', 'error', `${category}${detailStr ? `|${detailStr}` : ''}${'@' + __APP_VERSION__}`]);
+	queue.push(command);
 	queue.push(['setCustomDimension', 2, `${category}:${message.slice(0, 100)}`]);
+	trackedErrorsThisSession += 1;
 
-	if (offlineMode) addPendingEvent(['trackEvent', 'app', 'error', `${category}${detailStr ? `|${detailStr}` : ''}${'@' + __APP_VERSION__}`]);
+	if (offlineMode) addPendingEvent(command);
 }
 
 export function setupErrorTracking(): void {
-	if (!browser) return;
-	if ((typeof (window as any).__rntErrorTrackingSetup === 'undefined')) {
-		(window as any).__rntErrorTrackingSetup = true;
-	} else {
-		return;
-	}
+	if (!browser || errorListener || rejectionListener) return;
 
-	// Uncaught JS errors
-	window.addEventListener('error', (event: ErrorEvent) => {
+	errorListener = (event: ErrorEvent) => {
 		const message = event.message ?? 'unknown error';
 		trackError('js-error', message, {
 			filename: event.filename ?? '',
 			lineno: String(event.lineno ?? 0),
 			colno: String(event.colno ?? 0)
 		});
-	});
+	};
 
-	// Unhandled promise rejections
-	window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+	rejectionListener = (event: PromiseRejectionEvent) => {
 		const message = (event.reason?.message ?? String(event.reason))?.slice(0, 500) ?? 'unhandled rejection';
 		trackError('promise-rejection', message, {
 			type: String((event.reason as any)?.constructor?.name ?? 'unknown')
 		});
-	});
+	};
+
+	window.addEventListener('error', errorListener);
+	window.addEventListener('unhandledrejection', rejectionListener);
 }
 
 // ─── Performance Tracking ─────────────────────────────────────────
@@ -395,14 +424,18 @@ export function setupErrorTracking(): void {
 interface PerfMetrics {
 	lcp: number | null;
 	cls: number | null;
+	fid: number | null;
 }
 
-let perfMetrics: PerfMetrics = { lcp: null, cls: null };
+let perfMetrics: PerfMetrics = { lcp: null, cls: null, fid: null };
 let _lcpObs: PerformanceObserver | null = null;
 let _clsObs: PerformanceObserver | null = null;
+let _fidObs: PerformanceObserver | null = null;
 
-export function trackPerformance(): void {
+
+export function setupPerformanceTracking(): void {
 	if (!browser || !analyticsEnabled) return;
+	if (_lcpObs || _clsObs || _fidObs) return;
 
 	if ('PerformanceObserver' in window) {
 		try {
@@ -410,9 +443,26 @@ export function trackPerformance(): void {
 				const entries = list.getEntries();
 				if (entries.length > 0) {
 					perfMetrics.lcp = entries[entries.length - 1].startTime;
+					sendPerformanceMetrics();
 				}
 			});
-			_lcpObs.observe({ type: 'largest-contentful-paint' });
+			_lcpObs.observe({ type: 'largest-contentful-paint', buffered: true });
+		} catch {
+			// silently fail
+		}
+	}
+
+	if ('PerformanceObserver' in window) {
+		try {
+			_fidObs = new PerformanceObserver((list) => {
+				const entries = list.getEntries() as FirstInputEntry[];
+				if (entries.length > 0) {
+					const entry = entries[0];
+					perfMetrics.fid = entry.processingStart - entry.startTime;
+					sendPerformanceMetrics();
+				}
+			});
+			_fidObs.observe({ type: 'first-input', buffered: true });
 		} catch {
 			// silently fail
 		}
@@ -422,18 +472,21 @@ export function trackPerformance(): void {
 		try {
 			_clsObs = new PerformanceObserver((list) => {
 				let clsValue = 0;
-				for (const entry of list.getEntries()) {
+				for (const entry of list.getEntries() as LayoutShiftEntry[]) {
 					if (!entry.hadRecentInput) clsValue += entry.value;
 				}
 				perfMetrics.cls = clsValue;
+				sendPerformanceMetrics();
 			});
-			_clsObs.observe({ type: 'layout-shift' });
+			_clsObs.observe({ type: 'layout-shift', buffered: true });
 		} catch {
 			// silently fail
 		}
 	}
+}
 
-	sendPerformanceMetrics();
+export function trackPerformance(): void {
+	setupPerformanceTracking();
 }
 
 export function sendPerformanceMetrics(): void {
@@ -441,20 +494,42 @@ export function sendPerformanceMetrics(): void {
 	if (!ensureMatomo() || !queue) return;
 
 	if (perfMetrics.lcp !== null) {
-		queue.push(['trackEvent', 'app', 'performance_lcp', `${Math.round(perfMetrics.lcp)}ms@${__APP_VERSION__}:${currentDisplayMode}`]);
+		queue.push(['trackEvent', 'performance', 'lcp', `${Math.round(perfMetrics.lcp)}ms@${__APP_VERSION__}:${currentDisplayMode}`]);
+	}
+
+	if (perfMetrics.fid !== null) {
+		queue.push(['trackEvent', 'performance', 'fid', `${Math.round(perfMetrics.fid)}ms@${__APP_VERSION__}:${currentDisplayMode}`]);
 	}
 
 	if (perfMetrics.cls !== null) {
-		queue.push(['trackEvent', 'app', 'performance_cls', `${perfMetrics.cls.toFixed(3)}@${__APP_VERSION__}:${currentDisplayMode}`]);
+		queue.push(['trackEvent', 'performance', 'cls', `${perfMetrics.cls.toFixed(3)}@${__APP_VERSION__}:${currentDisplayMode}`]);
+	}
+
+	if (perfMetrics.lcp !== null && perfMetrics.fid !== null && perfMetrics.cls !== null) {
+		queue.push([
+			'trackEvent',
+			'performance',
+			'all',
+			`lcp=${Math.round(perfMetrics.lcp)}|fid=${Math.round(perfMetrics.fid)}|cls=${perfMetrics.cls.toFixed(3)}@${__APP_VERSION__}:${currentDisplayMode}`
+		]);
 	}
 }
 
 export function teardownErrorTracking(): void {
-	if (_lcpObs) { _lcpObs.disconnect(); _lcpObs = null; }
-	if (_clsObs) { _clsObs.disconnect(); _clsObs = null; }
-	perfMetrics = { lcp: null, cls: null };
+	if (!browser) return;
+	if (errorListener) {
+		window.removeEventListener('error', errorListener);
+		errorListener = null;
+	}
+	if (rejectionListener) {
+		window.removeEventListener('unhandledrejection', rejectionListener);
+		rejectionListener = null;
+	}
 }
 
-function teardownPerformanceTracking(): void {
-	teardownErrorTracking();
+export function teardownPerformanceTracking(): void {
+	if (_lcpObs) { _lcpObs.disconnect(); _lcpObs = null; }
+	if (_clsObs) { _clsObs.disconnect(); _clsObs = null; }
+	if (_fidObs) { _fidObs.disconnect(); _fidObs = null; }
+	perfMetrics = { lcp: null, cls: null, fid: null };
 }

@@ -2,7 +2,7 @@ import {
 	EVENT_TYPE_SLUGS,
 	MUSIC_SLUGS
 } from '$lib/constants';
-import type { TribeEvent, EventsResponse, EventType, MusicType } from '$lib/types';
+import type { TribeEvent, EventsResponse, EventType, MusicType, EventImage } from '$lib/types';
 
 const BASE_URL = 'https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1';
 
@@ -85,6 +85,27 @@ function replaceObfuscatedEmailMarkup(value: string, websiteUrl: string): string
 	);
 }
 
+function normalizeEventImage(image: EventImage): string | false {
+	if (!image) return false;
+	if (typeof image === 'string') return normalizeText(image) || false;
+
+	return (
+		normalizeText(image.sizes?.medium_large?.url) ||
+		normalizeText(image.sizes?.medium?.url) ||
+		normalizeText(image.url) ||
+		normalizeText(image.sizes?.thumbnail?.url) ||
+		false
+	);
+}
+
+function normalizeEuroAmount(value: string): string {
+	if (/^\d+[.]\d{1,2}$/.test(value)) {
+		return value.replace('.', ',');
+	}
+
+	return value;
+}
+
 function normalizeEvent(event: TribeEvent): TribeEvent {
 	const normalizedDescription = normalizeHtml(event.description);
 	const description = replaceObfuscatedEmailMarkup(normalizedDescription, event.url);
@@ -93,6 +114,7 @@ function normalizeEvent(event: TribeEvent): TribeEvent {
 		...event,
 		title: normalizeText(event.title),
 		description,
+		image: normalizeEventImage(event.image),
 		cost: normalizeText(event.cost),
 		venue: event.venue
 			? {
@@ -122,8 +144,20 @@ export function formatEventCost(cost: string | null | undefined): string {
 		return 'Frei';
 	}
 
+	const hasEuroMarker = /(?:€|\beur\b|\beuro\b)/i.test(normalizedCost);
+	if (hasEuroMarker) {
+		const strippedAmount = normalizedCost
+			.replace(/(?:€|\beur\b|\beuro\b)/gi, ' ')
+			.replace(/\s{2,}/g, ' ')
+			.trim();
+
+		if (strippedAmount) {
+			return `${normalizeEuroAmount(strippedAmount)} €`;
+		}
+	}
+
 	if (/^\d+(?:[.,]\d{1,2})?$/.test(normalizedCost)) {
-		return `${normalizedCost} €`;
+		return `${normalizeEuroAmount(normalizedCost)} €`;
 	}
 
 	return normalizedCost;
@@ -151,9 +185,13 @@ function getDateRange(filter: string): { start: Date; end: Date } {
 		case 'week':
 			end.setDate(end.getDate() + 7);
 			break;
-		case 'month':
-			end.setMonth(end.getMonth() + 1);
+		case 'month': {
+			const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+			end.setFullYear(lastDay.getFullYear());
+			end.setMonth(lastDay.getMonth());
+			end.setDate(lastDay.getDate());
 			break;
+		}
 		case 'all':
 			end.setFullYear(end.getFullYear() + 3);
 			break;
@@ -210,8 +248,7 @@ export async function fetchAllEvents(
 	const controller = new AbortController();
 	const { signal } = controller;
 
-	// Cap at 10 pages (500 events at 50 per page)
-	const MAX_PAGES = 10;
+	const MAX_PAGES = 60;
 	const allEvents: TribeEvent[] = [];
 	let page = 1;
 	let hasMore = true;
@@ -223,9 +260,8 @@ export async function fetchAllEvents(
 		try {
 			const data = await fetchEvents(types, music, dateFilter, page, 50, signal);
 			allEvents.push(...data.events);
-			hasMore = page < data.total_pages;
+			hasMore = data.events.length > 0 && page < data.total_pages && page < MAX_PAGES;
 			page++;
-			if (page > MAX_PAGES) break;
 		} catch (error) {
 			if (error instanceof DOMException && error.name === 'AbortError') {
 				console.warn('fetchAllEvents aborted after timeout or cancellation');

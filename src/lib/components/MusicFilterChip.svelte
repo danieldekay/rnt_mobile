@@ -6,9 +6,10 @@
 		music: MusicType;
 		active: boolean;
 		onclick: () => void;
+		count?: number;
 	}
 
-	let { music, active, onclick }: Props = $props();
+	let { music, active, onclick, count }: Props = $props();
 </script>
 
 <button
@@ -20,6 +21,9 @@
 		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
 	</svg>
 	<span>{getMusicLabel(music)}</span>
+	{#if !active && count !== undefined}
+		<span class="rounded-full bg-current/15 px-1.5 py-0.5 text-[0.6875rem] font-semibold leading-none">{count}</span>
+	{/if}
 	{#if active}
 		<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />

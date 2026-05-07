@@ -181,7 +181,6 @@ function createEventStore() {
 			filters: { ...state.filters, date },
 		}));
 		void loadEvents();
-		trackFeatureEvent("events", "date_filter_changed", date);
 	}
 
 	function setSearchQuery(query: string) {

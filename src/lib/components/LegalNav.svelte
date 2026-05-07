@@ -21,7 +21,8 @@
 </nav>
 
 <style>
-	.legal-nav a:target {
+	:global(.legal-prose h2[id]),
+	:global(.legal-prose h3[id]) {
 		scroll-margin-top: 70px;
 	}
 </style>

@@ -37,6 +37,7 @@
 
 		try {
 			event = await fetchEventById(id);
+			trackFeatureEvent('events', 'detail_view', String(id));
 		} catch (e) {
 			if (e instanceof EventFetchError) {
 				if (e.status === 404) {
@@ -51,6 +52,7 @@ error = 'Laden fehlgeschlagen';
 				trackFeatureEvent('event_detail', 'fetch_error', 'network');
 			}
 			console.error(e);
+		} finally {
 			loading = false;
 		}
 	});
@@ -101,6 +103,7 @@ error = 'Laden fehlgeschlagen';
 		});
 
 		L.marker([lat, lng], { icon: customIcon })
+			.on('click', () => trackFeatureEvent('events', 'map_marker_click', String(eventId ?? 'unknown')))
 			.addTo(map)
 			.bindPopup(`<strong>${escapeHtml(venueName)}</strong>`)
 			.openPopup();
@@ -138,6 +141,10 @@ error = 'Laden fehlgeschlagen';
 		}, 2200);
 	}
 
+	function handleBackClick() {
+		trackFeatureEvent('events', 'back_click');
+	}
+
 	async function handleShare() {
 		if (!event || !shareData) {
 			return;
@@ -146,12 +153,12 @@ error = 'Laden fehlgeschlagen';
 		try {
 			if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
 				await navigator.share(shareData);
-				trackFeatureEvent('event-share', 'native', String(event.id));
+				trackFeatureEvent('events', 'share', String(event.id));
 				return;
 			}
 		} catch (shareError) {
 			if (shareError instanceof DOMException && shareError.name === 'AbortError') {
-				trackFeatureEvent('event-share', 'cancelled', String(event.id));
+				trackFeatureEvent('events', 'share_cancelled', String(event.id));
 				return;
 			}
 		}
@@ -159,11 +166,11 @@ error = 'Laden fehlgeschlagen';
 		try {
 			await navigator.clipboard.writeText([shareData.text, shareData.url].join('\n'));
 			shareState = 'copied';
-			trackFeatureEvent('event-share', 'copy_link', String(event.id));
+			trackFeatureEvent('events', 'share', String(event.id));
 			resetShareState();
 		} catch {
 			shareState = 'error';
-			trackFeatureEvent('event-share', 'copy_failed', String(event.id));
+			trackFeatureEvent('events', 'share_failed', String(event.id));
 			resetShareState();
 		}
 	}
@@ -187,11 +194,11 @@ error = 'Laden fehlgeschlagen';
 			URL.revokeObjectURL(url);
 
 			calendarState = 'saved';
-			trackFeatureEvent('event-calendar', 'download_ics', String(event.id));
+			trackFeatureEvent('events', 'calendar_save', String(event.id));
 			resetCalendarState();
 		} catch {
 			calendarState = 'error';
-			trackFeatureEvent('event-calendar', 'download_failed', String(event.id));
+			trackFeatureEvent('events', 'calendar_save_failed', String(event.id));
 			resetCalendarState();
 		}
 	}
@@ -220,7 +227,7 @@ error = 'Laden fehlgeschlagen';
 	<article class="space-y-5">
 		<!-- Back button -->
 		<div>
-			<a href={resolve('/')} class="inline-flex min-h-12 items-center gap-2 rounded-control border border-border-default bg-surface-card px-4 py-2 text-sm font-medium text-text-default transition-colors hover:bg-action-secondary">
+			<a href={resolve('/')} onclick={handleBackClick} class="inline-flex min-h-12 items-center gap-2 rounded-control border border-border-default bg-surface-card px-4 py-2 text-sm font-medium text-text-default transition-colors hover:bg-action-secondary">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
 				</svg>
@@ -363,9 +370,7 @@ error = 'Laden fehlgeschlagen';
 				<div class="card p-4">
 					<div class="flex items-center gap-4">
 						<div class="flex h-12 w-12 items-center justify-center rounded-control border border-border-default bg-surface-subtle">
-							<svg class="h-6 w-6 text-text-default" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-							</svg>
+							<span class="text-[1.25rem] font-bold text-text-default leading-none" aria-hidden="true">€</span>
 						</div>
 						<div>
 							<p class="meta-text">Eintritt</p>

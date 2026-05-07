@@ -14,6 +14,7 @@
 	import MusicFilterChip from '$lib/components/MusicFilterChip.svelte';
 	import DateFilter from '$lib/components/DateFilter.svelte';
 	import type { EventType, MusicType, TribeEvent } from '$lib/types';
+	import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from '$lib/constants';
 	import 'leaflet/dist/leaflet.css';
 
 	const eventTypes: EventType[] = ['milonga', 'practica', 'workshop', 'kurs'];
@@ -35,6 +36,28 @@
 	const searchCount = $derived($eventStore.events.length);
 	const totalCount = $derived($eventStore.allEvents.length);
 	const showInlineLoading = $derived($eventStore.loading && totalCount > 0);
+
+	const typeCounts = $derived.by(() => {
+		const counts: Record<EventType, number> = { milonga: 0, practica: 0, workshop: 0, kurs: 0 };
+		for (const event of $eventStore.allEvents) {
+			const slugs = event.categories?.map((c) => c.slug) ?? [];
+			for (const type of eventTypes) {
+				if (slugs.includes(EVENT_TYPE_SLUGS[type])) counts[type]++;
+			}
+		}
+		return counts;
+	});
+
+	const musicCounts = $derived.by(() => {
+		const counts: Record<MusicType, number> = { traditional: 0, mixed: 0, neo: 0 };
+		for (const event of $eventStore.allEvents) {
+			const slugs = event.categories?.map((c) => c.slug) ?? [];
+			for (const music of musicTypes) {
+				if (slugs.includes(MUSIC_SLUGS[music])) counts[music]++;
+			}
+		}
+		return counts;
+	});
 
 	onMount(() => {
 		eventStore.loadEvents();
@@ -197,16 +220,36 @@
 		await eventStore.loadEvents(true);
 	}
 
+	function handleDateFilterChange(date: 'today' | 'week' | 'month' | 'all') {
+		eventStore.setDateFilter(date);
+		trackFeatureEvent('home', 'date_filter_toggle', date);
+	}
+
+	function handleMusicToggle(music: MusicType) {
+		const nextState = $eventStore.filters.music === music ? 'off' : 'on';
+		eventStore.toggleMusic(music);
+		trackFeatureEvent('home', 'filter_toggle', `${music}:${nextState}`);
+	}
+
+	function handleTypeToggle(type: EventType) {
+		const nextState = $eventStore.filters.types.includes(type) ? 'off' : 'on';
+		eventStore.toggleType(type);
+		trackFeatureEvent('home', 'filter_toggle', `${type}:${nextState}`);
+	}
+
+	function handleImageToggle() {
+		showImages = !showImages;
+		trackFeatureEvent('home', 'image_toggle', showImages ? 'show' : 'hide');
+	}
+
 	function handleMapToggle() {
 		showMap = !showMap;
-		if (showMap) {
-			trackFeatureEvent('home-map', 'open');
-		}
+		trackFeatureEvent('home', 'map_toggle', showMap ? 'show' : 'hide');
 	}
 
 	function enableMaps() {
 		consentStore.savePreferences({ maps: true });
-		trackFeatureEvent('home-map', 'enable');
+		trackFeatureEvent('home', 'map_enable');
 	}
 </script>
 
@@ -226,7 +269,7 @@
 		<!-- Date filter -->
 		<DateFilter 
 			active={$eventStore.filters.date} 
-			onchange={(date) => eventStore.setDateFilter(date)} 
+			onchange={handleDateFilterChange} 
 		/>
 		
 		<!-- Search -->
@@ -276,7 +319,8 @@
 				<MusicFilterChip
 					{music}
 					active={$eventStore.filters.music === music}
-					onclick={() => eventStore.toggleMusic(music)}
+					onclick={() => handleMusicToggle(music)}
+					count={musicCounts[music]}
 				/>
 			{/each}
 			</div>
@@ -285,12 +329,13 @@
 				<FilterChip
 					{type}
 					active={$eventStore.filters.types.includes(type)}
-					onclick={() => eventStore.toggleType(type)}
+					onclick={() => handleTypeToggle(type)}
+					count={typeCounts[type]}
 				/>
 			{/each}
 			<div class="flex-1"></div>
 			<button
-				onclick={() => showImages = !showImages}
+				onclick={handleImageToggle}
 				class="inline-flex min-h-12 items-center gap-2 rounded-control border px-4 py-2 text-sm font-medium transition-colors {showImages ? 'border-border-accent bg-action-secondary text-text-default' : 'border-border-default bg-surface-card text-text-muted hover:bg-action-secondary hover:text-text-default'}"
 				title={showImages ? 'Bilder ausblenden' : 'Bilder anzeigen'}
 				aria-pressed={showImages}

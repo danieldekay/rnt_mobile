@@ -9,7 +9,14 @@
 	import PwaInstallButton from '$lib/components/PwaInstallButton.svelte';
 	import PwaInstallModal from '$lib/components/PwaInstallModal.svelte';
 	import NewsletterSignup from '$lib/components/NewsletterSignup.svelte';
-	import { syncMatomoConsent, trackFeatureEvent } from '$lib/matomo';
+	import {
+		syncMatomoConsent,
+		trackFeatureEvent,
+		setupErrorTracking,
+		teardownErrorTracking,
+		setupPerformanceTracking,
+		teardownPerformanceTracking
+	} from '$lib/matomo';
 	import { consentStore } from '$lib/stores/consent.svelte';
 	import { pwaUpdateStore } from '$lib/stores/pwa-update.svelte';
 	import { pwaInstallStore } from '$lib/stores/pwa-install.svelte';
@@ -33,11 +40,24 @@
 
 	onMount(() => {
 		pwaInstallStore.start();
-		return () => pwaInstallStore.stop();
+		return () => {
+			pwaInstallStore.stop();
+			teardownErrorTracking();
+			teardownPerformanceTracking();
+		};
 	});
 
 	$effect(() => {
-		syncMatomoConsent(consentStore.hasConsent('analytics'));
+		const analyticsEnabled = consentStore.hasConsent('analytics');
+		syncMatomoConsent(analyticsEnabled);
+
+		if (analyticsEnabled) {
+			setupErrorTracking();
+			setupPerformanceTracking();
+		} else {
+			teardownErrorTracking();
+			teardownPerformanceTracking();
+		}
 	});
 
 	afterNavigate((navigation) => {
@@ -178,8 +198,8 @@
 	<header class="sticky top-0 z-50 border-b border-border-default bg-surface-canvas/95 backdrop-blur-sm">
 		<div class="mx-auto max-w-xl px-4 py-4 md:px-5">
 			<div class="flex items-center justify-between gap-4">
-				<div class="flex items-center gap-3">
-					<div class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-card border border-border-default bg-surface-card shadow-card">
+				<a href={resolve('/')} class="flex items-center gap-3 rounded-control transition-opacity hover:opacity-80" aria-label="RNT Kalender – zur Startseite">
+					<div class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-none border border-border-default bg-surface-card shadow-card">
 						<img
 							src="/rnt-logo.png"
 							alt=""
@@ -189,10 +209,10 @@
 						/>
 					</div>
 					<div>
-						<h1 class="font-display text-[1.25rem] font-semibold text-text-default">RNT Kalender</h1>
+						<p class="font-display text-[1.25rem] font-semibold text-text-default">RNT Kalender</p>
 						<p class="text-sm text-text-muted">Rhein-Neckar-Tango</p>
 					</div>
-				</div>
+				</a>
 				
 				<nav class="flex items-center gap-2" aria-label="Hauptnavigation">
 					<a href={resolve('/')} class="inline-flex min-h-12 items-center gap-2 rounded-control border px-3 py-2 text-sm font-medium transition-colors {$page.url.pathname === '/' ? 'border-border-accent bg-action-secondary text-text-default' : 'border-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'}">
@@ -201,7 +221,7 @@
 						</svg>
 						<span>Liste</span>
 					</a>
-					<a href={resolve('/calendar')} class="inline-flex min-h-12 items-center gap-2 rounded-control border px-3 py-2 text-sm font-medium transition-colors {$page.url.pathname.startsWith('/calendar') ? 'border-border-accent bg-action-secondary text-text-default' : 'border-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'}">
+					<a href={resolve('/kalender')} class="inline-flex min-h-12 items-center gap-2 rounded-control border px-3 py-2 text-sm font-medium transition-colors {$page.url.pathname.startsWith('/kalender') ? 'border-border-accent bg-action-secondary text-text-default' : 'border-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'}">
 						<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
 						</svg>

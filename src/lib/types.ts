@@ -5,7 +5,7 @@ export interface TribeEvent {
 	excerpt: string;
 	slug: string;
 	url: string;
-	image: string | false;
+	image: EventImage;
 	all_day: boolean;
 	start_date: string;
 	end_date: string;
@@ -21,6 +21,18 @@ export interface TribeEvent {
 	featured: boolean;
 	sticky: boolean;
 }
+
+export type EventImage =
+	| string
+	| false
+	| {
+		url?: string;
+		sizes?: {
+			thumbnail?: { url?: string };
+			medium?: { url?: string };
+			medium_large?: { url?: string };
+		};
+	  };
 
 export interface DateDetails {
 	year: string;

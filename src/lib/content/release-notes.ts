@@ -8,6 +8,23 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
 	{
+		version: '0.1.7',
+		releasedAt: '2026-05-07',
+		headline: 'Bessere Navigation und klarere Rueckmeldungen',
+		summary:
+			'Dieses Update verbessert die Navigation, ueberarbeitet die Newsletter-Bestaetigung und bringt mehrere kleinere Interface-Verbesserungen.',
+		highlights: [
+			'Der Kalender ist jetzt unter /kalender erreichbar – passend zur deutschen Sprache der App.',
+			'Das RNT-Logo im Header ist jetzt ein Link zur Startseite.',
+			'Die monatliche Ansicht laedt jetzt alle Termine bis zum letzten Tag des laufenden Monats.',
+			'Die Newsletter-Anmeldung zeigt jetzt eine klare Bestaetigung: „Vielen Dank! Wir haben dir eine Bestaetigungs-E-Mail geschickt.“',
+			'Der Newsletter-Bereich im Footer ist standardmaessig eingeklappt.',
+			'Filter-Chips zeigen jetzt die Anzahl der Veranstaltungen pro Kategorie an.',
+			'Das Eintritts-Preissymbol zeigt jetzt ein €-Zeichen statt eines Dollar-Icons.',
+			'Das App-Logo wird jetzt als Quadrat angezeigt.'
+		]
+	},
+	{
 		version: '0.1.6',
 		releasedAt: '2026-04-30',
 		headline: 'Newsletter-Anmeldung direkt in der App',
