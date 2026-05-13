@@ -1,0 +1,26 @@
+"$schema" = "./node_modules/wrangler/config-schema.json"
+
+name = "rnt"
+main = "./worker.ts"
+compatibility_date = "2024-01-01"
+keep_vars = true
+
+[assets]
+directory = "./build"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# Public build-time vars for the SvelteKit client bundle.
+# Referenced via `$env/dynamic/public` as PUBLIC_MATOMO_URL / PUBLIC_MATOMO_SITE_ID.
+# These are embedded in the client JS (not secrets) — duplicating them here keeps
+# CI builds self-contained without needing extra GitHub Actions inputs.
+[vars]
+PUBLIC_MATOMO_URL = "https://statistics.tangoparty.net"
+PUBLIC_MATOMO_SITE_ID = "15"
+SENDY_BASE_URL = "https://newsletter.rheinneckartango.de"
+SENDY_LIST_ID = "P04CWhVSOHvpkRVhqCvYKA"
+
+# SENDY_API_KEY is a secret — never store it here.
+# Set it as a Worker secret via: wrangler secret put SENDY_API_KEY
+# The key is required for newsletter status checks (/api/newsletter/status).
+# Without it, subscribe and unsubscribe still work; status checks return "unavailable".

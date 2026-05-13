@@ -1,0 +1,905 @@
+{
+  "success": true,
+  "issues": [
+    {
+      "type": "file",
+      "name": ".tmp_rnt_route_validation.cjs",
+      "file": ".tmp_rnt_route_validation.cjs"
+    },
+    {
+      "type": "file",
+      "name": "worker.ts",
+      "file": "worker.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/AgendaPanel.svelte",
+      "file": "src/lib/components/AgendaPanel.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Avatar.svelte",
+      "file": "src/lib/components/Avatar.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Avatar.test.svelte",
+      "file": "src/lib/components/Avatar.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Badge.svelte",
+      "file": "src/lib/components/Badge.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Badge.test.svelte",
+      "file": "src/lib/components/Badge.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Button.svelte",
+      "file": "src/lib/components/Button.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Button.test.svelte",
+      "file": "src/lib/components/Button.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Card.svelte",
+      "file": "src/lib/components/Card.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Card.test.svelte",
+      "file": "src/lib/components/Card.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Divider.svelte",
+      "file": "src/lib/components/Divider.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Divider.test.svelte",
+      "file": "src/lib/components/Divider.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Heading.svelte",
+      "file": "src/lib/components/Heading.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Heading.test.svelte",
+      "file": "src/lib/components/Heading.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/LegalDocument.svelte",
+      "file": "src/lib/components/LegalDocument.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/MusicSelector.svelte",
+      "file": "src/lib/components/MusicSelector.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/OrganizerCard.svelte",
+      "file": "src/lib/components/OrganizerCard.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Text.svelte",
+      "file": "src/lib/components/Text.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Text.test.svelte",
+      "file": "src/lib/components/Text.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/VenueCard.svelte",
+      "file": "src/lib/components/VenueCard.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/design-tokens.ts",
+      "file": "src/lib/utils/design-tokens.ts"
+    },
+    {
+      "type": "dependency",
+      "name": "@melt-ui/svelte",
+      "file": "package.json",
+      "line": 32
+    },
+    {
+      "type": "devDependency",
+      "name": "@vitest/coverage-v8",
+      "file": "package.json",
+      "line": 18
+    },
+    {
+      "type": "devDependency",
+      "name": "postcss",
+      "file": "package.json",
+      "line": 20
+    },
+    {
+      "type": "export",
+      "name": "trackPageView",
+      "file": "src/lib/matomo.ts",
+      "line": 300
+    },
+    {
+      "type": "export",
+      "name": "matomoConfigured",
+      "file": "src/lib/matomo.ts",
+      "line": 346
+    },
+    {
+      "type": "export",
+      "name": "getMatomoDisplayMode",
+      "file": "src/lib/matomo.ts",
+      "line": 350
+    },
+    {
+      "type": "export",
+      "name": "cleanup",
+      "file": "src/lib/matomo.ts",
+      "line": 355
+    },
+    {
+      "type": "export",
+      "name": "trackPerformance",
+      "file": "src/lib/matomo.ts",
+      "line": 488
+    },
+    {
+      "type": "export",
+      "name": "sendPerformanceMetrics",
+      "file": "src/lib/matomo.ts",
+      "line": 492
+    },
+    {
+      "type": "export",
+      "name": "formatApiDate",
+      "file": "src/lib/utils/date-formatting.ts",
+      "line": 45
+    },
+    {
+      "type": "export",
+      "name": "formatTime",
+      "file": "src/lib/utils/date-formatting.ts",
+      "line": 55
+    },
+    {
+      "type": "export",
+      "name": "fetchEvents",
+      "file": "src/lib/api/tribe.ts",
+      "line": 297
+    },
+    {
+      "type": "export",
+      "name": "MUSIC_TYPE_ACCENT_CLASSES",
+      "file": "src/lib/constants.ts",
+      "line": 75
+    },
+    {
+      "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/utils/text.ts",
+      "line": 35
+    },
+    {
+      "type": "export",
+      "name": "normalizeText",
+      "file": "src/lib/utils/text.ts",
+      "line": 74
+    },
+    {
+      "type": "export",
+      "name": "getDjsFromEvents",
+      "file": "src/lib/utils/djs.ts",
+      "line": 272
+    },
+    {
+      "type": "export",
+      "name": "updatePreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "subscribeWithPreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 47
+    },
+    {
+      "type": "export",
+      "name": "verifyEmail",
+      "file": "src/lib/newsletter/signup.ts",
+      "line": 30
+    },
+    {
+      "type": "export",
+      "name": "DEFAULT_CACHE_CONFIG",
+      "file": "src/lib/utils/caching.ts",
+      "line": 15
+    },
+    {
+      "type": "export",
+      "name": "generateOrganizersKey",
+      "file": "src/lib/utils/caching.ts",
+      "line": 234
+    },
+    {
+      "type": "export",
+      "name": "generateVenuesKey",
+      "file": "src/lib/utils/caching.ts",
+      "line": 238
+    },
+    {
+      "type": "export",
+      "name": "createCachedStore",
+      "file": "src/lib/utils/caching.ts",
+      "line": 428
+    },
+    {
+      "type": "export",
+      "name": "SWCacheUtils",
+      "file": "src/lib/utils/caching.ts",
+      "line": 466
+    },
+    {
+      "type": "export",
+      "name": "EnhancedAPIError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 29
+    },
+    {
+      "type": "export",
+      "name": "handleNetworkError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 63
+    },
+    {
+      "type": "export",
+      "name": "handleValidationError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 96
+    },
+    {
+      "type": "export",
+      "name": "handleParseError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 129
+    },
+    {
+      "type": "export",
+      "name": "handleTimeoutError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 151
+    },
+    {
+      "type": "export",
+      "name": "DEFAULT_RETRY_CONFIG",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 173
+    },
+    {
+      "type": "export",
+      "name": "executeWithRetry",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 183
+    },
+    {
+      "type": "export",
+      "name": "APIError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "RetryConfig",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 166
+    },
+    {
+      "type": "export",
+      "name": "getEventType",
+      "file": "src/lib/utils/event-presentation.ts",
+      "line": 20
+    },
+    {
+      "type": "export",
+      "name": "getMusicType",
+      "file": "src/lib/utils/event-presentation.ts",
+      "line": 48
+    },
+    {
+      "type": "export",
+      "name": "sanitizeString",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 46
+    },
+    {
+      "type": "export",
+      "name": "sanitizeUrl",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 58
+    },
+    {
+      "type": "export",
+      "name": "sanitizeEmail",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 84
+    },
+    {
+      "type": "export",
+      "name": "sanitizePhone",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 99
+    },
+    {
+      "type": "export",
+      "name": "sanitizeCoordinate",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 115
+    },
+    {
+      "type": "export",
+      "name": "sanitizeArray",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 135
+    },
+    {
+      "type": "export",
+      "name": "sanitizeSocialMedia",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 156
+    },
+    {
+      "type": "export",
+      "name": "batchValidateOrganizers",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 465
+    },
+    {
+      "type": "export",
+      "name": "batchValidateVenues",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 472
+    },
+    {
+      "type": "export",
+      "name": "ValidationSeverity",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 33
+    },
+    {
+      "type": "export",
+      "name": "ConsentCategory",
+      "file": "src/lib/stores/consent.svelte.ts",
+      "line": 3
+    },
+    {
+      "type": "export",
+      "name": "ConsentPreferences",
+      "file": "src/lib/stores/consent.svelte.ts",
+      "line": 5
+    },
+    {
+      "type": "export",
+      "name": "ConsentSnapshot",
+      "file": "src/lib/stores/consent.svelte.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "BeforeInstallPromptEvent",
+      "file": "src/lib/stores/pwa-install.svelte.ts",
+      "line": 15
+    },
+    {
+      "type": "export",
+      "name": "DateDetails",
+      "file": "src/lib/types.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "CostDetails",
+      "file": "src/lib/types.ts",
+      "line": 46
+    },
+    {
+      "type": "export",
+      "name": "Category",
+      "file": "src/lib/types.ts",
+      "line": 53
+    },
+    {
+      "type": "export",
+      "name": "Venue",
+      "file": "src/lib/types.ts",
+      "line": 61
+    },
+    {
+      "type": "export",
+      "name": "Organizer",
+      "file": "src/lib/types.ts",
+      "line": 75
+    },
+    {
+      "type": "export",
+      "name": "DateFilterCounts",
+      "file": "src/lib/types.ts",
+      "line": 309
+    },
+    {
+      "type": "export",
+      "name": "EnhancedTribeEvent",
+      "file": "src/lib/types.ts",
+      "line": 444
+    }
+  ],
+  "unusedExports": [
+    {
+      "type": "export",
+      "name": "trackPageView",
+      "file": "src/lib/matomo.ts",
+      "line": 300
+    },
+    {
+      "type": "export",
+      "name": "matomoConfigured",
+      "file": "src/lib/matomo.ts",
+      "line": 346
+    },
+    {
+      "type": "export",
+      "name": "getMatomoDisplayMode",
+      "file": "src/lib/matomo.ts",
+      "line": 350
+    },
+    {
+      "type": "export",
+      "name": "cleanup",
+      "file": "src/lib/matomo.ts",
+      "line": 355
+    },
+    {
+      "type": "export",
+      "name": "trackPerformance",
+      "file": "src/lib/matomo.ts",
+      "line": 488
+    },
+    {
+      "type": "export",
+      "name": "sendPerformanceMetrics",
+      "file": "src/lib/matomo.ts",
+      "line": 492
+    },
+    {
+      "type": "export",
+      "name": "formatApiDate",
+      "file": "src/lib/utils/date-formatting.ts",
+      "line": 45
+    },
+    {
+      "type": "export",
+      "name": "formatTime",
+      "file": "src/lib/utils/date-formatting.ts",
+      "line": 55
+    },
+    {
+      "type": "export",
+      "name": "fetchEvents",
+      "file": "src/lib/api/tribe.ts",
+      "line": 297
+    },
+    {
+      "type": "export",
+      "name": "MUSIC_TYPE_ACCENT_CLASSES",
+      "file": "src/lib/constants.ts",
+      "line": 75
+    },
+    {
+      "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/utils/text.ts",
+      "line": 35
+    },
+    {
+      "type": "export",
+      "name": "normalizeText",
+      "file": "src/lib/utils/text.ts",
+      "line": 74
+    },
+    {
+      "type": "export",
+      "name": "getDjsFromEvents",
+      "file": "src/lib/utils/djs.ts",
+      "line": 272
+    },
+    {
+      "type": "export",
+      "name": "updatePreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "subscribeWithPreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 47
+    },
+    {
+      "type": "export",
+      "name": "verifyEmail",
+      "file": "src/lib/newsletter/signup.ts",
+      "line": 30
+    },
+    {
+      "type": "export",
+      "name": "DEFAULT_CACHE_CONFIG",
+      "file": "src/lib/utils/caching.ts",
+      "line": 15
+    },
+    {
+      "type": "export",
+      "name": "generateOrganizersKey",
+      "file": "src/lib/utils/caching.ts",
+      "line": 234
+    },
+    {
+      "type": "export",
+      "name": "generateVenuesKey",
+      "file": "src/lib/utils/caching.ts",
+      "line": 238
+    },
+    {
+      "type": "export",
+      "name": "createCachedStore",
+      "file": "src/lib/utils/caching.ts",
+      "line": 428
+    },
+    {
+      "type": "export",
+      "name": "SWCacheUtils",
+      "file": "src/lib/utils/caching.ts",
+      "line": 466
+    },
+    {
+      "type": "export",
+      "name": "EnhancedAPIError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 29
+    },
+    {
+      "type": "export",
+      "name": "handleNetworkError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 63
+    },
+    {
+      "type": "export",
+      "name": "handleValidationError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 96
+    },
+    {
+      "type": "export",
+      "name": "handleParseError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 129
+    },
+    {
+      "type": "export",
+      "name": "handleTimeoutError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 151
+    },
+    {
+      "type": "export",
+      "name": "DEFAULT_RETRY_CONFIG",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 173
+    },
+    {
+      "type": "export",
+      "name": "executeWithRetry",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 183
+    },
+    {
+      "type": "export",
+      "name": "APIError",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "RetryConfig",
+      "file": "src/lib/utils/error-handling.ts",
+      "line": 166
+    },
+    {
+      "type": "export",
+      "name": "getEventType",
+      "file": "src/lib/utils/event-presentation.ts",
+      "line": 20
+    },
+    {
+      "type": "export",
+      "name": "getMusicType",
+      "file": "src/lib/utils/event-presentation.ts",
+      "line": 48
+    },
+    {
+      "type": "export",
+      "name": "sanitizeString",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 46
+    },
+    {
+      "type": "export",
+      "name": "sanitizeUrl",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 58
+    },
+    {
+      "type": "export",
+      "name": "sanitizeEmail",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 84
+    },
+    {
+      "type": "export",
+      "name": "sanitizePhone",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 99
+    },
+    {
+      "type": "export",
+      "name": "sanitizeCoordinate",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 115
+    },
+    {
+      "type": "export",
+      "name": "sanitizeArray",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 135
+    },
+    {
+      "type": "export",
+      "name": "sanitizeSocialMedia",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 156
+    },
+    {
+      "type": "export",
+      "name": "batchValidateOrganizers",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 465
+    },
+    {
+      "type": "export",
+      "name": "batchValidateVenues",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 472
+    },
+    {
+      "type": "export",
+      "name": "ValidationSeverity",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 33
+    },
+    {
+      "type": "export",
+      "name": "ConsentCategory",
+      "file": "src/lib/stores/consent.svelte.ts",
+      "line": 3
+    },
+    {
+      "type": "export",
+      "name": "ConsentPreferences",
+      "file": "src/lib/stores/consent.svelte.ts",
+      "line": 5
+    },
+    {
+      "type": "export",
+      "name": "ConsentSnapshot",
+      "file": "src/lib/stores/consent.svelte.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "BeforeInstallPromptEvent",
+      "file": "src/lib/stores/pwa-install.svelte.ts",
+      "line": 15
+    },
+    {
+      "type": "export",
+      "name": "DateDetails",
+      "file": "src/lib/types.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "CostDetails",
+      "file": "src/lib/types.ts",
+      "line": 46
+    },
+    {
+      "type": "export",
+      "name": "Category",
+      "file": "src/lib/types.ts",
+      "line": 53
+    },
+    {
+      "type": "export",
+      "name": "Venue",
+      "file": "src/lib/types.ts",
+      "line": 61
+    },
+    {
+      "type": "export",
+      "name": "Organizer",
+      "file": "src/lib/types.ts",
+      "line": 75
+    },
+    {
+      "type": "export",
+      "name": "DateFilterCounts",
+      "file": "src/lib/types.ts",
+      "line": 309
+    },
+    {
+      "type": "export",
+      "name": "EnhancedTribeEvent",
+      "file": "src/lib/types.ts",
+      "line": 444
+    }
+  ],
+  "unusedFiles": [
+    {
+      "type": "file",
+      "name": ".tmp_rnt_route_validation.cjs",
+      "file": ".tmp_rnt_route_validation.cjs"
+    },
+    {
+      "type": "file",
+      "name": "worker.ts",
+      "file": "worker.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/AgendaPanel.svelte",
+      "file": "src/lib/components/AgendaPanel.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Avatar.svelte",
+      "file": "src/lib/components/Avatar.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Avatar.test.svelte",
+      "file": "src/lib/components/Avatar.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Badge.svelte",
+      "file": "src/lib/components/Badge.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Badge.test.svelte",
+      "file": "src/lib/components/Badge.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Button.svelte",
+      "file": "src/lib/components/Button.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Button.test.svelte",
+      "file": "src/lib/components/Button.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Card.svelte",
+      "file": "src/lib/components/Card.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Card.test.svelte",
+      "file": "src/lib/components/Card.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Divider.svelte",
+      "file": "src/lib/components/Divider.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Divider.test.svelte",
+      "file": "src/lib/components/Divider.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Heading.svelte",
+      "file": "src/lib/components/Heading.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Heading.test.svelte",
+      "file": "src/lib/components/Heading.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/LegalDocument.svelte",
+      "file": "src/lib/components/LegalDocument.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/MusicSelector.svelte",
+      "file": "src/lib/components/MusicSelector.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/OrganizerCard.svelte",
+      "file": "src/lib/components/OrganizerCard.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Text.svelte",
+      "file": "src/lib/components/Text.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/Text.test.svelte",
+      "file": "src/lib/components/Text.test.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/components/VenueCard.svelte",
+      "file": "src/lib/components/VenueCard.svelte"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/design-tokens.ts",
+      "file": "src/lib/utils/design-tokens.ts"
+    }
+  ],
+  "unusedDeps": [
+    {
+      "type": "dependency",
+      "name": "@melt-ui/svelte",
+      "file": "package.json",
+      "line": 32
+    },
+    {
+      "type": "devDependency",
+      "name": "@vitest/coverage-v8",
+      "file": "package.json",
+      "line": 18
+    },
+    {
+      "type": "devDependency",
+      "name": "postcss",
+      "file": "package.json",
+      "line": 20
+    }
+  ],
+  "unlistedDeps": [],
+  "summary": "Found 78 issues"
+}

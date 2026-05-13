@@ -1,0 +1,189 @@
+<script lang="ts">
+	import type { CuratedLink } from '$lib/content/links';
+	import { CATEGORIES, LINKS } from '$lib/content/links';
+
+	let activeCategory = $state<string>('all');
+	let searchQuery = $state('');
+
+	const categoryCounts = $derived.by(() => {
+		const counts = new Map<string, number>();
+
+		for (const link of LINKS) {
+			counts.set(link.category, (counts.get(link.category) ?? 0) + 1);
+		}
+
+		return counts;
+	});
+
+	const filteredLinks = $derived.by(() => {
+		const normalizedQuery = searchQuery.trim().toLocaleLowerCase('de');
+
+		return LINKS.filter((link) => {
+			const matchesCategory = activeCategory === 'all' || link.category === activeCategory;
+			const matchesQuery =
+				normalizedQuery.length === 0 ||
+				link.title.toLocaleLowerCase('de').includes(normalizedQuery) ||
+				(link.description ?? '').toLocaleLowerCase('de').includes(normalizedQuery) ||
+				getDomain(link.url).toLocaleLowerCase('de').includes(normalizedQuery);
+
+			return matchesCategory && matchesQuery;
+		}).sort((left, right) => {
+			const categoryDelta = CATEGORIES.indexOf(left.category) - CATEGORIES.indexOf(right.category);
+			if (categoryDelta !== 0) return categoryDelta;
+			return left.title.localeCompare(right.title, 'de');
+		});
+	});
+
+	function getDomain(url: string): string {
+		try {
+			return new URL(url).hostname.replace(/^www\./, '');
+		} catch {
+			return url;
+		}
+	}
+
+	function resetFilters(): void {
+		activeCategory = 'all';
+		searchQuery = '';
+	}
+</script>
+
+<svelte:head>
+	<title>Links & Ressourcen - RNT Kalender</title>
+</svelte:head>
+
+
+<div class="space-y-6">
+	<div class="space-y-6">
+		<section class="space-y-3">
+			<p class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted">Community</p>
+			<h1 class="font-display text-[2rem] font-semibold text-text-default">Links & Ressourcen</h1>
+			<p class="meta-text max-w-[58ch]">
+				Kuratierte Verweise auf Musik, Lernmaterial, Community-Angebote, Veranstaltungsportale und Tools rund um Tango.
+			</p>
+		</section>
+
+		<section class="card space-y-4 p-4 sm:p-5">
+			<div class="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(14rem,0.8fr)_auto_auto] lg:items-end">
+				<label class="block min-w-0">
+					<span class="mb-1.5 block text-sm font-medium text-text-default">Suche</span>
+					<input
+						type="search"
+						bind:value={searchQuery}
+						placeholder="Nach Name, Beschreibung oder Quelle suchen"
+						class="min-h-11 w-full rounded-control border border-border-default bg-surface-card px-4 py-2 text-[0.95rem] text-text-default outline-none transition-colors placeholder:text-text-muted focus:border-action-primary"
+					/>
+				</label>
+
+				<label class="block min-w-0">
+					<span class="mb-1.5 block text-sm font-medium text-text-default">Typ</span>
+					<select
+						bind:value={activeCategory}
+						class="min-h-11 w-full rounded-control border border-border-default bg-surface-card px-4 py-2 text-[0.95rem] text-text-default outline-none transition-colors focus:border-action-primary"
+					>
+						<option value="all">Alle Typen ({LINKS.length})</option>
+						{#each CATEGORIES as category (category)}
+							<option value={category}>{category} ({categoryCounts.get(category) ?? 0})</option>
+						{/each}
+					</select>
+				</label>
+
+				<button
+					type="button"
+					onclick={resetFilters}
+					class="inline-flex min-h-11 items-center justify-center rounded-control border border-border-default bg-surface-subtle px-4 py-2 text-[0.95rem] font-medium text-text-default transition-colors hover:bg-action-secondary"
+				>
+					Zuruecksetzen
+				</button>
+
+				<a href="mailto:links@rheinneckartango.de" class="btn-secondary min-h-11 justify-center px-4 py-2">
+					Link vorschlagen
+				</a>
+			</div>
+
+			<div class="flex flex-col gap-1 border-t border-border-default pt-3 lg:flex-row lg:items-center lg:justify-between">
+				<p class="text-sm font-medium text-text-default">{filteredLinks.length} von {LINKS.length} Links sichtbar</p>
+				<p class="meta-text">Alle Eintraege laufen jetzt in einer gemeinsamen Tabelle und werden nur ueber die Leiste oben gefiltert.</p>
+			</div>
+		</section>
+
+	{#if LINKS.length === 0}
+		<section class="card p-6 text-center">
+			<p class="text-[1rem] font-medium text-text-default">Keine Links vorhanden</p>
+		</section>
+	{:else if filteredLinks.length === 0}
+		<section class="card p-6 text-center">
+			<p class="text-[1rem] font-medium text-text-default">Keine passenden Links gefunden</p>
+			<p class="meta-text mt-2">Passe Suche oder Typfilter an, um weitere Eintraege zu sehen.</p>
+		</section>
+	{:else}
+		<div class="overflow-hidden rounded-card border border-border-default bg-surface-card shadow-card">
+			<div class="hidden overflow-x-auto md:block">
+				<table class="min-w-full border-collapse" aria-label="Linktabelle">
+					<thead class="bg-surface-subtle">
+						<tr class="text-left text-[0.75rem] font-bold uppercase tracking-[0.08em] text-text-muted">
+							<th scope="col" class="w-[18%] px-4 py-3">Typ</th>
+							<th scope="col" class="w-[24%] px-4 py-3">Name</th>
+							<th scope="col" class="w-[32%] px-4 py-3">Beschreibung</th>
+							<th scope="col" class="w-[14%] px-4 py-3">Quelle</th>
+							<th scope="col" class="w-[12%] px-4 py-3">Aktion</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-border-default">
+						{#each filteredLinks as link (link.url)}
+							<tr class="align-top transition-colors hover:bg-action-secondary/60">
+								<td class="px-4 py-3 align-top">
+									<p class="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-text-muted">{link.category}</p>
+								</td>
+								<th scope="row" class="px-4 py-3 text-left align-top">
+									<p class="text-[1rem] font-semibold text-text-default">{link.title}</p>
+								</th>
+								<td class="px-4 py-3 align-top">
+									<p class="meta-text leading-6">{link.description ?? 'Keine Beschreibung vorhanden.'}</p>
+								</td>
+								<td class="px-4 py-3 align-top">
+									<p class="text-[0.9375rem] font-medium text-text-default">{getDomain(link.url)}</p>
+								</td>
+								<td class="px-4 py-3 align-top">
+									<a
+										href={link.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="btn-secondary min-h-10 px-3 py-2 text-[0.9375rem]"
+									>
+										Oeffnen
+									</a>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+
+			<ul class="divide-y divide-border-default md:hidden">
+				{#each filteredLinks as link (link.url)}
+					<li class="space-y-3 px-4 py-4">
+						<div class="flex items-start justify-between gap-3">
+							<div class="min-w-0 space-y-1">
+								<p class="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-text-muted">{link.category}</p>
+								<h3 class="text-[1rem] font-semibold text-text-default">{link.title}</h3>
+								<p class="text-[0.8125rem] uppercase tracking-[0.08em] text-text-subtle">{getDomain(link.url)}</p>
+							</div>
+							<a
+								href={link.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn-secondary min-h-10 shrink-0 px-3 py-2 text-[0.9375rem]"
+							>
+								Oeffnen
+							</a>
+						</div>
+
+						<p class="meta-text leading-6">{link.description ?? 'Keine Beschreibung vorhanden.'}</p>
+					</li>
+				{/each}
+			</ul>
+		</div>
+		{/if}
+	</div>
+</div>

@@ -1,0 +1,38 @@
+{
+  "servers": {
+    "context7": {
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-7ebb31d0-a73e-45d8-83f7-ffae16e1e93e"
+      },
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp"
+    },
+    "lean-ctx": {
+      "args": [],
+      "command": "lean-ctx",
+      "env": {
+        "LEAN_CTX_DATA_DIR": "/Users/danieldekay/.lean-ctx"
+      },
+    "type": "stdio"
+    },
+    "mcp-server-time": {
+      "args": [
+        "-m",
+        "mcp_server_time",
+        "--local-timezone=America/Los_Angeles"
+      ],
+      "command": "python",
+      "env": {}
+    },
+    "stitch": {
+      "headers": {
+        "Accept": "application/json"
+      },
+      "type": "http",
+      "url": "https://stitch.googleapis.com/mcp"
+    }
+  }
+}

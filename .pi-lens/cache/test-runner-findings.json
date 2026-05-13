@@ -1,0 +1,3 @@
+{
+  "content": "[Tests] ✗ 9/22 failed, 13 passed — vitest\n  ✗ should fetch enhanced organizers successfully\n    TypeError: Cannot read properties of undefined (reading 'ok')\n  ✗ should handle network error gracefully\n    AssertionError: expected [] to deeply equal [ ObjectContaining{…} ]\n  ✗ should handle JSON parsing error\n    Error: Invalid JSON\n  ✗ should fetch enhanced venues successfully\n    AssertionError: expected \"spy\" to be called 1 times, but got 2 times\n  ✗ should handle network error gracefully\n    AssertionError: expected [] to deeply equal [ ObjectContaining{…} ]\n  ... and 4 more failure(s)\n  → Fix failing tests before proceeding"
+}

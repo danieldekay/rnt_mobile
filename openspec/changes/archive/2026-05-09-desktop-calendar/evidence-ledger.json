@@ -1,0 +1,96 @@
+[
+  {
+    "task_id": "T1",
+    "risk": "🟢S",
+    "timestamp": "2026-05-08T00:00:00Z",
+    "verifications": [
+      {
+        "phase": "post-implement",
+        "check": "editor-diagnostics",
+        "command": "get_errors src/routes/kalender/+page.svelte",
+        "exit_code": 0,
+        "passed": true,
+        "output_snippet": "No errors found"
+      }
+    ],
+    "pushbacks": [],
+    "reuse_detected": true
+  },
+  {
+    "task_id": "T2",
+    "risk": "🟢S",
+    "timestamp": "2026-05-08T00:00:00Z",
+    "verifications": [
+      {
+        "phase": "post-implement",
+        "check": "editor-diagnostics",
+        "command": "get_errors src/lib/components/AgendaPanel.svelte",
+        "exit_code": 0,
+        "passed": true,
+        "output_snippet": "No errors found"
+      }
+    ],
+    "pushbacks": [],
+    "reuse_detected": false
+  },
+  {
+    "task_id": "T3",
+    "risk": "🟢S",
+    "timestamp": "2026-05-08T00:00:00Z",
+    "verifications": [
+      {
+        "phase": "post-implement",
+        "check": "editor-diagnostics",
+        "command": "get_errors src/routes/kalender/+page.svelte src/routes/+layout.svelte",
+        "exit_code": 0,
+        "passed": true,
+        "output_snippet": "No errors found"
+      }
+    ],
+    "pushbacks": [],
+    "reuse_detected": true
+  },
+  {
+    "task_id": "T4",
+    "risk": "🟡S",
+    "timestamp": "2026-05-08T00:00:00Z",
+    "verifications": [
+      {
+        "phase": "blocked",
+        "check": "check",
+        "command": "npm run check",
+        "exit_code": null,
+        "passed": false,
+        "output_snippet": "Command could not be executed because this session does not expose a terminal command runner."
+      },
+      {
+        "phase": "blocked",
+        "check": "build",
+        "command": "npm run build",
+        "exit_code": null,
+        "passed": false,
+        "output_snippet": "Command could not be executed because this session does not expose a terminal command runner."
+      },
+      {
+        "phase": "blocked",
+        "check": "openspec-status",
+        "command": "openspec status --change \"desktop-calendar\" --json",
+        "exit_code": null,
+        "passed": false,
+        "output_snippet": "Command could not be executed because this session does not expose a terminal command runner."
+      },
+      {
+        "phase": "blocked",
+        "check": "openspec-apply",
+        "command": "openspec instructions apply --change \"desktop-calendar\" --json",
+        "exit_code": null,
+        "passed": false,
+        "output_snippet": "Command could not be executed because this session does not expose a terminal command runner."
+      }
+    ],
+    "pushbacks": [
+      "Blocked from finishing T4 and verifying final OpenSpec state because this session cannot execute terminal commands for npm or openspec."
+    ],
+    "reuse_detected": false
+  }
+]

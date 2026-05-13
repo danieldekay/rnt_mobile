@@ -1,0 +1,27 @@
+{
+  "files": {
+    "openspec/changes/apply-design-theme/design.md": {
+      "modifiedRanges": [
+        {
+          "start": 1,
+          "end": 40
+        }
+      ],
+      "importsChanged": false,
+      "lastEdit": "2026-05-13T17:27:05.933Z"
+    },
+    "openspec/changes/apply-design-theme/specs/component-migration/spec.md": {
+      "modifiedRanges": [
+        {
+          "start": 1,
+          "end": 33
+        }
+      ],
+      "importsChanged": false,
+      "lastEdit": "2026-05-13T17:27:06.071Z"
+    }
+  },
+  "turnCycles": 0,
+  "maxCycles": 3,
+  "lastUpdated": "2026-05-13T17:27:06.071Z"
+}

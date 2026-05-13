@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../2ndBrain/projects"
+		},
+		{
+			"path": "../rnt_theme"
+		}
+	],
+	"settings": {
+		"djlint.showInstallError": false
+	}
+}

@@ -1,0 +1,210 @@
+versions:
+  schema_version: '1.0'
+  project: 0.1.0
+bundle:
+  created_at: '2026-05-09T13:38:29.428986+00:00'
+  last_modified: '2026-05-09T13:58:41.529739+00:00'
+  format: directory-based
+schema_metadata:
+project_metadata:
+checksums:
+  algorithm: sha256
+  files:
+    features/router-cleanup-spec.yaml: 
+      936423f68a54429d22990e7e0f2ba32898a71e8e864f2ed6304b50845c747f4b
+    product.yaml: 
+      a8e4193d46d08fcfa6c5239e0798ad003a841948237198d362f761a8dfeb3743
+    features/event-fetching-spec.yaml: 
+      52f020f0bc592135eb84a63274ec0b25e66282ad9ba57c98fd8ffbf1961c7950
+    features/visual-foundation.yaml: 
+      fa56605f0d6adae1d8e4ff72eabbc22bb17d750bdb8527d18f8bcc93fbd54cd0
+    features/pwa-update-flow.yaml: 
+      e98155883f05c7ed8e197db8c58bdc51ebe7df1d730ca4d5a6e2d3952645c20b
+    features/privacy-consent.yaml: 
+      bbc5e465f3b51eb6830e8aebc267cb951ab4e4eb0260ad20948709c26decf296
+    features/error-observability-spec.yaml: 
+      07f92ee6ef3681d9aa14f2b23f0cd37ffe6f0d2521cb2364cd5ccb64922bc0df
+    features/event-detail.yaml: 
+      52e6275bc9c537e9ede0e85bc5f6599979e567ce8112a1e2e9c096d6dfa64b7b
+    features/calendar-browsing.yaml: 
+      bf74fba5ce55e25d7087d94142ff7d7e7d37f79ea0e431071aaf2125ddee628c
+    features/home-event-browsing.yaml: 
+      2c265a6ef82b0c79b5c4c9b6b970d462a8be72d89c715a8e4b27e71530a54ebe
+    features/event-catalog-spec.yaml: 
+      fd2cd0e5502d81ad372b9ff5f0ecaccbeb5c37b287766f434a7e3349d3b99573
+    features/security-defense-spec.yaml: 
+      4696c3b026de887fded9b8e7cb137f0e4188fdb332f14f334172bb60b4f4b264
+    features/legal-pages.yaml: 
+      f2112e4d0600daf428b877559c47c2f3b31c359734c453ea45d0a85702cc39e6
+    features/matomo-enhanced.yaml: 
+      8c106b7d6575154a35b9baf213659de0d3e294695c51dc8d0e63623abd1ffb23
+    features/newsletter.yaml: 
+      36d71f6a5bc207fccec3d9b98a3ed472aa0c55da36c481f39998841aaef00b98
+    features/blog-browsing.yaml: 
+      143e1c501e100cdad189acf9bc5f1ea27512d5f56d179b221050b4965108f729
+    features/links-resources.yaml: 
+      c2ee288c738f1657c16663d12f7ba0fb7cd410cb46cf2da0e5dee1ec2764cb73
+locks: []
+personas:
+  product-owner:
+    owns:
+    - proposal
+    exports_to: github
+  architect:
+    owns:
+    - design
+    - specs
+    exports_to: github
+  developer:
+    owns:
+    - tasks
+    exports_to: github
+features:
+- key: privacy-consent
+  title: 'Capability: Privacy Consent'
+  file: privacy-consent.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: bbc5e465f3b51eb6830e8aebc267cb951ab4e4eb0260ad20948709c26decf296
+- key: event-fetching-spec
+  title: event-fetching-spec Specification
+  file: event-fetching-spec.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 52f020f0bc592135eb84a63274ec0b25e66282ad9ba57c98fd8ffbf1961c7950
+- key: links-resources
+  title: links-resources Specification
+  file: links-resources.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: c2ee288c738f1657c16663d12f7ba0fb7cd410cb46cf2da0e5dee1ec2764cb73
+- key: matomo-enhanced
+  title: matomo-enhanced Specification
+  file: matomo-enhanced.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 8c106b7d6575154a35b9baf213659de0d3e294695c51dc8d0e63623abd1ffb23
+- key: home-event-browsing
+  title: 'Capability: Home Event Browsing'
+  file: home-event-browsing.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 2c265a6ef82b0c79b5c4c9b6b970d462a8be72d89c715a8e4b27e71530a54ebe
+- key: security-defense-spec
+  title: security-defense-spec Specification
+  file: security-defense-spec.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 4696c3b026de887fded9b8e7cb137f0e4188fdb332f14f334172bb60b4f4b264
+- key: event-catalog-spec
+  title: 'Capability: Event Catalog'
+  file: event-catalog-spec.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: fd2cd0e5502d81ad372b9ff5f0ecaccbeb5c37b287766f434a7e3349d3b99573
+- key: newsletter
+  title: newsletter Specification
+  file: newsletter.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 36d71f6a5bc207fccec3d9b98a3ed472aa0c55da36c481f39998841aaef00b98
+- key: blog-browsing
+  title: blog-browsing Specification
+  file: blog-browsing.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 143e1c501e100cdad189acf9bc5f1ea27512d5f56d179b221050b4965108f729
+- key: router-cleanup-spec
+  title: 'Capability: Router Dead Flag Cleanup'
+  file: router-cleanup-spec.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 936423f68a54429d22990e7e0f2ba32898a71e8e864f2ed6304b50845c747f4b
+- key: pwa-update-flow
+  title: 'Capability: PWA Update Flow'
+  file: pwa-update-flow.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: e98155883f05c7ed8e197db8c58bdc51ebe7df1d730ca4d5a6e2d3952645c20b
+- key: visual-foundation
+  title: 'Capability: Visual Foundation'
+  file: visual-foundation.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: fa56605f0d6adae1d8e4ff72eabbc22bb17d750bdb8527d18f8bcc93fbd54cd0
+- key: legal-pages
+  title: 'Capability: Legal Pages'
+  file: legal-pages.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: f2112e4d0600daf428b877559c47c2f3b31c359734c453ea45d0a85702cc39e6
+- key: error-observability-spec
+  title: error-observability-spec Specification
+  file: error-observability-spec.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 07f92ee6ef3681d9aa14f2b23f0cd37ffe6f0d2521cb2364cd5ccb64922bc0df
+- key: calendar-browsing
+  title: 'Capability: Calendar Browsing'
+  file: calendar-browsing.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: bf74fba5ce55e25d7087d94142ff7d7e7d37f79ea0e431071aaf2125ddee628c
+- key: event-detail
+  title: 'Capability: Event Detail'
+  file: event-detail.yaml
+  status: active
+  stories_count: 0
+  created_at: '2026-05-09T13:58:41.529739+00:00'
+  updated_at: '2026-05-09T13:58:41.529739+00:00'
+  contract:
+  checksum: 52e6275bc9c537e9ede0e85bc5f6599979e567ce8112a1e2e9c096d6dfa64b7b
+protocols: []
+contracts: []
+change_tracking:
+change_archive: []

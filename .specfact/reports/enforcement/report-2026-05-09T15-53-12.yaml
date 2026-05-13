@@ -1,0 +1,49 @@
+total_duration: 1.474703073501587
+total_checks: 3
+passed_checks: 2
+failed_checks: 0
+timeout_checks: 0
+skipped_checks: 1
+budget_exceeded: false
+checks:
+- name: Linting (ruff)
+  tool: ruff
+  status: passed
+  duration: 0.4068870544433594
+  exit_code: 0
+  timeout: false
+  output_length: 19
+  error_length: 55
+  findings:
+    violations: []
+    total_violations: 0
+    files_checked: 0
+- name: Type checking (basedpyright)
+  tool: basedpyright
+  status: passed
+  duration: 1.0632750988006592
+  exit_code: 0
+  timeout: false
+  output_length: 30
+  error_length: 0
+  findings:
+    errors: []
+    warnings: []
+    total_errors: 0
+    total_warnings: 0
+- name: Contract exploration (CrossHair)
+  tool: crosshair
+  status: skipped
+  duration:
+  exit_code:
+  timeout: false
+  output_length: 0
+  error_length: 30
+  findings:
+    counterexamples: []
+    total_counterexamples: 0
+metadata:
+  timestamp: '2026-05-09T15:53:11.234013'
+  repo_path: /Users/danieldekay/Dokumente/projects/programmieren/rnt_mobile
+  budget: 120
+  active_plan_path: .specfact/projects/main
