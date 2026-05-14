@@ -30,7 +30,34 @@
 
     let stagedAnalytics = $state(false);
     let stagedMaps = $state(false);
+    let mobileMenuOpen = $state(false);
     const currentYear = new Date().getFullYear();
+
+    const mobileNavItems = [
+        {
+            href: "/",
+            label: "Liste",
+            iconPath: "M4 6h16M4 10h16M4 14h16M4 18h16",
+        },
+        {
+            href: "/kalender",
+            label: "Kalender",
+            iconPath:
+                "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+        },
+        {
+            href: "/blog",
+            label: "News",
+            iconPath:
+                "M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2zm3 4h8m-8 4h8m-8 4h5",
+        },
+        {
+            href: "/ankuendigungen",
+            label: "Ankuendigungen",
+            iconPath:
+                "M7 8h10M7 12h10M7 16h6M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
+        },
+    ] as const;
 
     $effect(() => {
         if (consentStore.settingsOpen) {
@@ -71,6 +98,7 @@
     });
 
     afterNavigate((navigation) => {
+        mobileMenuOpen = false;
         if (!navigation.to) return;
         if (!consentStore.hasConsent("analytics")) return;
         syncMatomoConsent(
@@ -79,6 +107,25 @@
             document.title,
         );
     });
+
+    function isMobileNavActive(href: string): boolean {
+        if (href === "/") {
+            return $page.url.pathname === "/";
+        }
+
+        return (
+            $page.url.pathname === href ||
+            $page.url.pathname.startsWith(`${href}/`)
+        );
+    }
+
+    function toggleMobileMenu() {
+        mobileMenuOpen = !mobileMenuOpen;
+    }
+
+    function closeMobileMenu() {
+        mobileMenuOpen = false;
+    }
 
     function openConsentSettings() {
         consentStore.openSettings();
@@ -335,58 +382,84 @@
                         </div>
                     </a>
 
-                    <nav
-                        class="flex items-center gap-2"
-                        aria-label="Hauptnavigation"
+                    <button
+                        type="button"
+                        class="inline-flex min-h-12 min-w-12 items-center justify-center rounded-control border border-border-default bg-surface-card px-3 py-2 text-text-default transition-colors hover:bg-action-secondary"
+                        aria-label={mobileMenuOpen
+                            ? "Navigation schliessen"
+                            : "Navigation oeffnen"}
+                        aria-controls="mobile-main-navigation"
+                        aria-expanded={mobileMenuOpen}
+                        onclick={toggleMobileMenu}
                     >
-                        <a
-                            href={resolve("/")}
-                            class="inline-flex min-h-12 items-center gap-2 rounded-control border px-3 py-2 text-sm font-medium transition-colors {$page
-                                .url.pathname === '/'
-                                ? 'border-border-accent bg-action-secondary text-text-default'
-                                : 'border-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'}"
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
                         >
-                            <svg
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
+                            {#if mobileMenuOpen}
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-                                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                                    d="M6 18L18 6M6 6l12 12"
                                 />
-                            </svg>
-                            <span>Liste</span>
-                        </a>
-                        <a
-                            href={resolve("/kalender")}
-                            class="inline-flex min-h-12 items-center gap-2 rounded-control border px-3 py-2 text-sm font-medium transition-colors {$page.url.pathname.startsWith(
-                                '/kalender',
-                            )
-                                ? 'border-border-accent bg-action-secondary text-text-default'
-                                : 'border-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'}"
-                        >
-                            <svg
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
+                            {:else}
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    d="M4 6h16M4 12h16M4 18h16"
                                 />
-                            </svg>
-                            <span>Kalender</span>
-                        </a>
-                        <PwaInstallButton />
-                    </nav>
+                            {/if}
+                        </svg>
+                    </button>
                 </div>
+
+                {#if mobileMenuOpen}
+                    <div
+                        id="mobile-main-navigation"
+                        class="mt-4 border-t border-border-default pt-4"
+                    >
+                        <nav class="flex flex-col gap-2" aria-label="Hauptnavigation">
+                            {#each mobileNavItems as item (item.href)}
+                                <a
+                                    href={resolve(item.href)}
+                                    class={`inline-flex min-h-13 w-full items-center gap-3 rounded-control border px-4 py-3 text-left text-base font-medium transition-colors ${
+                                        isMobileNavActive(item.href)
+                                            ? "border-border-accent bg-action-secondary text-text-default"
+                                            : "border-border-default bg-surface-card text-text-muted hover:bg-action-secondary hover:text-text-default"
+                                    }`}
+                                    aria-current={isMobileNavActive(item.href)
+                                        ? "page"
+                                        : undefined}
+                                    onclick={closeMobileMenu}
+                                >
+                                    <svg
+                                        class="h-5 w-5 shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d={item.iconPath}
+                                        />
+                                    </svg>
+                                    <span>{item.label}</span>
+                                </a>
+                            {/each}
+                        </nav>
+                        <div class="mt-3">
+                            <PwaInstallButton />
+                        </div>
+                    </div>
+                {/if}
             </div>
         </header>
 

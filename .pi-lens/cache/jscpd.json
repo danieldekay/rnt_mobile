@@ -1,0 +1,456 @@
+{
+  "success": true,
+  "clones": [
+    {
+      "fileA": "src/routes/event/[id]/+page.svelte",
+      "startA": 563,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 537,
+      "lines": 15,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/event/[id]/+page.svelte",
+      "startA": 727,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 655,
+      "lines": 14,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/event/[id]/+page.svelte",
+      "startA": 782,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 724,
+      "lines": 17,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/event/[id]/+page.svelte",
+      "startA": 848,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 618,
+      "lines": 11,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/event/[id]/+page.svelte",
+      "startA": 889,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 658,
+      "lines": 11,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/djs/[slug]/+page.svelte",
+      "startA": 247,
+      "fileB": "src/routes/veranstalter/[slug]/+page.svelte",
+      "startB": 62,
+      "lines": 17,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/ankuendigungen/[slug]/+page.ts",
+      "startA": 107,
+      "fileB": "src/routes/veranstalter/[slug]/+page.ts",
+      "startB": 42,
+      "lines": 12,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/ankuendigungen/[slug]/+page.svelte",
+      "startA": 62,
+      "fileB": "src/routes/ankuendigungen/[slug]/+page.ts",
+      "startB": 15,
+      "lines": 10,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/veranstalter/+page.ts",
+      "startA": 94,
+      "fileB": "src/routes/djs/[slug]/+page.ts",
+      "startB": 13,
+      "lines": 8,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/tanzraeume/+page.ts",
+      "startA": 85,
+      "fileB": "src/routes/veranstalter/+page.ts",
+      "startB": 90,
+      "lines": 12,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/kalender/+page.svelte",
+      "startA": 177,
+      "fileB": "src/routes/kalender/+page.svelte",
+      "startB": 96,
+      "lines": 25,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/djs/+page.ts",
+      "startA": 6,
+      "fileB": "src/routes/veranstalter/+page.ts",
+      "startB": 93,
+      "lines": 9,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/djs/+page.svelte",
+      "startA": 126,
+      "fileB": "src/routes/djs/[slug]/+page.svelte",
+      "startB": 59,
+      "lines": 8,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/djs/+page.svelte",
+      "startA": 360,
+      "fileB": "src/routes/veranstalter/+page.svelte",
+      "startB": 186,
+      "lines": 24,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/blog/+page.svelte",
+      "startA": 105,
+      "fileB": "src/routes/blog/[slug]/+page.svelte",
+      "startB": 91,
+      "lines": 22,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/ankuendigungen/+page.svelte",
+      "startA": 184,
+      "fileB": "src/routes/ankuendigungen/[slug]/+page.svelte",
+      "startB": 53,
+      "lines": 10,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/ankuendigungen/+page.svelte",
+      "startA": 189,
+      "fileB": "src/routes/ankuendigungen/[slug]/+page.ts",
+      "startB": 11,
+      "lines": 14,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/ankuendigungen/+page.svelte",
+      "startA": 444,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 702,
+      "lines": 11,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/utils/error-handling.ts",
+      "startA": 492,
+      "fileB": "src/lib/utils/error-handling.ts",
+      "startB": 414,
+      "lines": 22,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/utils/djs.ts",
+      "startA": 284,
+      "fileB": "src/lib/utils/djs.ts",
+      "startB": 184,
+      "lines": 17,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/utils/djs.ts",
+      "startA": 300,
+      "fileB": "src/lib/utils/djs.ts",
+      "startB": 202,
+      "lines": 19,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/utils/djs.ts",
+      "startA": 318,
+      "fileB": "src/lib/utils/djs.ts",
+      "startB": 221,
+      "lines": 21,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/utils/djs.ts",
+      "startA": 354,
+      "fileB": "src/lib/utils/djs.ts",
+      "startB": 256,
+      "lines": 18,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/utils/date-filters.ts",
+      "startA": 99,
+      "fileB": "src/routes/tanzraeume/+page.ts",
+      "startB": 30,
+      "lines": 13,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/stores/events.svelte.ts",
+      "startA": 170,
+      "fileB": "src/lib/stores/events.svelte.ts",
+      "startB": 116,
+      "lines": 19,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/stores/events.svelte.ts",
+      "startA": 199,
+      "fileB": "src/lib/stores/events.svelte.ts",
+      "startB": 138,
+      "lines": 18,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/NewsletterSignup.svelte",
+      "startA": 111,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 312,
+      "lines": 11,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/LegalPage.svelte",
+      "startA": 160,
+      "fileB": "src/routes/was-ist-neu/+page.svelte",
+      "startB": 21,
+      "lines": 8,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/LegalHeader.svelte",
+      "startA": 25,
+      "fileB": "src/lib/components/LegalPage.svelte",
+      "startB": 206,
+      "lines": 8,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/LegalHeader.svelte",
+      "startA": 33,
+      "fileB": "src/lib/components/LegalNav.svelte",
+      "startB": 7,
+      "lines": 7,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/LegalDocument.svelte",
+      "startA": 12,
+      "fileB": "src/lib/components/LegalPage.svelte",
+      "startB": 20,
+      "lines": 11,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/LegalDocument.svelte",
+      "startA": 20,
+      "fileB": "src/lib/components/LegalPage.svelte",
+      "startB": 56,
+      "lines": 14,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/LegalDocument.svelte",
+      "startA": 44,
+      "fileB": "src/lib/components/LegalPage.svelte",
+      "startB": 172,
+      "lines": 10,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/LegalDocument.svelte",
+      "startA": 55,
+      "fileB": "src/routes/was-ist-neu/+page.svelte",
+      "startB": 23,
+      "lines": 13,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/Heading.svelte",
+      "startA": 5,
+      "fileB": "src/lib/components/Text.svelte",
+      "startB": 4,
+      "lines": 6,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/Heading.svelte",
+      "startA": 42,
+      "fileB": "src/lib/components/Text.svelte",
+      "startB": 27,
+      "lines": 44,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/FilterChip.svelte",
+      "startA": 37,
+      "fileB": "src/lib/components/MusicFilterChip.svelte",
+      "startB": 23,
+      "lines": 10,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/components/Calendar.svelte",
+      "startA": 111,
+      "fileB": "src/routes/blog/[slug]/+page.svelte",
+      "startB": 131,
+      "lines": 6,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/api/tribe.ts",
+      "startA": 588,
+      "fileB": "src/lib/api/tribe.ts",
+      "startB": 559,
+      "lines": 8,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/api/tribe.ts",
+      "startA": 597,
+      "fileB": "src/lib/api/tribe.ts",
+      "startB": 568,
+      "lines": 9,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/api/posts.ts",
+      "startA": 58,
+      "fileB": "src/lib/api/posts.ts",
+      "startB": 40,
+      "lines": 6,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/api/posts.ts",
+      "startA": 94,
+      "fileB": "src/lib/api/posts.ts",
+      "startB": 76,
+      "lines": 6,
+      "tokens": 0
+    },
+    {
+      "fileA": ".wrangler/tmp/dev-FzlvYf/worker.js",
+      "startA": 296,
+      "fileB": ".wrangler/tmp/dev-FzlvYf/worker.js",
+      "startB": 243,
+      "lines": 18,
+      "tokens": 0
+    },
+    {
+      "fileA": ".wrangler/tmp/dev-FzlvYf/worker.js",
+      "startA": 346,
+      "fileB": ".wrangler/tmp/dev-FzlvYf/worker.js",
+      "startB": 243,
+      "lines": 10,
+      "tokens": 0
+    },
+    {
+      "fileA": ".wrangler/tmp/bundle-wRLREv/checked-fetch.js",
+      "startA": 1,
+      "fileB": ".wrangler/tmp/dev-FzlvYf/worker.js",
+      "startB": 5,
+      "lines": 15,
+      "tokens": 0
+    },
+    {
+      "fileA": ".wrangler/tmp/bundle-wRLREv/checked-fetch.js",
+      "startA": 22,
+      "fileB": ".wrangler/tmp/dev-FzlvYf/worker.js",
+      "startB": 22,
+      "lines": 6,
+      "tokens": 0
+    },
+    {
+      "fileA": ".wrangler/tmp/bundle-IOD2iC/middleware-loader.entry.ts",
+      "startA": 11,
+      "fileB": ".wrangler/tmp/bundle-wRLREv/middleware-loader.entry.ts",
+      "startB": 11,
+      "lines": 124,
+      "tokens": 0
+    },
+    {
+      "fileA": ".wrangler/tmp/bundle-IOD2iC/checked-fetch.js",
+      "startA": 1,
+      "fileB": ".wrangler/tmp/bundle-wRLREv/checked-fetch.js",
+      "startB": 1,
+      "lines": 28,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/+page.svelte",
+      "startA": 37,
+      "fileB": "src/routes/kalender/+page.svelte",
+      "startB": 18,
+      "lines": 26,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/routes/+layout.svelte",
+      "startA": 441,
+      "fileB": "src/routes/event/[id]/+page.svelte",
+      "startB": 658,
+      "lines": 11,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/types.ts",
+      "startA": 434,
+      "fileB": "src/lib/types.ts",
+      "startB": 310,
+      "lines": 18,
+      "tokens": 0
+    },
+    {
+      "fileA": "docs/pwa-communication/pwa-announcement-email.html",
+      "startA": 40,
+      "fileB": "docs/pwa-communication/pwa-announcement-email.html",
+      "startB": 39,
+      "lines": 6,
+      "tokens": 0
+    },
+    {
+      "fileA": "docs/pwa-communication/pwa-announcement-email.html",
+      "startA": 62,
+      "fileB": "docs/pwa-communication/pwa-announcement-email.html",
+      "startB": 45,
+      "lines": 7,
+      "tokens": 0
+    },
+    {
+      "fileA": "docs/pwa-communication/pwa-announcement-email.html",
+      "startA": 65,
+      "fileB": "docs/pwa-communication/pwa-announcement-email.html",
+      "startB": 39,
+      "lines": 7,
+      "tokens": 0
+    },
+    {
+      "fileA": "worker.ts",
+      "startA": 374,
+      "fileB": "worker.ts",
+      "startB": 309,
+      "lines": 25,
+      "tokens": 0
+    },
+    {
+      "fileA": "worker.ts",
+      "startA": 434,
+      "fileB": "worker.ts",
+      "startB": 309,
+      "lines": 15,
+      "tokens": 0
+    }
+  ],
+  "duplicatedLines": 834,
+  "totalLines": 24046,
+  "percentage": 3.47
+}

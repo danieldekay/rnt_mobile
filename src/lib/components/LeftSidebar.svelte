@@ -139,7 +139,7 @@
 </script>
 
 <aside
-	class="hidden lg:flex lg:flex-col border-r border-border-default bg-surface-card text-text-default lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto"
+	class="hidden lg:flex lg:flex-col border-r border-border-default bg-surface-card text-text-default lg:sticky lg:top-0 lg:h-dvh lg:overflow-hidden"
 	style="width: var(--desktop-sidebar-width);"
 >
 	<div class="flex flex-1 flex-col px-4 py-6">

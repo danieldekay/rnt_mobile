@@ -8,11 +8,6 @@
     },
     {
       "type": "file",
-      "name": "worker.ts",
-      "file": "worker.ts"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/AgendaPanel.svelte",
       "file": "src/lib/components/AgendaPanel.svelte"
     },
@@ -28,28 +23,13 @@
     },
     {
       "type": "file",
-      "name": "src/lib/components/Badge.svelte",
-      "file": "src/lib/components/Badge.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Badge.test.svelte",
       "file": "src/lib/components/Badge.test.svelte"
     },
     {
       "type": "file",
-      "name": "src/lib/components/Button.svelte",
-      "file": "src/lib/components/Button.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Button.test.svelte",
       "file": "src/lib/components/Button.test.svelte"
-    },
-    {
-      "type": "file",
-      "name": "src/lib/components/Card.svelte",
-      "file": "src/lib/components/Card.svelte"
     },
     {
       "type": "file",
@@ -68,11 +48,6 @@
     },
     {
       "type": "file",
-      "name": "src/lib/components/Heading.svelte",
-      "file": "src/lib/components/Heading.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Heading.test.svelte",
       "file": "src/lib/components/Heading.test.svelte"
     },
@@ -88,23 +63,8 @@
     },
     {
       "type": "file",
-      "name": "src/lib/components/OrganizerCard.svelte",
-      "file": "src/lib/components/OrganizerCard.svelte"
-    },
-    {
-      "type": "file",
-      "name": "src/lib/components/Text.svelte",
-      "file": "src/lib/components/Text.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Text.test.svelte",
       "file": "src/lib/components/Text.test.svelte"
-    },
-    {
-      "type": "file",
-      "name": "src/lib/components/VenueCard.svelte",
-      "file": "src/lib/components/VenueCard.svelte"
     },
     {
       "type": "file",
@@ -119,24 +79,12 @@
     },
     {
       "type": "devDependency",
-      "name": "@vitest/coverage-v8",
-      "file": "package.json",
-      "line": 18
-    },
-    {
-      "type": "devDependency",
       "name": "postcss",
       "file": "package.json",
       "line": 20
     },
     {
       "type": "export",
-      "name": "trackPageView",
-      "file": "src/lib/matomo.ts",
-      "line": 300
-    },
-    {
-      "type": "export",
       "name": "matomoConfigured",
       "file": "src/lib/matomo.ts",
       "line": 346
@@ -146,12 +94,6 @@
       "name": "getMatomoDisplayMode",
       "file": "src/lib/matomo.ts",
       "line": 350
-    },
-    {
-      "type": "export",
-      "name": "cleanup",
-      "file": "src/lib/matomo.ts",
-      "line": 355
     },
     {
       "type": "export",
@@ -188,42 +130,6 @@
       "name": "MUSIC_TYPE_ACCENT_CLASSES",
       "file": "src/lib/constants.ts",
       "line": 75
-    },
-    {
-      "type": "export",
-      "name": "decodeHtmlEntities",
-      "file": "src/lib/utils/text.ts",
-      "line": 35
-    },
-    {
-      "type": "export",
-      "name": "normalizeText",
-      "file": "src/lib/utils/text.ts",
-      "line": 74
-    },
-    {
-      "type": "export",
-      "name": "getDjsFromEvents",
-      "file": "src/lib/utils/djs.ts",
-      "line": 272
-    },
-    {
-      "type": "export",
-      "name": "updatePreferences",
-      "file": "src/lib/newsletter/preferences.ts",
-      "line": 37
-    },
-    {
-      "type": "export",
-      "name": "subscribeWithPreferences",
-      "file": "src/lib/newsletter/preferences.ts",
-      "line": 47
-    },
-    {
-      "type": "export",
-      "name": "verifyEmail",
-      "file": "src/lib/newsletter/signup.ts",
-      "line": 30
     },
     {
       "type": "export",
@@ -308,6 +214,48 @@
       "name": "RetryConfig",
       "file": "src/lib/utils/error-handling.ts",
       "line": 166
+    },
+    {
+      "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/utils/text.ts",
+      "line": 35
+    },
+    {
+      "type": "export",
+      "name": "normalizeText",
+      "file": "src/lib/utils/text.ts",
+      "line": 74
+    },
+    {
+      "type": "export",
+      "name": "createOrganizerNextEventSummary",
+      "file": "src/lib/utils/date-filters.ts",
+      "line": 99
+    },
+    {
+      "type": "export",
+      "name": "getDjsFromEvents",
+      "file": "src/lib/utils/djs.ts",
+      "line": 272
+    },
+    {
+      "type": "export",
+      "name": "updatePreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "subscribeWithPreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 47
+    },
+    {
+      "type": "export",
+      "name": "verifyEmail",
+      "file": "src/lib/newsletter/signup.ts",
+      "line": 30
     },
     {
       "type": "export",
@@ -439,24 +387,12 @@
       "type": "export",
       "name": "DateFilterCounts",
       "file": "src/lib/types.ts",
-      "line": 309
-    },
-    {
-      "type": "export",
-      "name": "EnhancedTribeEvent",
-      "file": "src/lib/types.ts",
-      "line": 444
+      "line": 180
     }
   ],
   "unusedExports": [
     {
       "type": "export",
-      "name": "trackPageView",
-      "file": "src/lib/matomo.ts",
-      "line": 300
-    },
-    {
-      "type": "export",
       "name": "matomoConfigured",
       "file": "src/lib/matomo.ts",
       "line": 346
@@ -466,12 +402,6 @@
       "name": "getMatomoDisplayMode",
       "file": "src/lib/matomo.ts",
       "line": 350
-    },
-    {
-      "type": "export",
-      "name": "cleanup",
-      "file": "src/lib/matomo.ts",
-      "line": 355
     },
     {
       "type": "export",
@@ -508,42 +438,6 @@
       "name": "MUSIC_TYPE_ACCENT_CLASSES",
       "file": "src/lib/constants.ts",
       "line": 75
-    },
-    {
-      "type": "export",
-      "name": "decodeHtmlEntities",
-      "file": "src/lib/utils/text.ts",
-      "line": 35
-    },
-    {
-      "type": "export",
-      "name": "normalizeText",
-      "file": "src/lib/utils/text.ts",
-      "line": 74
-    },
-    {
-      "type": "export",
-      "name": "getDjsFromEvents",
-      "file": "src/lib/utils/djs.ts",
-      "line": 272
-    },
-    {
-      "type": "export",
-      "name": "updatePreferences",
-      "file": "src/lib/newsletter/preferences.ts",
-      "line": 37
-    },
-    {
-      "type": "export",
-      "name": "subscribeWithPreferences",
-      "file": "src/lib/newsletter/preferences.ts",
-      "line": 47
-    },
-    {
-      "type": "export",
-      "name": "verifyEmail",
-      "file": "src/lib/newsletter/signup.ts",
-      "line": 30
     },
     {
       "type": "export",
@@ -628,6 +522,48 @@
       "name": "RetryConfig",
       "file": "src/lib/utils/error-handling.ts",
       "line": 166
+    },
+    {
+      "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/utils/text.ts",
+      "line": 35
+    },
+    {
+      "type": "export",
+      "name": "normalizeText",
+      "file": "src/lib/utils/text.ts",
+      "line": 74
+    },
+    {
+      "type": "export",
+      "name": "createOrganizerNextEventSummary",
+      "file": "src/lib/utils/date-filters.ts",
+      "line": 99
+    },
+    {
+      "type": "export",
+      "name": "getDjsFromEvents",
+      "file": "src/lib/utils/djs.ts",
+      "line": 272
+    },
+    {
+      "type": "export",
+      "name": "updatePreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "subscribeWithPreferences",
+      "file": "src/lib/newsletter/preferences.ts",
+      "line": 47
+    },
+    {
+      "type": "export",
+      "name": "verifyEmail",
+      "file": "src/lib/newsletter/signup.ts",
+      "line": 30
     },
     {
       "type": "export",
@@ -759,13 +695,7 @@
       "type": "export",
       "name": "DateFilterCounts",
       "file": "src/lib/types.ts",
-      "line": 309
-    },
-    {
-      "type": "export",
-      "name": "EnhancedTribeEvent",
-      "file": "src/lib/types.ts",
-      "line": 444
+      "line": 180
     }
   ],
   "unusedFiles": [
@@ -773,11 +703,6 @@
       "type": "file",
       "name": ".tmp_rnt_route_validation.cjs",
       "file": ".tmp_rnt_route_validation.cjs"
-    },
-    {
-      "type": "file",
-      "name": "worker.ts",
-      "file": "worker.ts"
     },
     {
       "type": "file",
@@ -796,28 +721,13 @@
     },
     {
       "type": "file",
-      "name": "src/lib/components/Badge.svelte",
-      "file": "src/lib/components/Badge.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Badge.test.svelte",
       "file": "src/lib/components/Badge.test.svelte"
     },
     {
       "type": "file",
-      "name": "src/lib/components/Button.svelte",
-      "file": "src/lib/components/Button.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Button.test.svelte",
       "file": "src/lib/components/Button.test.svelte"
-    },
-    {
-      "type": "file",
-      "name": "src/lib/components/Card.svelte",
-      "file": "src/lib/components/Card.svelte"
     },
     {
       "type": "file",
@@ -836,11 +746,6 @@
     },
     {
       "type": "file",
-      "name": "src/lib/components/Heading.svelte",
-      "file": "src/lib/components/Heading.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Heading.test.svelte",
       "file": "src/lib/components/Heading.test.svelte"
     },
@@ -856,23 +761,8 @@
     },
     {
       "type": "file",
-      "name": "src/lib/components/OrganizerCard.svelte",
-      "file": "src/lib/components/OrganizerCard.svelte"
-    },
-    {
-      "type": "file",
-      "name": "src/lib/components/Text.svelte",
-      "file": "src/lib/components/Text.svelte"
-    },
-    {
-      "type": "file",
       "name": "src/lib/components/Text.test.svelte",
       "file": "src/lib/components/Text.test.svelte"
-    },
-    {
-      "type": "file",
-      "name": "src/lib/components/VenueCard.svelte",
-      "file": "src/lib/components/VenueCard.svelte"
     },
     {
       "type": "file",
@@ -889,17 +779,11 @@
     },
     {
       "type": "devDependency",
-      "name": "@vitest/coverage-v8",
-      "file": "package.json",
-      "line": 18
-    },
-    {
-      "type": "devDependency",
       "name": "postcss",
       "file": "package.json",
       "line": 20
     }
   ],
   "unlistedDeps": [],
-  "summary": "Found 78 issues"
+  "summary": "Found 67 issues"
 }
