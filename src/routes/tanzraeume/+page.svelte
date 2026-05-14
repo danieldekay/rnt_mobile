@@ -28,6 +28,7 @@
 	let activeCity = $state('');
 	let searchQuery = $state('');
 	let activeDateFilter = $state<EntityDateFilter>('current-month');
+	let onlyWithEvents = $state(true);
 
 	// Show ALL venues, sorted: those with events first, then others
 	const allVenues = $derived.by(() => buildVenueViewModels(data.venues));
@@ -46,10 +47,15 @@
 		})
 	);
 
+	const venuesWithEvents = $derived.by(() => 
+		venues.filter((venue) => (venue.nextEvents?.length ?? 0) > 0)
+	);
+
 	const cityOptions = $derived.by(() => {
 		const counts: Record<string, number> = {};
+		const sourceForCities = onlyWithEvents ? venuesWithEvents : venues;
 
-		for (const venue of venues) {
+		for (const venue of sourceForCities) {
 			if (venue.cityLabel === 'Unbekannt') continue;
 			counts[venue.cityLabel] = (counts[venue.cityLabel] ?? 0) + 1;
 		}
@@ -61,8 +67,9 @@
 
 	const filteredVenues = $derived.by(() => {
 		const normalizedQuery = normalizeForSearch(searchQuery);
+		const sourceVenues = onlyWithEvents ? venuesWithEvents : venues;
 
-		return venues.filter((venue) => {
+		return sourceVenues.filter((venue) => {
 			const matchesCity = activeCity.length === 0 || venue.cityLabel === activeCity;
 			const matchesSearch = normalizedQuery.length === 0 || venue.searchIndex.includes(normalizedQuery);
 
@@ -71,9 +78,9 @@
 	});
 
 	const visibleCount = $derived(filteredVenues.length);
-	const totalCount = $derived(venues.length);
+	const totalCount = $derived(onlyWithEvents ? venuesWithEvents.length : venues.length);
 	const dateFilterCounts = $derived.by(() => countEntitiesForDateFilters(venues, (venue) => venue.countsByDateFilter || {}));
-	const hasActiveFilters = $derived(activeCity.length > 0 || searchQuery.trim().length > 0 || activeDateFilter !== 'current-month');
+	const hasActiveFilters = $derived(activeCity.length > 0 || searchQuery.trim().length > 0 || activeDateFilter !== 'current-month' || !onlyWithEvents);
 	const hasRelatedEntries = $derived(filteredVenues.some((venue) => venue.relatedVenueCount > 0));
 	const showLoading = $derived(
 		Boolean(navigating.to && navigating.to.url.pathname === resolve('/tanzraeume') && !data.loadError && venues.length === 0)
@@ -222,6 +229,7 @@
 			activeDateFilter = 'current-month';
 			activeCity = '';
 		searchQuery = '';
+		onlyWithEvents = true;
 	}
 
 	function toEnhancedVenue(venue: VenueViewModel, nextEvents?: typeof venue.nextEvents): EnhancedVenue {
@@ -296,7 +304,18 @@
 
 		<DateFilterChips bind:value={activeDateFilter} counts={dateFilterCounts} />
 
-		<div class="flex flex-col gap-1 border-t border-border-default pt-3 lg:flex-row lg:items-center lg:justify-between">
+		<div class="flex flex-wrap items-center gap-4 border-t border-border-default pt-3">
+			<label class="flex items-center gap-2">
+				<input
+					type="checkbox"
+					bind:checked={onlyWithEvents}
+					class="h-4 w-4 rounded border-border-default text-action-primary focus:ring-action-primary"
+				/>
+				<span class="text-sm font-medium text-text-default">Nur mit Termine</span>
+			</label>
+		</div>
+
+		<div class="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between">
 			<p class="text-sm font-medium text-text-default">{visibleCount} von {totalCount} Tanzräumen</p>
 			<p class="meta-text">
 				Zeitraum: {getDateFilterLabel(activeDateFilter)}. Suche durchsucht Namen, Stadt, Adresse und Website.
