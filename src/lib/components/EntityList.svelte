@@ -3,23 +3,25 @@
 	import SkeletonCard from "$lib/components/SkeletonCard.svelte";
 	import type { EntityDateFilter, DateFilterCounts } from "$lib/types";
 
-	export let searchQuery: string = $bindable("");
-	export let searchPlaceholder: string = "Suche";
-	export let onReset: (() => void) | undefined = undefined;
-	export let hasActiveFilters: boolean = false;
-	export let visibleCount: number = 0;
-	export let totalCount: number = 0;
-	export let activeDateFilter: EntityDateFilter = "current-month";
-	export let onDateFilterChange: ((filter: EntityDateFilter) => void) | undefined = undefined;
-	export let dateFilterCounts: DateFilterCounts = {
-		all: 0,
-		"next-7-days": 0,
-		"current-month": 0,
-		"next-3-months": 0,
-	};
-	export let showLoading: boolean = false;
-	export let loadError: boolean = false;
-	export let entityType: string = "";
+	let {
+		searchQuery = $bindable(""),
+		searchPlaceholder = "Suche",
+		onReset,
+		hasActiveFilters = false,
+		visibleCount = 0,
+		totalCount = 0,
+		activeDateFilter = $bindable("current-month"),
+		onDateFilterChange,
+		dateFilterCounts = {
+			all: 0,
+			"next-7-days": 0,
+			"current-month": 0,
+			"next-3-months": 0,
+		} as DateFilterCounts,
+		showLoading = false,
+		loadError = false,
+		entityType = "",
+	} = $props();
 </script>
 
 {#if showLoading}
