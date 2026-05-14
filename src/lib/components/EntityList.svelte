@@ -3,6 +3,21 @@
 	import SkeletonCard from "$lib/components/SkeletonCard.svelte";
 	import type { EntityDateFilter, DateFilterCounts } from "$lib/types";
 
+	type EntityListProps = {
+		searchQuery?: string;
+		searchPlaceholder?: string;
+		onReset?: () => void;
+		hasActiveFilters?: boolean;
+		visibleCount?: number;
+		totalCount?: number;
+		activeDateFilter?: EntityDateFilter;
+		onDateFilterChange?: (filter: EntityDateFilter) => void;
+		dateFilterCounts?: DateFilterCounts;
+		showLoading?: boolean;
+		loadError?: boolean;
+		entityType?: string;
+	};
+
 	let {
 		searchQuery = $bindable(""),
 		searchPlaceholder = "Suche",
@@ -21,7 +36,7 @@
 		showLoading = false,
 		loadError = false,
 		entityType = "",
-	} = $props();
+	}: EntityListProps = $props();
 </script>
 
 {#if showLoading}
