@@ -395,7 +395,7 @@
     },
     {
       "fileA": "src/routes/+layout.svelte",
-      "startA": 441,
+      "startA": 444,
       "fileB": "src/routes/event/[id]/+page.svelte",
       "startB": 658,
       "lines": 11,
@@ -451,6 +451,6 @@
     }
   ],
   "duplicatedLines": 834,
-  "totalLines": 24046,
-  "percentage": 3.47
+  "totalLines": 24107,
+  "percentage": 3.46
 }

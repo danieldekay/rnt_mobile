@@ -386,12 +386,16 @@
                             class="block h-full rounded-card transition-shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring/25"
                         >
                             <div
-                                class="grid h-full grid-cols-[5.5rem,minmax(0,1fr)] items-start gap-4 p-4 sm:grid-cols-[6.5rem,minmax(0,1fr)] sm:p-5"
+                                class={`grid h-full items-start gap-4 p-4 sm:p-5 ${
+                                    media
+                                        ? "grid-cols-[5.5rem,minmax(0,1fr)] sm:grid-cols-[6.5rem,minmax(0,1fr)]"
+                                        : "grid-cols-1"
+                                }`}
                             >
-                                <div
-                                    class="overflow-hidden rounded-card bg-surface-subtle ring-1 ring-inset ring-border-default/40"
-                                >
-                                    {#if media}
+                                {#if media}
+                                    <div
+                                        class="overflow-hidden rounded-card bg-surface-subtle ring-1 ring-inset ring-border-default/40"
+                                    >
                                         <img
                                             src={imageUrl ??
                                                 media.source_url ??
@@ -402,32 +406,20 @@
                                             loading="lazy"
                                             decoding="async"
                                         />
-                                    {:else}
-                                        <div
-                                            class="flex aspect-square items-center justify-center bg-surface-subtle p-3"
-                                        >
-                                            <img
-                                                src="/rnt-logo.png"
-                                                alt=""
-                                                class="h-full w-full object-contain opacity-55 transition-transform duration-500 group-hover:scale-105"
-                                                loading="lazy"
-                                                decoding="async"
-                                            />
-                                        </div>
-                                    {/if}
-                                </div>
+                                    </div>
+                                {/if}
 
                                 <div
                                     class="flex h-full min-w-0 flex-col gap-2 pt-0.5"
                                 >
-                                    <p class="announcement-excerpt meta-text">
-                                        {excerpt}
-                                    </p>
                                     <h2
                                         class="line-clamp-2 font-display text-[1.125rem] font-semibold leading-snug tracking-tight text-text-default transition-colors group-hover:text-action-primary sm:text-[1.1875rem]"
                                     >
                                         {title}
                                     </h2>
+                                    <p class="announcement-excerpt meta-text">
+                                        {excerpt}
+                                    </p>
                                     <div
                                         class="mt-auto flex items-center justify-between gap-3 pt-0.5"
                                     >

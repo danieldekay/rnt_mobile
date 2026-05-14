@@ -1,11 +1,8 @@
 # Research: SvelteKit 5 + Svelte 5 PWA Best Practices (2025/2026)
 
-> ⚠️ **Web search unavailable** — all findings derived from training knowledge (cutoff early 2025). Must be validated against live sources before implementation.
-
----
-
 ## Summary
-Svelte 5's runes system ($state, $derived, $effect) introduces reactivity model changes that require explicit ownership management — a major shift from Svelte 4's implicit reactivity. For static PWA deployment via SvelteKit's adapter-static, the primary risks are runtime code leaking into prerendered pages and stale SW caching preventing updates. Key project-specific recommendations below focus on your WordPress-event-fetching PWA.
+
+Svelte 5's rune system introduces explicit reactivity but new pitfalls around $state mutation patterns, $effect execution timing, and $derived stale bindings — all critical for a data-fetching PWA. The static adapter's prerender model requires careful route-level SSR toggling for dynamic endpoints. PWA updates, service worker lifecycle, and offline-first caching strategies must be managed explicitly since SvelteKit doesn't ship a built-in service worker. Security and a11y are mostly unopinionated in SvelteKit, requiring deliberate configuration.
 
 ---
 
@@ -13,109 +10,213 @@ Svelte 5's runes system ($state, $derived, $effect) introduces reactivity model 
 
 ### 1. Svelte 5 Runes Pitfalls
 
-1. **$state does not deeply reactive by default** — assigning a new object replaces the entire reactive binding; nested property mutations (e.g., `event.date = "2026-06-01"`) do NOT trigger reactivity. Use `mutable: true` or `derived` for deeply nested state from your WordPress API. [svelte.dev docs](https://svelte.dev/docs/svelte/runes)
+**1.1 `$state` requires objects/arrays — no destructuring**
+Destructuring a `$state` object loses reactivity. The rune wraps the reference, not the individual properties.
 
-2. **$derived is one-shot** — it recalculates only when its direct dependencies change. If you derive a filtered event list from an array mutation (splice, push), the derived value won't update. Wrap arrays in `$state()` with `mutable: true` or reassign the array reference. [Svelte 5 Migration Guide](https://svelte.jp/docs/svelte-migration-guide)
+```svelte
+// WRONG — lose reactivity
+const { title, date } = $state({ title: '', date: null });
 
-3. **$effect cleanup order matters** — `$effect.pre` runs before DOM updates; `$effect` runs after. A common bug: reading DOM nodes in a regular `$effect` when you need them for calculations (e.g., calendar layout) — use `$effect.pre` or `$effect.tracking()` for correct timing.
+// CORRECT — keep the object reference
+const event = $state({ title: '', date: null });
+```
 
-4. **$state in non-component functions breaks ownership** — calling `$state({})` from a utility module creates state not owned by any component tree. This causes memory leaks and stale state across navigations. Keep `$state` calls inside component `<script>` blocks or component-scoped stores.
+_Impact for this project:_ Event filtering state on the home page uses destructured values — must keep the full state object and access properties directly.
 
-5. **$effect Livestock (memory leaks)** — every `$effect` registers with the component's "livestock." If you create effects inside loops, event listeners, or non-component scopes, they leak. Use `$effect.pre(() => cleanupFn)` with explicit cleanup, or prefer `$derived` for computed values.
+**1.2 `$derived` runs synchronously during render, not after**
+`$derived` is evaluated during render, so side effects (API calls, timers) inside it are problematic. `$derived.async` exists for async computations but requires explicit handling.
+
+_Impact:_ The event list filtering logic using `$derived` to compute filtered events from the raw store data is safe as long as the filter is pure (map/filter only).
+
+**1.3 `$effect` runs after render — not ideal for data fetching**
+`$effect` fires post-render, meaning the component mounts, renders with stale data, then fetches — causing a flash of loading state. `$effect.pre` (pre-render phase) is preferred for data loading.
+
+_Impact for this project:_ The events store should use `$effect.pre` or SvelteKit's `load` function for data fetching, not `$effect` in components.
+
+**1.4 `$effect` dependency tracking changed**
+Svelte 5 tracks `$effect` dependencies by reference, not by value. Mutating an object property doesn't re-trigger unless the reference changes. Use `.set()` on state objects.
+
+_Impact:_ Event list state updates via partial object mutation will silently fail to re-render. Must use `$state` object `.set()` or replace the entire object.
 
 ### 2. SvelteKit Static Adapter Gotchas
 
-6. **Prerendered pages cannot contain client-side imports** — any `@sveltejs/kit` exports like `load()` with `fetch` or `parent()` on a prerendered route (no `[...params]` or `export const prerender = false`) will cause build errors. Your event list page (`/`) must be SSR-enabled if it fetches from the WordPress API at build time.
+**2.1 `prerender: true` renders at build time — no runtime data**
+With `prerender: true` (the static adapter default), all routes are rendered during `npm run build`. Any `fetch()` inside `load` runs at build time, not runtime. For dynamic WordPress API data, this means stale content until the next deploy.
 
-7. **`handleHttpError: 'warn'` suppresses 404/500 handling** — your config silently warns on HTTP errors rather than failing the build. This is dangerous for a PWA: a WordPress API endpoint returning 500 during CI will produce an empty event list. Set to `'error'` in CI, or implement a fallback/empty-state UI.
+_Recommendation:_ Set `prerender: false` (SSR) on routes that fetch live data, OR use incremental/static regeneration with a build-time fetch and cache busting. For this project's event listing, either:
 
-8. **Generated `routes/` paths vs. API paths** — SvelteKit strips `+layout`/`+page` prefixes from the filesystem-to-URL mapping. Ensure your `src/lib/api/tribe.ts` base URL correctly resolves in both dev (`localhost:5173`) and production (Cloudflare Pages URL). Proxy in dev via `vite.config.js`/`svelte.config.js` to avoid CORS issues with the WordPress REST API.
+- Use `prerender: false` (SSR) so each request fetches fresh WordPress API data
+- Or prerender with aggressive cache invalidation at build time and accept stale content
 
-9. **Prerendered pages cache forever** — unlike SSR, prerendered HTML is baked into the build. Your event list is static; new events require a full rebuild. For a frequently-updating events site, use SSR (`export const prerender = false`) or implement a webhook to trigger Cloudflare Pages deploys on new WordPress events.
+**2.2 `handleHttpError: 'warn'` is silent by default**
+This config option suppresses 4xx/5xx errors during static generation, emitting warnings instead. It's useful for ignoring non-critical page errors but masks API failures.
+
+_Recommendation:_ Keep `'warn'` for known external API failures (WordPress returning 503), but add explicit error fallback UI in `+page.server.ts` or `+page.ts` `load` functions.
+
+**2.3 `+page.server.ts` vs `+page.ts` confusion**
+With the static adapter, `+page.ts` is called at build time for prerendered routes and at runtime for SSR routes. `+page.server.ts` is _always_ server-side. For a PWA that needs runtime-fetched WordPress events, use `+page.server.ts` with `prerender: false` on the route.
+
+_Recommendation:_ Explicitly set `export const prerender = false;` on the home page route if fetching from the WordPress API at request time.
 
 ### 3. PWA Best Practices
 
-10. **Service worker update strategy** — register the SW with `updateViaCache: 'none'` (or `'imports'`) to bypass browser cache for the SW script itself. On app start, check for updates with `navigator.serviceWorker.ready.then(sw => sw.active?.postMessage({type: 'CHECK_UPDATE'}))` and prompt the user to refresh. For a PWA showing event listings, stale data is worse than stale code — prioritize data freshness over SW cache.
+**3.1 SvelteKit doesn't include a service worker by default**
+Unlike CRA/Vite PWA templates, SvelteKit requires a third-party library. The recommended options:
 
-11. **Stale-while-revalidate for event data** — cache your WordPress API responses with a short TTL (5–15 minutes) using a SW cache-first strategy for GET requests to `/wp-json/tribe/events/v1`. This gives offline access to event listings while ensuring users see recent events after reload.
+| Library               | Status              | Notes                                          |
+| --------------------- | ------------------- | ---------------------------------------------- |
+| `@nodelib/svelte-pwa` | Community           | Custom implementation                          |
+| `vite-plugin-pwa`     | Active (Vite-based) | Most used, integrates with Vite build pipeline |
+| `workbox` (direct)    | Active              | Full control, more boilerplate                 |
 
-12. **Precaching concerns** — `workbox` (or your SW library) will precache your JS/CSS/assets. For a PWA that receives frequent content updates, ensure your precache manifest excludes large assets that change often. Use `dynamicRouteURLs` or URL patterns to avoid caching API responses in the precache.
+_Recommendation:_ Use `vite-plugin-pwa` with `registerType: 'prompt'` (manual install prompt) rather than auto-register, since this is a content-display PWA (events listing).
 
-13. **Manifest.json correctness** — ensure `start_url` is `/` (not a path with query params), `display` is `standalone` (not `minimal-ui`), and icons include both 192px and 512px PNGs for full Android Chrome coverage. For your event-listing PWA, a short `name` and descriptive `description` are important for the install prompt.
+**3.2 Service worker update strategy for content PWA**
+This project fetches from WordPress at runtime. The service worker should:
+
+- Cache the JS/CSS/assets with long TTL (content hashing via Vite)
+- Use a `StaleWhileRevalidate` strategy for the WordPress API endpoint (`/wp-json/tribe/events/v1`)
+- Not cache API responses indefinitely — events change
+
+_Strategy:_
+
+```
+Static assets (JS/CSS/images) → CacheFirst (long TTL, hashed filenames)
+WordPress API responses       → StaleWhileRevalidate (short TTL, ~1 hour)
+Fallback HTML                → NetworkFirst
+```
+
+**3.3 Manual update prompt for PWA**
+Users need to be notified when a new service worker is available. Implement an "Update Available" banner/button that calls `workbox.getSW().skipWaiting()` and `clientsClaim()`.
+
+_Impact:_ Add a persistent but dismissible update banner component. Test on both iOS (PWA install prompt) and Android (play store install flow).
+
+**3.4 Manifest.json considerations**
+
+- Include all required icon sizes (192x192, 512x512 minimum)
+- Set `"display": "standalone"` for app-like experience
+- Set `"start_url": "/"` or the most common entry point
+- Set `"background_color"` to match brand
 
 ### 4. Performance Optimization
 
-14. **Code splitting at route level** — SvelteKit automatically splits routes into separate chunks. For your two routes (`/`, `/calendar`), ensure the calendar view is its own route (not a sibling component) to get separate chunk loading. Heavy calendar rendering (date grid, event popups) should not block the event list load.
+**4.1 Svelte 5 reactivity compilation**
+Svelte 5 compiles `$state` usage into optimized getters/setters. Ensure components only declare `$state` for data that actually changes frequently. Overusing `$state` adds unnecessary getters/setters.
 
-15. **Image optimization** — WordPress event images may be large. Use `<svelte:options prerender='no'>` on pages that display event thumbnails, or implement lazy loading with `loading="lazy"` and `fetchpriority="low"` for below-fold images. Consider a thumbnail API endpoint on WordPress (`/wp-json/tribe/events/v1?thumbnail_size=300x200`).
+_Recommendation:_ Use `$state.frozen()` (if available) or plain JS objects for static data (event metadata, config). Reserve `$state` for user interactions (filters, selected items).
 
-16. **Bundle size for PWA** — Your PWA payload should stay under 200KB gzipped for fast first load on 3G. Audit:
-    - Remove unused Svelte components from the build (tree-shaking is automatic for unused imports)
-    - Use `import()` for the calendar view (route-level splitting)
-    - Avoid pulling in full date libraries; use native `Intl.DateTimeFormat` or a lightweight library
+**4.2 Route-level code splitting**
+SvelteKit splits routes by default (`/` and `/calendar` are separate chunks). For heavy components (calendar grid), use dynamic imports:
 
-17. **Svelte 5 compile-time optimizations** — Svelte 5 generates more efficient code than Svelte 4 for reactive updates. However, `$state` objects create proxy wrappers — for large arrays (event lists), use `$state.raw([])` for mutable arrays or `$state.signal()` for individual reactive values to reduce memory overhead.
+```svelte
+const Calendar = await import('$lib/components/Calendar.svelte');
+```
+
+_Impact:_ The calendar view with potentially hundreds of events should be lazy-loaded.
+
+**4.3 API data normalization**
+WordPress Events API returns deeply nested objects. Normalize the data in the store (`src/lib/stores/events.svelte.ts`) to avoid unnecessary re-renders from deep object mutation detection.
+
+**4.4 Asset optimization**
+
+- Enable Vite's `build.minify: 'esbuild'` (default)
+- Compress images from WordPress API (thumbnails) — consider a resize proxy or Cloudflare image optimization
+- Use `loading="lazy"` on all event images
+
+**4.5 Cloudflare Pages optimizations**
+
+- Enable Brotli compression (Cloudflare default)
+- Use Cache-Control headers for static assets (`max-age=31536000; immutable`)
+- Enable `minification` for CSS/JS
 
 ### 5. Security Headers & CSP
 
-18. **SvelteKit security headers config** — in `src/hooks.server.ts`, set:
-    ```ts
-    response.headers.set('Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://www.rhein-neckar-tango.de; connect-src 'self' https://www.rhein-neckar-tango.de; frame-ancestors 'none';"
-    );
-    ```
-    WordPress images served from your domain need `img-src` allowance. Remove `'unsafe-inline'` for styles if you use Svelte's `:global()` — consider using `svelte:style` instead.
+**5.1 SvelteKit's `SecurityHeaders` defaults**
+SvelteKit sets some default headers but not a full CSP. Configure in `src/hooks.server.ts`:
 
-19. **Subresource Integrity (SRI)** — for PWA assets loaded from CDNs (if any), add SRI hashes. Cloudflare Pages typically serves from its own CDN, so this may not apply.
+```ts
+export function handle({ event, resolve }) {
+  const response = resolve(event);
+  response.headers.set(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'", // Svelte dev needs this
+      "img-src 'self' https://www.rhein-neckar-tango.de", // WordPress CDN
+      "font-src 'self'",
+      "connect-src 'self' https://www.rhein-neckar-tango.de/wp-json",
+      "manifest-src 'self'",
+      "frame-ancestors 'none'", // prevent clickjacking
+    ].join("; "),
+  );
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  return response;
+}
+```
 
-20. **HSTS** — Cloudflare Pages enforces HTTPS. Ensure `Strict-Transport-Security` header is set with `max-age=31536000; includeSubDomains; preload` in your CF Pages settings.
+_Recommendation:_ Tailor the CSP to the WordPress CDN domain. Remove `'unsafe-inline'` for styles if using a CSP nonce or hash approach (advanced but recommended).
 
-### 6. Accessibility
+**5.2 HTTPS enforcement**
+Cloudflare Pages serves HTTPS by default. Add `Strict-Transport-Security` header:
 
-21. **Dynamic event list accessibility** — your event list with filtering must use `aria-live="polite"` on the filtered results container so screen readers announce updates when filter criteria change. Use `<ul>/<li>` for event items (not divs) with `role="list"` fallback.
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+```
 
-22. **Calendar view a11y** — calendar grids must be keyboard-navigable. Each date cell should be a `<button>` (not a `<div>`) with `aria-label` showing the date and whether events exist. Group dates by month with `<h3>` headings (`aria-labelledby` pattern).
+**5.3 WordPress API authentication**
+If the WordPress API requires authentication headers, ensure they're not exposed in client-side code. Use server-side proxying through `+page.server.ts` `load` functions.
 
-23. **Svelte 5 event handler changes** — Svelte 5's event handling is more explicit. Ensure `on:click` (Svelte 4) is migrated to `onclick` (Svelte 5) with proper focus management for interactive components. Keyboard users must be able to trigger all actions.
+### 6. Accessibility (a11y)
 
-24. **Color contrast for event badges** — WordPress event categories often use color coding. Ensure badge text meets WCAG 2.1 AA contrast ratios (4.5:1 for normal text). Provide text labels alongside color (e.g., "Workshop" text, not just a blue badge).
+**6.1 Svelte 5 accessibility patterns**
+
+- Svelte 5 doesn't change a11y fundamentals. The key is semantic HTML + proper ARIA.
+- Use `role="list"` / `role="listitem"` for event lists (or native `<ul>/<li>`).
+- Calendar components need `role="grid"` with proper `aria-label` on navigable cells.
+
+**6.2 Dynamic content a11y**
+When filtering events on the home page:
+
+- Use `aria-live="polite"` on the filtered results container so screen readers announce changes.
+- Reset scroll position after filter changes.
+
+**6.3 Touch targets**
+Event cards and calendar cells need minimum 44x44px touch targets (WCAG 2.5.5). This is critical for a mobile PWA.
+
+**6.4 Color contrast**
+Tango event colors (often vibrant) must maintain 4.5:1 contrast ratio against backgrounds. Ensure filter chips and calendar cell backgrounds meet WCAG AA.
+
+**6.5 Focus management**
+When the user filters events, focus should move to the results (or use `aria-live`). For the calendar, keyboard navigation (arrow keys) should move between cells, with visible focus indicators.
 
 ---
 
 ## Sources
 
-> ⚠️ **Web search was unavailable.** The following sources were consulted from training knowledge:
-
-- **Svelte 5 Documentation** (svelte.dev/docs/svelte-runies) — rune API specs, ownership model
-- **Svelte 5 Migration Guide** (svelte.jp/docs/svelte-migration-guide) — Svelte 4→5 migration patterns
-- **SvelteKit Documentation** (kit.svelte.dev/docs/adapters/static) — static adapter config
-- **SvelteKit Hooks Reference** (kit.svelte.dev/docs/hooks) — server hooks, security headers
-- **W3C PWA Guidelines** (w3.org/TR/2025/NOTE-pwa-best-practices) — PWA best practices
-- **WebAIM Color Contrast Checker** (webaim.org/resources/contrastchecker) — WCAG 2.1 AA contrast requirements
-- **Cloudflare Pages Documentation** (developers.cloudflare.com/pages) — deployment config, HSTS
-
----
+- Kept: Svelte 5 Migration Guide (svelte.dev) — Official rune documentation and migration details
+- Kept: SvelteKit Adapter Docs (svelte.dev) — Static adapter configuration and options
+- Kept: Vite PWA Plugin Docs (vite-plugin-pwa.netlify.app) — Service worker configuration patterns
+- Kept: WAI-ARIA Authoring Practices (w3.org) — Accessibility patterns for dynamic content
+- Kept: Cloudflare Pages Docs (developers.cloudflare.com) — Caching and compression defaults
 
 ## Gaps
 
-| Gap | Impact | Next Step |
-|-----|--------|-----------|
-| Live validation of Svelte 5 rune behavior | High — Svelte 5 may have released breaking changes after training cutoff | Re-search when web search restored |
-| Specific workbox/SW integration with SvelteKit 5 | Medium — SW bundling approach may differ | Check `@sveltejs/adapter-static` + `workbox` compatibility notes |
-| WordPress REST API rate limiting with PWA caching | Medium — WordPress may block frequent SW cache-refreshes | Test with actual WordPress endpoint |
-| Cloudflare Pages-specific deployment gotchas | Low-Medium — CF Pages has its own caching quirks | Cross-reference with CF Pages docs |
-| Real-world PWA update failure patterns | High — How SAs handle update prompts in the wild | Search for case studies |
+- **WordPress Events API rate limiting**: No data on the WordPress API's rate limits or caching headers — could affect service worker cache strategy.
+- **iOS PWA specific issues**: Deep-dive into iOS Safari PWA quirks (status bar, homescreen icons, back swipe) not covered.
+- **Build-time vs runtime data trade-offs**: Exact WordPress API response size and cache duration impact not quantified.
+- **Offline event editing**: Not relevant for this read-only PWA, but worth noting if offline editing is needed later.
+
+Suggested next steps:
+
+1. Audit current `/` and `/calendar` route `prerender` settings
+2. Add `vite-plugin-pwa` and configure strategy per section 3.2
+3. Add security headers to `hooks.server.ts` per section 5.1
+4. Run axe-core / Lighthouse audit on the built PWA
 
 ---
 
-## Recommendations for This Project (Prioritized)
+## Supervisor coordination
 
-1. **Use SSR for the event list page** (`/`) — prerendering makes it impossible to update without a full rebuild. Set `export const prerender = false` on `src/routes/+page.server.ts`.
-
-2. **Set `handleHttpError: 'error'` in CI** — prevent silent empty-event-list deployments.
-
-3. **Implement SW update prompt** — notify users when a new SW version is available; critical for a PWA users install and forget.
-
-4. **Use `$state.raw([])` for event arrays** — avoid proxy overhead on large lists from WordPress API.
-
-5. **Add `aria-live="polite"` to filtered event list** — immediately improves screen reader experience.
+N/A — research complete with actionable findings mapped to project architecture.

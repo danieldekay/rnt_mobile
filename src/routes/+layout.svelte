@@ -423,7 +423,10 @@
                         id="mobile-main-navigation"
                         class="mt-4 border-t border-border-default pt-4"
                     >
-                        <nav class="flex flex-col gap-2" aria-label="Hauptnavigation">
+                        <nav
+                            class="flex flex-col gap-2"
+                            aria-label="Hauptnavigation"
+                        >
                             {#each mobileNavItems as item (item.href)}
                                 <a
                                     href={resolve(item.href)}
