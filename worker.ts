@@ -19,6 +19,10 @@ type JsonBody = {
   [key: string]: unknown;
 };
 
+type CacheStorageWithDefault = CacheStorage & {
+  default: Cache;
+};
+
 const NEWSLETTER_SUBSCRIBE_PATH = "/api/newsletter/subscribe";
 const NEWSLETTER_UNSUBSCRIBE_PATH = "/api/newsletter/unsubscribe";
 const NEWSLETTER_UNSUBSCRIBE_ALIAS_PATH = "/api/newsletter/unsub";
@@ -47,7 +51,6 @@ const TRIBE_ORGANIZERS_BASE_URL =
 const WORDPRESS_ORIGIN = "https://www.rhein-neckar-tango.de";
 const WORDPRESS_ADMIN_URL = `${WORDPRESS_ORIGIN}/wp-admin/`;
 const WORDPRESS_PROFILE_URL = `${WORDPRESS_ADMIN_URL}profile.php`;
-const WORDPRESS_USER_API_URL = `${WORDPRESS_ORIGIN}/wp-json/wp/v2/users/me`;
 const REQUEST_TIMEOUT_MS = 8000;
 const EVENTS_CACHE_TTL_SECONDS = 300;
 const DJ_CPT_CACHE_TTL_SECONDS = 1800;
@@ -161,12 +164,11 @@ async function handleWordPressAuthStatus(request: Request): Promise<Response> {
   }
 
   try {
-    // Use WordPress REST API to check auth status
-    // Returns 401 if not logged in, 200 with user data if logged in
-    const response = await fetchWithTimeout(WORDPRESS_USER_API_URL, {
+    const response = await fetchWithTimeout(WORDPRESS_PROFILE_URL, {
       method: "GET",
+      redirect: "manual",
       headers: {
-        accept: "application/json",
+        accept: "text/html,application/xhtml+xml",
         cookie,
         "user-agent":
           request.headers.get("user-agent") ??
@@ -174,7 +176,15 @@ async function handleWordPressAuthStatus(request: Request): Promise<Response> {
       },
     });
 
-    const loggedIn = response.status === 200;
+    const location = response.headers.get("location")?.toLowerCase() ?? "";
+    const redirectedToLogin =
+      location.includes("/wp-login.php") ||
+      response.status === 301 ||
+      response.status === 302 ||
+      response.status === 303 ||
+      response.status === 307 ||
+      response.status === 308;
+    const loggedIn = response.status === 200 && !redirectedToLogin;
 
     return json(
       {
@@ -249,7 +259,7 @@ async function proxyTribeRequest(
   const cacheKey = new Request(targetUrl.toString());
 
   if (cacheTtlSeconds > 0) {
-    const cache = caches.default;
+    const cache = getDefaultCache();
     const cached = await cache.match(cacheKey);
     if (cached) {
       return cached;
@@ -281,7 +291,7 @@ async function proxyTribeRequest(
     });
 
     if (cacheTtlSeconds > 0 && response.ok) {
-      const cache = caches.default;
+      const cache = getDefaultCache();
       await cache.put(cacheKey, proxiedResponse.clone());
     }
 
@@ -868,13 +878,17 @@ function json(body: JsonBody, status: number): Response {
   });
 }
 
+function getDefaultCache(): Cache {
+  return (caches as CacheStorageWithDefault).default;
+}
+
 async function proxyRssFeed(request: Request): Promise<Response> {
   if (request.method !== "GET") {
     return json({ ok: false, message: "Methode nicht erlaubt." }, 405);
   }
 
   const cacheKey = new Request(LINKS_FEED_URL);
-  const cache = caches.default;
+  const cache = getDefaultCache();
   const cached = await cache.match(cacheKey);
   if (cached) {
     return cached;

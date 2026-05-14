@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.2.2',
+        releasedAt: '2026-05-14',
+        headline: 'WordPress-Session und Matomo-Tracking stabilisiert',
+        summary:
+            'Dieses Patch-Release korrigiert den WordPress-Loginstatus in der Sidebar und stellt sicher, dass Matomo direkt beim ersten consentierten Seitenaufruf trackt.',
+        highlights: [
+            'WordPress-Status prueft jetzt die wp-admin-Session robust ueber profile.php statt nonce-abhaengiger REST-Erkennung.',
+            'Die Sidebar zeigt damit den Loginzustand zuverlaessiger und bleibt bei Ausfaellen mit klaren Fallback-Meldungen nutzbar.',
+            'Matomo sendet jetzt den ersten Pageview sofort nach aktivierter Analytics-Einwilligung auf der aktuellen Seite.',
+            'Duplicate-Prevention fuer identische URLs bleibt aktiv, damit nachfolgende SPA-Navigationen keinen doppelten Initial-Hit erzeugen.',
+            'Neue Tests decken WordPress-Statusfaelle und Consent-Tracking-Flows explizit ab.'
+        ]
+    },
+    {
         version: '0.2.1',
         releasedAt: '2026-05-14',
         headline: 'Venue-Karten mit Termin-Vorschau und verbessertes Filter',

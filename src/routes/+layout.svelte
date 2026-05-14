@@ -54,7 +54,12 @@
 
     $effect(() => {
         const analyticsEnabled = consentStore.hasConsent("analytics");
-        syncMatomoConsent(analyticsEnabled);
+        const currentUrl = `${$page.url.pathname}${$page.url.search}`;
+        syncMatomoConsent(
+            analyticsEnabled,
+            analyticsEnabled ? currentUrl : undefined,
+            analyticsEnabled ? document.title : undefined,
+        );
 
         if (analyticsEnabled) {
             setupErrorTracking();
