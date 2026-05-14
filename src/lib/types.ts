@@ -221,7 +221,7 @@ export interface OrganizerWithStats extends TribeOrganizer {
   upcomingCount: number;
   cityLabel: string;
   countsByDateFilter: DateFilterCounts;
-  nextEvents?: DjNextEventSummary[];
+  nextEvents?: OrganizerNextEventSummary[];
 }
 
 export interface CategoryStat {

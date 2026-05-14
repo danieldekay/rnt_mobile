@@ -9,6 +9,7 @@
     type EnhancedOrganizerDetail = EnhancedOrganizer & {
         cityLabel: string;
         upcomingCount: number;
+        nextEvents: import("$lib/types").OrganizerNextEventSummary[];
     };
 
     let { data }: PageProps = $props();
@@ -47,6 +48,7 @@
         }}
         <OrganizerCard
             organizer={enhancedOrganizer}
+            nextEvents={organizer.nextEvents || []}
             showVerification={true}
             showSocialLinks={false}
             showContactInfo={true}

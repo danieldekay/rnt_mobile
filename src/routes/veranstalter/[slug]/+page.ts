@@ -1,5 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { fetchOrganizerEvents, fetchOrganizers } from "$lib/api/tribe";
+import { getNextEventsForOrganizer } from "$lib/utils/date-filters";
 import type { TribeOrganizer } from "$lib/types";
 import type { PageLoad } from "./$types";
 
@@ -9,6 +10,7 @@ const WORDPRESS_ADMIN_BASE =
 type OrganizerDetail = TribeOrganizer & {
   cityLabel: string;
   upcomingCount: number;
+  nextEvents: import("$lib/types").OrganizerNextEventSummary[];
 };
 
 function normalizeCity(city: string | null | undefined): string {
@@ -68,6 +70,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
       ...organizer,
       cityLabel: deriveCityLabel(organizerEvents),
       upcomingCount: organizerEvents.length,
+      nextEvents: getNextEventsForOrganizer(organizerEvents, organizer.id, 2),
     };
 
     return {

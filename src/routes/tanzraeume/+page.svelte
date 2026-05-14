@@ -241,6 +241,7 @@
 			geo_lat: venue.geo_lat,
 			geo_lng: venue.geo_lng,
 			website: venue.website,
+			upcomingCount: venue.upcomingCount,
 			nextEvent: nextEvents?.[0] ? {
 				internalPath: nextEvents[0].internalPath,
 				externalUrl: nextEvents[0].externalUrl,

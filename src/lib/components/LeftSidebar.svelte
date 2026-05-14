@@ -88,7 +88,8 @@
 				method: 'GET',
 				headers: {
 					accept: 'application/json'
-				}
+				},
+				credentials: 'include'
 			});
 
 			const payload = (await response.json().catch(() => null)) as

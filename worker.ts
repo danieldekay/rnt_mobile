@@ -47,6 +47,7 @@ const TRIBE_ORGANIZERS_BASE_URL =
 const WORDPRESS_ORIGIN = "https://www.rhein-neckar-tango.de";
 const WORDPRESS_ADMIN_URL = `${WORDPRESS_ORIGIN}/wp-admin/`;
 const WORDPRESS_PROFILE_URL = `${WORDPRESS_ADMIN_URL}profile.php`;
+const WORDPRESS_USER_API_URL = `${WORDPRESS_ORIGIN}/wp-json/wp/v2/users/me`;
 const REQUEST_TIMEOUT_MS = 8000;
 const EVENTS_CACHE_TTL_SECONDS = 300;
 const DJ_CPT_CACHE_TTL_SECONDS = 1800;
@@ -160,11 +161,12 @@ async function handleWordPressAuthStatus(request: Request): Promise<Response> {
   }
 
   try {
-    const response = await fetchWithTimeout(WORDPRESS_PROFILE_URL, {
+    // Use WordPress REST API to check auth status
+    // Returns 401 if not logged in, 200 with user data if logged in
+    const response = await fetchWithTimeout(WORDPRESS_USER_API_URL, {
       method: "GET",
-      redirect: "manual",
       headers: {
-        accept: "text/html",
+        accept: "application/json",
         cookie,
         "user-agent":
           request.headers.get("user-agent") ??
@@ -172,9 +174,7 @@ async function handleWordPressAuthStatus(request: Request): Promise<Response> {
       },
     });
 
-    const location = response.headers.get("location") ?? "";
-    const loggedIn =
-      response.status === 200 && !location.includes("wp-login.php");
+    const loggedIn = response.status === 200;
 
     return json(
       {
