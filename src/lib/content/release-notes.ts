@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.2.1',
+        releasedAt: '2026-05-14',
+        headline: 'Venue-Karten mit Termin-Vorschau und verbessertes Filter',
+        summary:
+            'Tanzräume zeigen jetzt den nächsten Termin direkt in der Karte an, haben ein konsistentes Layout und können nach Termine gefiltert werden.',
+        highlights: [
+            'VenueCard zeigt jetzt den ersten bevorstehenden Termin direkt in der Karte an – passend zum OrganizerCard-Layout.',
+            'Venue-Karten haben jetzt ein 40×40px farbiges Initialen-Avatar – wie bei Organizern und DJs.',
+            'Neuer "Nur mit Termine" Filter auf der Tanzräume-Seite – standardmäßig aktiviert.',
+            'Alle Venues werden angezeigt, aber mit Terminen zuerst – nicht mehr ausgefiltert.',
+            'Verbesserte Sortierung: Venues mit Terminen erscheinen vor solchen ohne bevorstehende Events.'
+        ]
+    },
+    {
         version: '0.2.0',
         releasedAt: '2026-05-09',
         headline: 'Profile, Redaktion und Verzeichnisse wachsen zusammen',
