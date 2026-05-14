@@ -2,7 +2,11 @@
  * DJ presentation helpers – extracted from djs/+page.svelte
  */
 
-import type { DjProfileSummary, DjStyleKey, EntityDateFilter } from "$lib/types";
+import type {
+	DjProfileSummary,
+	DjStyleKey,
+	EntityDateFilter,
+} from "$lib/types";
 import { MUSIC_TYPE_NAMES, MUSIC_TYPE_BADGE_CLASSES } from "$lib/constants";
 
 export function getInitials(name: string): string {
@@ -39,19 +43,30 @@ export function getAvatarTone(style: DjStyleKey): string {
 	}
 }
 
-export function getNextEventMeta(dj: DjProfileSummary, activeDateFilter: EntityDateFilter): string {
-	const nextEvent = dj.nextEventsByDateFilter[activeDateFilter] ?? dj.nextEventsByDateFilter.all;
+export function getNextEventMeta(
+	dj: DjProfileSummary,
+	activeDateFilter: EntityDateFilter,
+): string {
+	const nextEvent =
+		dj.nextEventsByDateFilter[activeDateFilter] ??
+		dj.nextEventsByDateFilter.all;
 	if (!nextEvent) return "Kein Termin im Zeitraum";
 	return nextEvent.city
 		? `${nextEvent.dateLabel} · ${nextEvent.city}`
 		: nextEvent.dateLabel;
 }
 
-export function getUpcomingCount(dj: DjProfileSummary, activeDateFilter: EntityDateFilter): number {
+export function getUpcomingCount(
+	dj: DjProfileSummary,
+	activeDateFilter: EntityDateFilter,
+): number {
 	return dj.countsByDateFilter[activeDateFilter] ?? 0;
 }
 
-export function getNextEvent(dj: DjProfileSummary, activeDateFilter: EntityDateFilter) {
+export function getNextEvent(
+	dj: DjProfileSummary,
+	activeDateFilter: EntityDateFilter,
+) {
 	return (
 		dj.nextEventsByDateFilter[activeDateFilter] ??
 		dj.nextEventsByDateFilter.all ??
@@ -61,7 +76,12 @@ export function getNextEvent(dj: DjProfileSummary, activeDateFilter: EntityDateF
 
 export function getMusicBadge(dj: DjProfileSummary) {
 	return {
-		label: MUSIC_TYPE_NAMES[dj.style as keyof typeof MUSIC_TYPE_NAMES]?.charAt(0) ?? "",
-		classes: MUSIC_TYPE_BADGE_CLASSES[dj.style as keyof typeof MUSIC_TYPE_BADGE_CLASSES] ?? "",
+		label:
+			MUSIC_TYPE_NAMES[dj.style as keyof typeof MUSIC_TYPE_NAMES]?.charAt(0) ??
+			"",
+		classes:
+			MUSIC_TYPE_BADGE_CLASSES[
+				dj.style as keyof typeof MUSIC_TYPE_BADGE_CLASSES
+			] ?? "",
 	};
 }

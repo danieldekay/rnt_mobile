@@ -95,12 +95,6 @@
         activeCity = "";
         searchQuery = "";
     }
-
-    function formatUpcomingBadge(upcomingCount: number): string {
-        if (upcomingCount <= 0) return "Keine Termine";
-        if (upcomingCount === 1) return "1 Termin";
-        return `${upcomingCount} Termine`;
-    }
 </script>
 
 <svelte:head>

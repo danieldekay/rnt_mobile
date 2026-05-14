@@ -25,7 +25,9 @@ export function normalizeForSearch(value: string): string {
 export function getWebsiteUrl(website: string): string | null {
 	const trimmed = normalizeText(website);
 	if (trimmed.length === 0) return null;
-	const withScheme = /^[a-z]+:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+	const withScheme = /^[a-z]+:\/\//i.test(trimmed)
+		? trimmed
+		: `https://${trimmed}`;
 
 	try {
 		return new URL(withScheme).toString();
@@ -38,7 +40,9 @@ export function getWebsiteHost(websiteUrl: string | null): string | null {
 	if (websiteUrl === null) return null;
 
 	try {
-		return new URL(websiteUrl).hostname.replace(/^www\./, "").toLocaleLowerCase("de");
+		return new URL(websiteUrl).hostname
+			.replace(/^www\./, "")
+			.toLocaleLowerCase("de");
 	} catch {
 		return null;
 	}
@@ -58,7 +62,9 @@ export function getAddressCore(address: string): string | null {
 
 	const lastPart = parts[parts.length - 1];
 	const previousPart = parts[parts.length - 2];
-	return /\d/.test(lastPart) ? `${previousPart} ${lastPart}`.trim() : parts.slice(-2).join(" ");
+	return /\d/.test(lastPart)
+		? `${previousPart} ${lastPart}`.trim()
+		: parts.slice(-2).join(" ");
 }
 
 // --- Related venue detection ---
@@ -95,7 +101,10 @@ export function buildRelatedVenueLabel(
 ): string | null {
 	if (relatedCount === 0) return null;
 
-	const countLabel = relatedCount === 1 ? "1 ähnlicher Eintrag" : `${relatedCount} ähnliche Einträge`;
+	const countLabel =
+		relatedCount === 1
+			? "1 ähnlicher Eintrag"
+			: `${relatedCount} ähnliche Einträge`;
 
 	if (sharesWebsite && sharesAddress) {
 		return `${countLabel} in ${cityLabel} mit gleicher Website und ähnlicher Adresse`;
@@ -114,10 +123,7 @@ export function buildRelatedVenueLabel(
 
 // --- Enhanced venue conversion ---
 
-export function toEnhancedVenue(
-	venue: any,
-	nextEvents?: any[],
-): EnhancedVenue {
+export function toEnhancedVenue(venue: any, nextEvents?: any[]): EnhancedVenue {
 	return {
 		id: venue.id,
 		venue: venue.venue,
@@ -134,7 +140,7 @@ export function toEnhancedVenue(
 					title: nextEvents[0].title,
 					dateLabel: nextEvents[0].dateLabel,
 					city: nextEvents[0].city,
-			  }
+				}
 			: undefined,
 		location: {
 			address: venue.address,

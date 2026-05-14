@@ -10,6 +10,17 @@
 	} from '$lib/utils/date-filters';
 	import type { PageProps } from './$types';
 	import type { EnhancedVenue } from '$lib/types';
+	import {
+		normalizeCity,
+		normalizeText,
+		normalizeForSearch,
+		getWebsiteUrl,
+		getWebsiteHost,
+		getAddressCore,
+		isRelatedVenue,
+		buildRelatedVenueLabel,
+		toEnhancedVenue,
+	} from '$lib/utils/venue-presentation';
 
 	type VenueRecord = PageProps['data']['venues'][number];
 
@@ -129,134 +140,11 @@
 		});
 	}
 
-	function normalizeCity(city: string): string {
-		const trimmed = normalizeText(city);
-		return trimmed.length > 0 ? trimmed : 'Unbekannt';
-	}
-
-	function normalizeText(value: string): string {
-		return value.replace(/\s+/g, ' ').trim();
-	}
-
-	function normalizeForSearch(value: string): string {
-		return normalizeText(value)
-			.normalize('NFKD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.toLocaleLowerCase('de');
-	}
-
-	function getWebsiteUrl(website: string): string | null {
-		const trimmed = normalizeText(website);
-		if (trimmed.length === 0) return null;
-		const withScheme = /^[a-z]+:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-
-		try {
-			return new URL(withScheme).toString();
-		} catch {
-			return null;
-		}
-	}
-
-	function getWebsiteHost(websiteUrl: string | null): string | null {
-		if (websiteUrl === null) return null;
-
-		try {
-			return new URL(websiteUrl).hostname.replace(/^www\./, '').toLocaleLowerCase('de');
-		} catch {
-			return null;
-		}
-	}
-
-	function getAddressCore(address: string): string | null {
-		const normalized = normalizeForSearch(address)
-			.replace(/straße/g, 'strasse')
-			.replace(/[^a-z0-9\s]/g, ' ')
-			.replace(/\s+/g, ' ')
-			.trim();
-
-		if (normalized.length === 0) return null;
-
-		const parts = normalized.split(' ').filter((part) => part.length > 0);
-		if (parts.length === 1) return parts[0];
-
-		const lastPart = parts[parts.length - 1];
-		const previousPart = parts[parts.length - 2];
-		return /\d/.test(lastPart) ? `${previousPart} ${lastPart}`.trim() : parts.slice(-2).join(' ');
-	}
-
-	function isRelatedVenue(currentVenue: VenueViewModel, candidate: VenueViewModel): boolean {
-		if (currentVenue.id === candidate.id) return false;
-		if (currentVenue.cityLabel !== candidate.cityLabel) return false;
-
-		const sameWebsite =
-			currentVenue.websiteHost !== null &&
-			candidate.websiteHost !== null &&
-			currentVenue.websiteHost === candidate.websiteHost;
-		const sameAddressCore =
-			currentVenue.addressCore !== null &&
-			candidate.addressCore !== null &&
-			currentVenue.addressCore === candidate.addressCore;
-
-		return sameWebsite || sameAddressCore;
-	}
-
-	function buildRelatedVenueLabel(
-		relatedCount: number,
-		sharesWebsite: boolean,
-		sharesAddress: boolean,
-		cityLabel: string
-	): string | null {
-		if (relatedCount === 0) return null;
-
-		const countLabel = relatedCount === 1 ? '1 ähnlicher Eintrag' : `${relatedCount} ähnliche Einträge`;
-
-		if (sharesWebsite && sharesAddress) {
-			return `${countLabel} in ${cityLabel} mit gleicher Website und ähnlicher Adresse`;
-		}
-
-		if (sharesWebsite) {
-			return `${countLabel} in ${cityLabel} mit gleicher Website`;
-		}
-
-		if (sharesAddress) {
-			return `${countLabel} in ${cityLabel} mit ähnlicher Adresse`;
-		}
-
-		return `${countLabel} in ${cityLabel}`;
-	}
-
 	function resetFilters(): void {
-			activeDateFilter = 'current-month';
-			activeCity = '';
+		activeDateFilter = 'current-month';
+		activeCity = '';
 		searchQuery = '';
 		onlyWithEvents = true;
-	}
-
-	function toEnhancedVenue(venue: VenueViewModel, nextEvents?: typeof venue.nextEvents): EnhancedVenue {
-		return {
-			id: venue.id,
-			venue: venue.venue,
-			address: venue.address,
-			city: venue.city,
-			geo_lat: venue.geo_lat,
-			geo_lng: venue.geo_lng,
-			website: venue.website,
-			upcomingCount: venue.upcomingCount,
-			nextEvent: nextEvents?.[0] ? {
-				internalPath: nextEvents[0].internalPath,
-				externalUrl: nextEvents[0].externalUrl,
-				title: nextEvents[0].title,
-				dateLabel: nextEvents[0].dateLabel,
-				city: nextEvents[0].city
-			} : undefined,
-			location: {
-				address: venue.address,
-				city: venue.city
-			},
-			details: {
-				description: ''
-			}
-		};
 	}
 </script>
 

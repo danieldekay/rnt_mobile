@@ -15,6 +15,13 @@
     } from "$lib/types";
     import { MUSIC_TYPE_NAMES, MUSIC_TYPE_BADGE_CLASSES } from "$lib/constants";
     import type { PageProps } from "./$types";
+    import {
+        getInitials,
+        getAvatarTone,
+        getNextEventMeta,
+        getUpcomingCount,
+        getNextEvent,
+    } from "$lib/utils/dj-presentation";
 
     type StyleOption = {
         id: DjStyleKey;
@@ -116,55 +123,9 @@
         showAllWpDjs = false;
     }
 
-    function getInitials(name: string): string {
-        const words = name
-            .split(/\s+/)
-            .map((value) => value.trim())
-            .filter((value) => value.length > 0);
-
-        if (words.length === 0) return "DJ";
-        if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-        return `${words[0][0]}${words[1][0]}`.toUpperCase();
-    }
-
     function getStyleLabel(style: DjStyleKey): string {
         const match = styleOptions.find((option) => option.id === style);
         return match?.label ?? "Gemischt";
-    }
-
-    function getAvatarTone(style: DjStyleKey): string {
-        switch (style) {
-            case "traditional":
-                return "border-dj-traditional/25 bg-dj-traditional/15 text-dj-traditional";
-            case "neo":
-                return "border-dj-neo/20 bg-dj-neo/15 text-dj-neo";
-            case "fifty-fifty":
-                return "border-dj-fifty-fifty/20 bg-dj-fifty-fifty/15 text-dj-fifty-fifty";
-            default:
-                return "border-border-default bg-surface-subtle text-text-default";
-        }
-    }
-
-    function getNextEventMeta(dj: DjProfileSummary): string {
-        const nextEvent =
-            dj.nextEventsByDateFilter[activeDateFilter] ??
-            dj.nextEventsByDateFilter.all;
-        if (!nextEvent) return "Kein Termin im Zeitraum";
-        return nextEvent.city
-            ? `${nextEvent.dateLabel} · ${nextEvent.city}`
-            : nextEvent.dateLabel;
-    }
-
-    function getUpcomingCount(dj: DjProfileSummary): number {
-        return dj.countsByDateFilter[activeDateFilter];
-    }
-
-    function getNextEvent(dj: DjProfileSummary) {
-        return (
-            dj.nextEventsByDateFilter[activeDateFilter] ??
-            dj.nextEventsByDateFilter.all ??
-            null
-        );
     }
 </script>
 
@@ -381,7 +342,7 @@
         {:else}
             <div class="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
                 {#each filteredDjs as dj (dj.id)}
-                    {@const nextEvent = getNextEvent(dj)}
+                    {@const nextEvent = getNextEvent(dj, activeDateFilter)}
                     <article
                         class="card flex h-full flex-col gap-4 p-5 transition-all duration-200 hover:shadow-lg"
                     >
@@ -476,13 +437,13 @@
                                             <p
                                                 class="text-xs text-text-muted mt-0.5"
                                             >
-                                                {getNextEventMeta(dj)}
+                                                {getNextEventMeta(dj, activeDateFilter)}
                                             </p>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-                        {:else if showAllWpDjs && getUpcomingCount(dj) <= 0}
+                        {:else if showAllWpDjs && getUpcomingCount(dj, activeDateFilter) <= 0}
                             <div
                                 class="space-y-2.5 pt-1 border-t border-amber-200/30"
                             >
