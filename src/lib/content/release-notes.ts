@@ -8,6 +8,21 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.2.3',
+        releasedAt: '2026-05-14',
+        headline: 'Datenmodule entkoppelt und Verzeichnisseiten vereinheitlicht',
+        summary:
+            'Dieses Patch-Release strukturiert die API-Schicht neu, verbessert Listen- und Kartenlayouts fuer DJs, Veranstalter und Tanzraeume und stabilisiert die Anzeige von Profil- und Stilinformationen.',
+        highlights: [
+            'Die bisher monolithische Tribe-API wurde in fokussierte Module fuer Events, Organizers, Venues, DJs und Normalisierung aufgeteilt.',
+            'Der zentrale Export in tribe.ts bleibt als Kompatibilitaetsschicht bestehen, waehrend interne Verantwortlichkeiten klar getrennt wurden.',
+            'DJs uebernehmen Stilinformationen jetzt robuster aus Eventdaten und nutzen CPT-Praeferenzen als Fallback, wenn keine Event-Signale vorliegen.',
+            'Veranstalter-, DJ- und Venue-Karten wurden im Layout vereinheitlicht: sauberere Aktionen, bessere Lesbarkeit und konsistentere Darstellung von Terminen.',
+            'Die linke Desktop-Navigation wurde verfeinert, inklusive klarerer Bezeichnungen und erweitertem WordPress-Backendzugriff.',
+            'Die Release- und Verzeichnisdarstellung wurde durch neue Praesentations-Utilities und wiederverwendbare List-Patterns weiter modularisiert.'
+        ]
+    },
+    {
         version: '0.2.2',
         releasedAt: '2026-05-14',
         headline: 'WordPress-Session und Matomo-Tracking stabilisiert',
