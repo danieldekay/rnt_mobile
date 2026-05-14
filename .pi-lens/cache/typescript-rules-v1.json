@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "timestamp": 1778530524674,
-  "ruleHash": "f37bfed337504ba6",
+  "timestamp": 1778772112184,
+  "ruleHash": "ddff9a806f4693e2",
   "queries": [
     {
       "id": "console-statement",

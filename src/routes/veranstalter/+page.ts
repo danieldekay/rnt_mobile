@@ -1,5 +1,5 @@
 import { fetchAllEvents, fetchOrganizers } from "$lib/api/tribe";
-import type { TribeOrganizer, OrganizerWithStats } from "$lib/types";
+import type { OrganizerWithStats } from "$lib/types";
 import {
   emptyDateFilterCounts,
   getMatchingDateFilters,

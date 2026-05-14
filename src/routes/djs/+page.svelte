@@ -13,10 +13,7 @@
         EntityDateFilter,
         MusicType,
     } from "$lib/types";
-    import {
-        MUSIC_TYPE_NAMES,
-        MUSIC_TYPE_BADGE_CLASSES,
-    } from "$lib/constants";
+    import { MUSIC_TYPE_NAMES, MUSIC_TYPE_BADGE_CLASSES } from "$lib/constants";
     import type { PageProps } from "./$types";
 
     type StyleOption = {
@@ -135,8 +132,6 @@
         return match?.label ?? "Gemischt";
     }
 
-
-
     function getAvatarTone(style: DjStyleKey): string {
         switch (style) {
             case "traditional":
@@ -213,49 +208,30 @@
             class="flex items-center justify-between gap-2 border-t border-border-default pt-3"
         >
             <div class="flex items-center gap-3">
-                <button
-                    type="button"
-                    onclick={() => (showAllWpDjs = !showAllWpDjs)}
-                    aria-pressed={showAllWpDjs}
-                    aria-describedby="show-all-djs-help"
-                    class="group relative inline-flex min-h-10 items-center gap-2 rounded-badge border px-3 py-2 text-sm font-medium transition-colors hover:bg-action-secondary"
-                >
-                    <span class="flex items-center gap-2">
-                        <svg
-                            class={`h-4 w-4 transition-transform ${
-                                showAllWpDjs
-                                    ? "text-action-primary"
-                                    : "text-text-muted"
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d={showAllWpDjs
-                                    ? "M4 6h16M4 12h16M4 18h16"
-                                    : "M4 6h16M4 12h16M4 18h16"}
-                            />
-                        </svg>
-                        <span
-                            class={showAllWpDjs
-                                ? "text-action-primary"
-                                : "text-text-default"}
-                        >
-                            {showAllWpDjs
-                                ? "Alle DJs"
-                                : "DJs mit bekannten Terminen"}
-                        </span>
-                    </span>
-                    <span
-                        class="rounded-full bg-current/15 px-1.5 py-0.5 text-[0.6875rem] font-semibold leading-none transition-colors"
+                <label class="inline-flex cursor-pointer items-center gap-2.5">
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={showAllWpDjs}
+                        aria-describedby="show-all-djs-help"
+                        aria-label="Alle DJs anzeigen"
+                        onclick={() => (showAllWpDjs = !showAllWpDjs)}
+                        class={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary focus-visible:ring-offset-2 ${
+                            showAllWpDjs
+                                ? "bg-action-primary"
+                                : "bg-surface-subtle border-border-default outline outline-1 outline-border-default"
+                        }`}
                     >
-                        {showAllWpDjs ? "Aktiv" : "Aus"}
+                        <span
+                            class={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                                showAllWpDjs ? "translate-x-5" : "translate-x-0"
+                            }`}
+                        ></span>
+                    </button>
+                    <span class="text-sm font-medium text-text-default">
+                        Alle DJs
                     </span>
-                </button>
+                </label>
                 <span id="show-all-djs-help" class="text-xs text-text-muted">
                     Zeigt DJs ohne Termine an
                 </span>
@@ -413,12 +389,12 @@
                             <div class="relative">
                                 {#if dj.image}
                                     <div
-                                        class="relative aspect-square h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-border-default shadow-sm"
+                                        class="relative aspect-square h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-border-default shadow-sm flex items-center justify-center"
                                     >
                                         <img
                                             src={dj.image}
                                             alt={dj.name}
-                                            class="absolute inset-0 h-full w-full object-cover"
+                                            class="absolute inset-0 h-full w-full object-cover object-top"
                                             loading="lazy"
                                             decoding="async"
                                         />
@@ -434,11 +410,15 @@
                                 {/if}
 
                                 <span
-                                    class="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/80 bg-surface-default text-[0.625rem] font-medium ${MUSIC_TYPE_BADGE_CLASSES[
-                                        dj.style as MusicType
-                                    ]} shadow-sm"
+                                    class={`absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/80 text-[0.625rem] font-medium shadow-sm ${
+                                        MUSIC_TYPE_BADGE_CLASSES[
+                                            dj.style as MusicType
+                                        ] ?? ""
+                                    }`}
                                 >
-                                    {MUSIC_TYPE_NAMES[dj.style as MusicType].charAt(0)}
+                                    {MUSIC_TYPE_NAMES[
+                                        dj.style as MusicType
+                                    ].charAt(0)}
                                 </span>
                             </div>
 
@@ -537,11 +517,11 @@
                             </div>
                         {/if}
 
-                        <div class="mt-auto flex gap-2 pt-3">
+                        <div class="mt-auto flex justify-end pt-3">
                             <a
                                 href={resolve(`/djs/${dj.slug}`)}
                                 data-sveltekit-preload-data="hover"
-                                class="min-h-4 px-4 py-2 text-sm font-medium text-text-default bg-white border border-border-default hover:bg-surface-subtle hover:shadow-md transition-all duration-200 rounded-badge flex-1 min-w-[60px] justify-center"
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-text-default bg-white border border-border-default hover:bg-surface-subtle hover:shadow-md transition-all duration-200 rounded-badge"
                                 >DJ-Profil ansehen</a
                             >
                         </div>

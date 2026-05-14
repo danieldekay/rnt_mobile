@@ -34,10 +34,10 @@
         { label: "Veranstaltungen", href: "/", match: "exact" },
         { label: "Kalender", href: "/kalender", match: "prefix" },
         { label: "News", href: "/blog", match: "prefix" },
-        { label: "Ankuendigungen", href: "/ankuendigungen", match: "prefix" },
+        { label: "Ankündigungen", href: "/ankuendigungen", match: "prefix" },
         { label: "DJs", href: "/djs", match: "prefix" },
         { label: "Veranstalter", href: "/veranstalter", match: "prefix" },
-        { label: "Tanzraeume", href: "/tanzraeume", match: "prefix" },
+        { label: "Tanzräume", href: "/tanzraeume", match: "prefix" },
         { label: "Links", href: "/links", match: "prefix" },
     ];
 
@@ -56,6 +56,10 @@
         {
             label: "Veranstaltungen",
             href: `${WORDPRESS_ORIGIN}/wp-admin/edit.php?post_type=tribe_events`,
+        },
+        {
+            label: "DJ",
+            href: `${WORDPRESS_ORIGIN}/wp-admin/edit.php?post_type=dj`,
         },
         {
             label: "Veranstalter",
@@ -158,10 +162,11 @@
 </script>
 
 <aside
-    class="hidden lg:flex lg:flex-col border-r border-border-default bg-surface-card text-text-default lg:sticky lg:top-0 lg:h-dvh lg:overflow-hidden"
-    style="width: var(--desktop-sidebar-width);"
+    class="hidden lg:flex lg:flex-col border-r border-border-default bg-surface-card text-text-default lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto"
+    style="width: var(--desktop-sidebar-width); height: auto"
 >
-    <div class="flex flex-1 flex-col px-4 py-6">
+    <!-- Logo header – never scrolls -->
+    <div class="shrink-0 px-4 pt-6 pb-4">
         <a
             href={resolve("/")}
             class="flex items-center gap-3 rounded-control border border-border-default bg-surface-canvas px-4 py-3 transition-colors hover:bg-action-secondary"
@@ -189,14 +194,17 @@
                 </p>
             </div>
         </a>
+    </div>
 
-        <nav class="mt-6 flex flex-col gap-2" aria-label="Desktop Navigation">
+    <!-- Nav items -->
+    <div class="flex flex-1 flex-col px-4 pb-4">
+        <nav class="flex flex-col gap-1" aria-label="Desktop Navigation">
             {#each navItems as item (item.href)}
                 {@const active = isActive(item)}
                 <a
                     href={toHref(item.href)}
                     aria-current={active ? "page" : undefined}
-                    class={`inline-flex min-h-11 items-center rounded-control border-l-4 px-3 py-2 text-[0.95rem] transition-colors ${
+                    class={`inline-flex min-h-10 items-center rounded-control border-l-4 px-3 py-2 text-[0.95rem] transition-colors ${
                         active
                             ? "border-action-primary bg-surface-subtle text-text-default"
                             : "border-transparent text-text-muted hover:bg-action-secondary hover:text-text-default"
@@ -206,66 +214,51 @@
                 </a>
             {/each}
         </nav>
+    </div>
 
-        <section
-            class="mt-6 border-t border-border-default pt-4"
-            aria-labelledby="wordpress-section-heading"
+    <!-- Footer: WP links + legal – never scrolls -->
+    <div
+        class="flex flex-col flex-2 shrink-0 border-t border-border-default px-4 py-3 height-max-content"
+    >
+        <h3 class="text-sm font-semibold text-text-muted px-2 py-1">
+            Backend-Zugang
+        </h3>
+        <a
+            href={wordpressStatus.loggedIn
+                ? wordpressStatus.adminUrl
+                : wordpressStatus.loginUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex w-full min-h-9 items-center rounded-control border border-border-default px-3 py-1.5 text-sm font-medium text-text-default transition-colors hover:bg-action-secondary"
         >
-            <div class="px-2">
-                <p
-                    id="wordpress-section-heading"
-                    class="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-text-muted"
-                >
-                    WordPress
-                </p>
-                <div
-                    class={`mt-2 rounded-control border px-3 py-2 text-[0.8125rem] ${wordpressStatusClass}`}
-                >
-                    <p class="font-medium">{wordpressStatusLabel}</p>
-                    <p class="mt-1 text-[0.75rem] opacity-80">
-                        {wordpressStatus.message}
-                    </p>
-                </div>
-            </div>
+            {wordpressStatus.loggedIn ? "WP Admin" : "WP Login"}
+        </a>
 
-            <div class="mt-3 flex flex-col gap-2">
+        <nav class="mt-2 flex flex-col gap-1" aria-label="WordPress Seiten">
+            {#each wordpressPageLinks as link (link.href)}
                 <a
-                    href={wordpressStatus.loggedIn
-                        ? wordpressStatus.adminUrl
-                        : wordpressStatus.loginUrl}
+                    href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex min-h-11 items-center rounded-control border border-border-default px-3 py-2 text-[0.95rem] font-medium text-text-default transition-colors hover:bg-action-secondary"
+                    class="rounded-control px-2 py-1 text-sm text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
                 >
-                    {wordpressStatus.loggedIn ? "WP Admin" : "WP Login"}
+                    Neu: {link.label}
                 </a>
+            {/each}
+        </nav>
 
-                <nav class="flex flex-col gap-2" aria-label="WordPress Seiten">
-                    {#each wordpressPageLinks as link (link.href)}
-                        <a
-                            href={link.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="rounded-control px-2 py-1 text-sm text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
-                        >
-                            {link.label}
-                        </a>
-                    {/each}
-                </nav>
-            </div>
-        </section>
-
-        <div class="mt-auto border-t border-border-default pt-4">
-            <nav class="flex flex-col gap-2" aria-label="Rechtliches">
-                {#each footerLinks as link (link.href)}
-                    <a
-                        href={toHref(link.href)}
-                        class="rounded-control px-2 py-1 text-sm text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
-                    >
-                        {link.label}
-                    </a>
-                {/each}
-            </nav>
-        </div>
+        <nav
+            class="mt-2 flex flex-col gap-1 border-t border-border-default/50 pt-2"
+            aria-label="Rechtliches"
+        >
+            {#each footerLinks as link (link.href)}
+                <a
+                    href={toHref(link.href)}
+                    class="rounded-control px-2 py-1 text-sm text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
+                >
+                    {link.label}
+                </a>
+            {/each}
+        </nav>
     </div>
 </aside>

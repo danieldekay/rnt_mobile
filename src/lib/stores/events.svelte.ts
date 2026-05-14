@@ -1,6 +1,7 @@
 import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
 import { fetchAllEvents, extractDjFromDescription } from "$lib/api/tribe";
 import { trackFeatureEvent } from "$lib/matomo";
+import { writable } from "svelte/store";
 import type {
 	TribeEvent,
 	EventType,
@@ -8,9 +9,12 @@ import type {
 	DateFilter,
 	Filters,
 } from "$lib/types";
-import { get, writable } from "svelte/store";
 
-interface EventStoreState {
+let activeRequestId = 0;
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+interface EventStoreData {
 	events: TribeEvent[];
 	allEvents: TribeEvent[];
 	loading: boolean;
@@ -19,32 +23,36 @@ interface EventStoreState {
 	filters: Filters;
 }
 
-const INITIAL_STATE: EventStoreState = {
-	events: [],
-	allEvents: [],
-	loading: false,
-	error: null,
-	searchQuery: "",
-	filters: {
-		types: [],
-		music: null,
-		date: "week",
-	},
-};
+// ── Store class ──────────────────────────────────────────────────────────────
 
-function createEventStore() {
-	const store = writable<EventStoreState>(INITIAL_STATE);
-	const { subscribe, update } = store;
+class EventStore {
+	// Internal reactive state
+	events = $state.raw<TribeEvent[]>([]);
+	allEvents = $state.raw<TribeEvent[]>([]);
+	loading = $state.raw(false);
+	error = $state.raw<string | null>(null);
+	searchQuery = $state.raw("");
+	filters = $state.raw({
+		types: [] as EventType[],
+		music: null as MusicType | null,
+		date: "week" as DateFilter,
+	});
+	// Cache tracking (not reactive to consumers)
+	lastFetchedDate: DateFilter | null = null;
+	lastFetchedMonthKey: string | null = null;
 
-	let lastFetchedDate: DateFilter | null = null;
-	let lastFetchedMonthKey: string | null = null;
-	let activeRequestId = 0;
-
-	function getMonthKey(date: Date): string {
-		return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+	// Svelte store contract
+	subscribe(run: (value: EventStoreData) => void) {
+		return store.subscribe(run);
 	}
 
-	function getMonthDateRange(date: Date): { start: Date; end: Date } {
+	// ── Helpers ────────────────────────────────────────────────────────────
+
+	private getMonthKey(date: Date): string {
+		return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+	}
+
+	private getMonthDateRange(date: Date): { start: Date; end: Date } {
 		const start = new Date(date.getFullYear(), date.getMonth(), 1);
 		start.setHours(0, 0, 0, 0);
 
@@ -54,7 +62,7 @@ function createEventStore() {
 		return { start, end };
 	}
 
-	function eventMatchesTypes(event: TribeEvent, filters: Filters): boolean {
+	private eventMatchesTypes(event: TribeEvent, filters: Filters): boolean {
 		if (filters.types.length === 0) return true;
 
 		const categorySlugs =
@@ -64,7 +72,7 @@ function createEventStore() {
 		);
 	}
 
-	function eventMatchesMusic(event: TribeEvent, filters: Filters): boolean {
+	private eventMatchesMusic(event: TribeEvent, filters: Filters): boolean {
 		if (!filters.music) return true;
 
 		const categorySlugs =
@@ -72,17 +80,17 @@ function createEventStore() {
 		return categorySlugs.includes(MUSIC_SLUGS[filters.music]);
 	}
 
-	function withFilteredEvents(state: EventStoreState): EventStoreState {
-		const query = state.searchQuery.toLowerCase();
-		const events = state.allEvents.filter((event) => {
+	private applyFilters(): TribeEvent[] {
+		const query = this.searchQuery.toLowerCase();
+		return this.allEvents.filter((event) => {
 			if (
-				!eventMatchesTypes(event, state.filters) ||
-				!eventMatchesMusic(event, state.filters)
+				!this.eventMatchesTypes(event, this.filters) ||
+				!this.eventMatchesMusic(event, this.filters)
 			) {
 				return false;
 			}
 
-			if (!state.searchQuery.trim()) {
+			if (!this.searchQuery.trim()) {
 				return true;
 			}
 
@@ -101,185 +109,168 @@ function createEventStore() {
 				organizer.includes(query)
 			);
 		});
-
-		return {
-			...state,
-			events,
-		};
 	}
 
-	async function loadEvents(forceRefresh = false) {
-		const currentDate = get(store).filters.date;
+	// ── Actions ────────────────────────────────────────────────────────────
 
+	async loadEvents(forceRefresh = false) {
 		if (
 			!forceRefresh &&
-			lastFetchedDate === currentDate &&
-			get(store).allEvents.length > 0
+			this.lastFetchedDate === this.filters.date &&
+			this.allEvents.length > 0
 		) {
-			update(withFilteredEvents);
+			this.events = this.applyFilters();
+			this.notify();
 			return;
 		}
 
 		const requestId = ++activeRequestId;
-		update((state) => ({
-			...state,
-			loading: true,
-			error: null,
-		}));
+		this.loading = true;
+		this.error = null;
+		this.notify();
 
 		try {
-			const fetchedEvents = await fetchAllEvents([], null, currentDate);
+			const fetchedEvents = await fetchAllEvents([], null, this.filters.date);
 
-			if (requestId !== activeRequestId) {
-				return;
-			}
+			if (requestId !== activeRequestId) return;
 
-			lastFetchedDate = currentDate;
-			lastFetchedMonthKey = null;
-			update((state) =>
-				withFilteredEvents({
-					...state,
-					allEvents: fetchedEvents,
-					loading: false,
-					error: null,
-				}),
-			);
+			this.lastFetchedDate = this.filters.date;
+			this.lastFetchedMonthKey = null;
+			this.allEvents = fetchedEvents;
+			this.events = this.applyFilters();
+			this.loading = false;
+			this.notify();
 		} catch (e) {
-			if (requestId !== activeRequestId) {
-				return;
-			}
+			if (requestId !== activeRequestId) return;
 
-			update((state) => ({
-				...state,
-				loading: false,
-				error: e instanceof Error ? e.message : "Failed to load events",
-			}));
+			this.loading = false;
+			this.error = e instanceof Error ? e.message : "Failed to load events";
 			trackFeatureEvent(
 				"events",
 				"api_error",
-				e instanceof Error ? "fail" : "fetch_error",
+				e instanceof Error ? e.message : "fetch_error",
 			);
+			this.notify();
 		}
 	}
 
-	async function loadCalendarMonth(monthDate: Date, forceRefresh = false) {
-		const monthKey = getMonthKey(monthDate);
+	async loadCalendarMonth(monthDate: Date, forceRefresh = false) {
+		const monthKey = this.getMonthKey(monthDate);
 
 		if (
 			!forceRefresh &&
-			lastFetchedMonthKey === monthKey &&
-			get(store).allEvents.length > 0
+			this.lastFetchedMonthKey === monthKey &&
+			this.allEvents.length > 0
 		) {
-			update(withFilteredEvents);
+			this.events = this.applyFilters();
+			this.notify();
 			return;
 		}
 
 		const requestId = ++activeRequestId;
-		update((state) => ({
-			...state,
-			loading: true,
-			error: null,
-		}));
+		this.loading = true;
+		this.error = null;
+		this.notify();
 
 		try {
 			const fetchedEvents = await fetchAllEvents(
 				[],
 				null,
-				'all',
+				"all",
 				fetch,
 				undefined,
-				getMonthDateRange(monthDate),
+				this.getMonthDateRange(monthDate),
 			);
 
-			if (requestId !== activeRequestId) {
-				return;
-			}
+			if (requestId !== activeRequestId) return;
 
-			lastFetchedMonthKey = monthKey;
-			lastFetchedDate = null;
-			update((state) =>
-				withFilteredEvents({
-					...state,
-					allEvents: fetchedEvents,
-					loading: false,
-					error: null,
-				}),
-			);
+			this.lastFetchedMonthKey = monthKey;
+			this.lastFetchedDate = null;
+			this.allEvents = fetchedEvents;
+			this.events = this.applyFilters();
+			this.loading = false;
+			this.notify();
 		} catch (e) {
-			if (requestId !== activeRequestId) {
-				return;
-			}
+			if (requestId !== activeRequestId) return;
 
-			update((state) => ({
-				...state,
-				loading: false,
-				error: e instanceof Error ? e.message : 'Failed to load calendar events',
-			}));
+			this.loading = false;
+			this.error =
+				e instanceof Error ? e.message : "Failed to load calendar events";
 			trackFeatureEvent(
-				'calendar',
-				'api_error',
-				e instanceof Error ? 'fail' : 'fetch_error',
+				"calendar",
+				"api_error",
+				e instanceof Error ? e.message : "fetch_error",
 			);
+			this.notify();
 		}
 	}
 
-	function setFilters(newFilters: Partial<Filters>) {
-		update((state) =>
-			withFilteredEvents({
-				...state,
-				filters: { ...state.filters, ...newFilters },
-			}),
-		);
+	setFilters(newFilters: Partial<Filters>) {
+		Object.assign(this.filters, newFilters);
+		this.events = this.applyFilters();
+		this.notify();
 	}
 
-	function toggleType(type: EventType) {
-		const currentFilters = get(store).filters;
-		const types = currentFilters.types.includes(type)
-			? currentFilters.types.filter((t) => t !== type)
-			: [...currentFilters.types, type];
-		setFilters({ types });
+	toggleType(type: EventType) {
+		const includes = this.filters.types.includes(type);
+		this.filters.types = includes
+			? this.filters.types.filter((t) => t !== type)
+			: [...this.filters.types, type];
+		this.events = this.applyFilters();
+		this.notify();
 	}
 
-	function setMusic(music: MusicType | null) {
-		setFilters({ music });
+	setMusic(music: MusicType | null) {
+		this.filters.music = music;
+		this.events = this.applyFilters();
+		this.notify();
 	}
 
-	function toggleMusic(music: MusicType) {
-		setMusic(get(store).filters.music === music ? null : music);
+	toggleMusic(music: MusicType) {
+		this.setMusic(this.filters.music === music ? null : music);
 	}
 
-	function setDateFilter(date: DateFilter) {
-		if (get(store).filters.date === date) {
-			return;
-		}
-
-		update((state) => ({
-			...state,
-			filters: { ...state.filters, date },
-		}));
-		void loadEvents();
+	setDateFilter(date: DateFilter) {
+		if (this.filters.date === date) return;
+		this.filters.date = date;
+		void this.loadEvents();
 	}
 
-	function setSearchQuery(query: string) {
-		update((state) => withFilteredEvents({ ...state, searchQuery: query }));
+	setSearchQuery(query: string) {
+		this.searchQuery = query;
+		this.events = this.applyFilters();
+		this.notify();
 	}
 
-	function clearSearch() {
-		update((state) => withFilteredEvents({ ...state, searchQuery: "" }));
+	clearSearch() {
+		this.searchQuery = "";
+		this.events = this.applyFilters();
+		this.notify();
 	}
 
-	return {
-		subscribe,
-		loadEvents,
-		loadCalendarMonth,
-		setFilters,
-		toggleType,
-		setMusic,
-		toggleMusic,
-		setDateFilter,
-		setSearchQuery,
-		clearSearch,
-	};
+	// ── Notification ──────────────────────────────────────────────────────
+
+	private notify() {
+		store.set({
+			events: this.events,
+			allEvents: this.allEvents,
+			loading: this.loading,
+			error: this.error,
+			searchQuery: this.searchQuery,
+			filters: this.filters,
+		});
+	}
 }
 
-export const eventStore = createEventStore();
+// ── Store instance + export ─────────────────────────────────────────────────
+
+const store = writable<EventStoreData>({
+	events: [],
+	allEvents: [],
+	loading: false,
+	error: null,
+	searchQuery: "",
+	filters: { types: [], music: null, date: "week" },
+});
+
+export const eventStore = new EventStore();

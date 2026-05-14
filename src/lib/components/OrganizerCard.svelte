@@ -75,12 +75,13 @@
     // Get initials for avatar fallback
     function getInitials(): string {
         if (!organizer.organizer) return "";
-        return organizer.organizer
-            .split(" ")
-            .map((word) => word.charAt(0))
-            .join("")
-            .toUpperCase()
-            .substring(0, 2);
+        const tokens = organizer.organizer
+            .split(/[\s\-_]+/)
+            .map((t) => t.replace(/[^a-zA-Z\u00C0-\u017E]/g, ""))
+            .filter((t) => t.length > 0);
+        if (tokens.length === 0) return "";
+        if (tokens.length === 1) return tokens[0].charAt(0).toUpperCase();
+        return (tokens[0].charAt(0) + tokens[1].charAt(0)).toUpperCase();
     }
 
     // Generate a colorful background color based on initials
@@ -166,21 +167,30 @@
     }
 </script>
 
-<Card variant="outlined" padding="md" responsive={true} role="article">
-    <div class="organizer-card-content">
-        <!-- Left: Avatar/Image -->
-        <div class="organizer-avatar">
+<Card
+    variant="outlined"
+    padding="md"
+    responsive={true}
+    role="article"
+    class="flex flex-col h-full"
+>
+    <!-- Top row: avatar + name/badges -->
+    <div class="organizer-card-top">
+        <!-- Avatar -->
+        <div
+            class="organizer-avatar {imageUrl
+                ? 'organizer-avatar--image'
+                : 'organizer-avatar--initials'}"
+        >
             {#if isLoading}
-                <div class="avatar-loading">
-                    <div class="skeleton"></div>
-                </div>
+                <div class="skeleton"></div>
             {:else if imageUrl}
                 <img
                     src={imageUrl}
                     alt="{organizer.organizer} logo"
                     loading="lazy"
-                    width={120}
-                    height={120}
+                    width={56}
+                    height={56}
                     class="organizer-image"
                     onerror={() => (imageUrl = null)}
                 />
@@ -198,169 +208,160 @@
             {/if}
         </div>
 
-        <!-- Right: Organizer Information -->
-        <div class="organizer-info">
-            <!-- Name and Title -->
-            <div class="organizer-header">
-                <Heading
-                    level={3}
-                    size="base"
-                    weight="semibold"
-                    id="organizer-name"
+        <!-- Name and badges -->
+        <div class="organizer-header">
+            <Heading
+                level={3}
+                size="base"
+                weight="semibold"
+                id="organizer-name"
+            >
+                <a
+                    href={organizer.slug
+                        ? resolve(`/veranstalter/${organizer.slug}`)
+                        : undefined}
+                    data-sveltekit-preload-data="hover"
+                    class="transition-colors hover:text-action-primary"
                 >
-                    <a
-                        href={organizer.slug
-                            ? resolve(`/veranstalter/${organizer.slug}`)
-                            : undefined}
-                        data-sveltekit-preload-data="hover"
-                        class="transition-colors hover:text-action-primary"
-                    >
-                        {organizer.organizer}
-                    </a>
-                </Heading>
-
-                {#if organizer.details?.organizationType}
-                    <Badge variant="muted" size="sm">
-                        {organizer.details.organizationType}
-                    </Badge>
-                {/if}
-            </div>
-
-            <!-- Description/Bio -->
-            {#if showDescription && organizer.details?.description}
-                <Text size="sm" color="muted">
-                    {truncateDescription(
-                        organizer.details.description,
-                        maxDescriptionLength,
-                    )}
-                </Text>
+                    {organizer.organizer}
+                </a>
+            </Heading>
+            {#if organizer.details?.organizationType}
+                <Badge variant="muted" size="sm">
+                    {organizer.details.organizationType}
+                </Badge>
             {/if}
+        </div>
+    </div>
 
-            <!-- Next Events -->
-            {#if nextEvents.length > 0}
-                <div class="next-events">
-                    <div
-                        class="space-y-2.5 pt-1 border-t border-border-default/50"
-                    >
-                        {#each nextEvents as event}
-                            <a
-                                href={event.internalPath
-                                    ? resolve(event.internalPath)
-                                    : event.externalUrl}
-                                data-sveltekit-preload-data="hover"
-                                target={event.externalUrl && !event.internalPath
-                                    ? "_blank"
-                                    : undefined}
-                                rel={event.externalUrl && !event.internalPath
-                                    ? "noopener noreferrer"
-                                    : undefined}
-                                class="block hover:opacity-90 transition-opacity"
-                            >
-                                <div class="flex items-start gap-2">
-                                    <svg
-                                        class="h-4 w-4 text-action-primary flex-shrink-0 mt-0.5"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
-                                    <div class="flex-1 min-w-0">
-                                        <p
-                                            class="text-sm font-medium leading-snug text-text-default line-clamp-2"
-                                        >
-                                            {event.title}
-                                        </p>
-                                        <p
-                                            class="text-xs text-text-muted mt-0.5"
-                                        >
-                                            {getEventMeta(event)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
-                        {/each}
-                    </div>
-                </div>
-            {:else}
-                <div class="space-y-2.5 pt-1 border-t border-amber-200/30">
+    <!-- Description -->
+    {#if showDescription && organizer.details?.description}
+        <Text size="sm" color="muted" class="mt-2">
+            {truncateDescription(
+                organizer.details.description,
+                maxDescriptionLength,
+            )}
+        </Text>
+    {/if}
+
+    <!-- Events – full card width -->
+    {#if nextEvents.length > 0}
+        <div class="organizer-events">
+            {#each nextEvents as event}
+                <a
+                    href={event.internalPath
+                        ? resolve(event.internalPath)
+                        : event.externalUrl}
+                    data-sveltekit-preload-data="hover"
+                    target={event.externalUrl && !event.internalPath
+                        ? "_blank"
+                        : undefined}
+                    rel={event.externalUrl && !event.internalPath
+                        ? "noopener noreferrer"
+                        : undefined}
+                    class="block hover:opacity-90 transition-opacity"
+                >
                     <div class="flex items-start gap-2">
                         <svg
-                            class="h-4 w-4 text-amber-600/80 flex-shrink-0 mt-0.5"
+                            class="h-4 w-4 text-action-primary flex-shrink-0 mt-0.5"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg"
                         >
                             <path
                                 fill-rule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0 1 1 0 002 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
                                 clip-rule="evenodd"
                             />
                         </svg>
-                        <p class="text-sm text-amber-800/80">
-                            Keine Termine im gewählten Zeitraum
-                        </p>
+                        <div class="flex-1 min-w-0">
+                            <p
+                                class="text-sm font-medium leading-snug text-text-default line-clamp-2"
+                            >
+                                {event.title}
+                            </p>
+                            <p class="text-xs text-text-muted mt-0.5">
+                                {getEventMeta(event)}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            {/if}
-
-            <!-- Action Buttons -->
-            <div class="organizer-actions">
-                <a
-                    href={resolve(`/veranstalter/${organizer.slug}`)}
-                    data-sveltekit-preload-data="hover"
-                    class="min-h-4 px-4 py-2 text-sm font-medium text-text-default bg-white border border-border-default hover:bg-surface-subtle hover:shadow-md transition-all duration-200 rounded-badge min-w-[60px] justify-center"
-                >
-                    Profil ansehen
                 </a>
-            </div>
+            {/each}
         </div>
+    {:else}
+        <div class="organizer-events organizer-events--empty">
+            <svg
+                class="h-4 w-4 text-amber-600/80 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0 1 1 0 002 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"
+                />
+            </svg>
+            <p class="text-sm text-amber-800/80">
+                Keine Termine im gewählten Zeitraum
+            </p>
+        </div>
+    {/if}
+
+    <!-- Action -->
+    <div class="organizer-actions">
+        <a
+            href={resolve(`/veranstalter/${organizer.slug}`)}
+            data-sveltekit-preload-data="hover"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-text-default bg-white border border-border-default hover:bg-surface-subtle hover:shadow-md transition-all duration-200 rounded-badge"
+        >
+            Profil ansehen
+        </a>
     </div>
 
     <!-- Tags -->
     {#if organizer.details?.tags && organizer.details.tags.length > 0}
         <div class="organizer-tags">
             {#each organizer.details.tags as tag}
-                <Badge variant="muted" size="sm">
-                    {tag}
-                </Badge>
+                <Badge variant="muted" size="sm">{tag}</Badge>
             {/each}
         </div>
     {/if}
 </Card>
 
 <style>
-    .organizer-card-content {
+    /* ── Top row: avatar + name ── */
+    .organizer-card-top {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem;
         align-items: flex-start;
     }
 
+    /* Avatar wrapper – size varies by content type */
     .organizer-avatar {
         flex-shrink: 0;
         position: relative;
-        width: 40px;
-        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    .avatar-loading {
+    /* Image avatar: larger circle */
+    .organizer-avatar--image {
+        width: 56px;
+        height: 56px;
+    }
+
+    /* Initials avatar: smaller circle */
+    .organizer-avatar--initials {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Skeleton loading placeholder */
+    .skeleton {
         width: 100%;
         height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .skeleton {
-        width: 40px;
-        height: 40px;
         border-radius: 50%;
         background: linear-gradient(
             90deg,
@@ -386,7 +387,8 @@
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
-        border: 3px solid var(--border-default);
+        /* hairline ring */
+        box-shadow: 0 0 0 1px var(--border-default, #e5e7eb);
     }
 
     .organizer-avatar-initials {
@@ -396,24 +398,25 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 3px solid var(--border-default);
+        /* hairline ring */
+        box-shadow: 0 0 0 1px var(--border-default, #e5e7eb);
     }
 
     .organizer-initials-text {
-        font-size: 2.5rem;
+        font-family: "Arial Narrow", Arial, ui-sans-serif, sans-serif;
+        font-size: 0.8125rem;
         font-weight: 700;
+        letter-spacing: 0.04em;
         color: white;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.25);
+        line-height: 1;
     }
 
-    .organizer-info {
+    /* Name + badge column */
+    .organizer-header {
         flex: 1;
         min-width: 0;
-    }
-
-    .organizer-header {
-        margin-bottom: 0.75rem;
-        min-height: 2.5rem;
+        padding-top: 0.125rem;
     }
 
     .organizer-header a {
@@ -421,43 +424,38 @@
         text-decoration: none;
     }
 
+    /* Events section – full card width */
+    .organizer-events {
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid
+            color-mix(in srgb, var(--border-default, #e5e7eb) 50%, transparent);
+    }
+
+    .organizer-events--empty {
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: flex-start;
+        border-top-color: color-mix(in srgb, #fbbf24 30%, transparent);
+    }
+
+    /* Bottom-right action button */
     .organizer-actions {
         display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        margin-top: 1rem;
-
-        bottom: 1rem;
+        margin-top: auto;
+        padding-top: 0.75rem;
+        justify-content: flex-end;
     }
 
     .organizer-tags {
         display: flex;
         gap: 0.5rem;
         flex-wrap: wrap;
-        margin-top: 1rem;
-    }
-
-    @media (max-width: 768px) {
-        .organizer-card-content {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .organizer-avatar {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto;
-        }
-
-        .organizer-actions {
-            justify-content: center;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .organizer-avatar {
-            width: 80px;
-            height: 80px;
-        }
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-default, #e5e7eb);
     }
 </style>

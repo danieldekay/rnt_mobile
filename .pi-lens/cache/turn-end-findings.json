@@ -1,1 +1,3 @@
-null
+{
+  "content": "Unresolved from this turn — src/lib/components/EntityList.svelte:\n🔴 STOP — 1 issue(s) must be fixed:\n  L6: `$bindable()` can only be used inside a `$props()` declaration\n  https://svelte.dev/e/bindable_invalid_location"
+}

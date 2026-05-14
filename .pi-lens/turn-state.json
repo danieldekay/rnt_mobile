@@ -1,6 +1,18 @@
 {
-  "files": {},
-  "turnCycles": 0,
+  "files": {
+    "src/lib/components/EntityList.svelte": {
+      "modifiedRanges": [
+        {
+          "start": 1,
+          "end": 85
+        }
+      ],
+      "importsChanged": false,
+      "lastEdit": "2026-05-14T18:50:04.681Z"
+    }
+  },
+  "turnCycles": 1,
   "maxCycles": 3,
-  "lastUpdated": "2026-05-14T13:58:56.072Z"
+  "lastUpdated": "2026-05-14T18:50:14.356Z",
+  "sessionId": "lens-mp5sm3j8-45c04505"
 }

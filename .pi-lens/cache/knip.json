@@ -48,6 +48,11 @@
     },
     {
       "type": "file",
+      "name": "src/lib/components/EntityList.svelte",
+      "file": "src/lib/components/EntityList.svelte"
+    },
+    {
+      "type": "file",
       "name": "src/lib/components/Heading.test.svelte",
       "file": "src/lib/components/Heading.test.svelte"
     },
@@ -70,6 +75,21 @@
       "type": "file",
       "name": "src/lib/utils/design-tokens.ts",
       "file": "src/lib/utils/design-tokens.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/dj-presentation.ts",
+      "file": "src/lib/utils/dj-presentation.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/organizer-presentation.ts",
+      "file": "src/lib/utils/organizer-presentation.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/venue-presentation.ts",
+      "file": "src/lib/utils/venue-presentation.ts"
     },
     {
       "type": "dependency",
@@ -121,9 +141,105 @@
     },
     {
       "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/api/tribe.ts",
+      "line": 8
+    },
+    {
+      "type": "export",
+      "name": "normalizeText",
+      "file": "src/lib/api/tribe.ts",
+      "line": 9
+    },
+    {
+      "type": "export",
+      "name": "normalizeHtml",
+      "file": "src/lib/api/tribe.ts",
+      "line": 10
+    },
+    {
+      "type": "export",
+      "name": "stripHtmlToPlainText",
+      "file": "src/lib/api/tribe.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "escapeHtmlAttribute",
+      "file": "src/lib/api/tribe.ts",
+      "line": 12
+    },
+    {
+      "type": "export",
+      "name": "replaceObfuscatedEmailMarkup",
+      "file": "src/lib/api/tribe.ts",
+      "line": 13
+    },
+    {
+      "type": "export",
+      "name": "normalizeEventImage",
+      "file": "src/lib/api/tribe.ts",
+      "line": 14
+    },
+    {
+      "type": "export",
+      "name": "normalizeEuroAmount",
+      "file": "src/lib/api/tribe.ts",
+      "line": 15
+    },
+    {
+      "type": "export",
+      "name": "normalizeCoordinate",
+      "file": "src/lib/api/tribe.ts",
+      "line": 16
+    },
+    {
+      "type": "export",
+      "name": "normalizeWebsiteUrl",
+      "file": "src/lib/api/tribe.ts",
+      "line": 17
+    },
+    {
+      "type": "export",
+      "name": "normalizeEvent",
+      "file": "src/lib/api/tribe.ts",
+      "line": 18
+    },
+    {
+      "type": "export",
       "name": "fetchEvents",
       "file": "src/lib/api/tribe.ts",
-      "line": 297
+      "line": 23
+    },
+    {
+      "type": "export",
+      "name": "formatDate",
+      "file": "src/lib/api/tribe.ts",
+      "line": 27
+    },
+    {
+      "type": "export",
+      "name": "getDateRange",
+      "file": "src/lib/api/tribe.ts",
+      "line": 28
+    },
+    {
+      "type": "export",
+      "name": "normalizeVenue",
+      "file": "src/lib/api/tribe.ts",
+      "line": 34
+    },
+    {
+      "type": "export",
+      "name": "normalizeOrganizer",
+      "file": "src/lib/api/tribe.ts",
+      "line": 41
+    },
+    {
+      "type": "export",
+      "name": "EventDateRange",
+      "file": "src/lib/api/tribe.ts",
+      "line": 29
     },
     {
       "type": "export",
@@ -163,60 +279,6 @@
     },
     {
       "type": "export",
-      "name": "EnhancedAPIError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 29
-    },
-    {
-      "type": "export",
-      "name": "handleNetworkError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 63
-    },
-    {
-      "type": "export",
-      "name": "handleValidationError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 96
-    },
-    {
-      "type": "export",
-      "name": "handleParseError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 129
-    },
-    {
-      "type": "export",
-      "name": "handleTimeoutError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 151
-    },
-    {
-      "type": "export",
-      "name": "DEFAULT_RETRY_CONFIG",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 173
-    },
-    {
-      "type": "export",
-      "name": "executeWithRetry",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 183
-    },
-    {
-      "type": "export",
-      "name": "APIError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 11
-    },
-    {
-      "type": "export",
-      "name": "RetryConfig",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 166
-    },
-    {
-      "type": "export",
       "name": "decodeHtmlEntities",
       "file": "src/lib/utils/text.ts",
       "line": 35
@@ -237,7 +299,7 @@
       "type": "export",
       "name": "getDjsFromEvents",
       "file": "src/lib/utils/djs.ts",
-      "line": 272
+      "line": 301
     },
     {
       "type": "export",
@@ -268,6 +330,60 @@
       "name": "getMusicType",
       "file": "src/lib/utils/event-presentation.ts",
       "line": 48
+    },
+    {
+      "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/api/normalizers.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "escapeHtmlAttribute",
+      "file": "src/lib/api/normalizers.ts",
+      "line": 43
+    },
+    {
+      "type": "export",
+      "name": "replaceObfuscatedEmailMarkup",
+      "file": "src/lib/api/normalizers.ts",
+      "line": 49
+    },
+    {
+      "type": "export",
+      "name": "formatDate",
+      "file": "src/lib/api/events.ts",
+      "line": 63
+    },
+    {
+      "type": "export",
+      "name": "getDateRange",
+      "file": "src/lib/api/events.ts",
+      "line": 71
+    },
+    {
+      "type": "export",
+      "name": "fetchEvents",
+      "file": "src/lib/api/events.ts",
+      "line": 102
+    },
+    {
+      "type": "export",
+      "name": "normalizeVenue",
+      "file": "src/lib/api/venues.ts",
+      "line": 30
+    },
+    {
+      "type": "export",
+      "name": "normalizeOrganizer",
+      "file": "src/lib/api/organizers.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "cleanDjCandidate",
+      "file": "src/lib/api/djs.ts",
+      "line": 12
     },
     {
       "type": "export",
@@ -313,6 +429,18 @@
     },
     {
       "type": "export",
+      "name": "validateOrganizer",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 183
+    },
+    {
+      "type": "export",
+      "name": "validateVenue",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 288
+    },
+    {
+      "type": "export",
       "name": "batchValidateOrganizers",
       "file": "src/lib/utils/data-validation.ts",
       "line": 465
@@ -328,6 +456,12 @@
       "name": "ValidationSeverity",
       "file": "src/lib/utils/data-validation.ts",
       "line": 33
+    },
+    {
+      "type": "export",
+      "name": "ValidationResult",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 36
     },
     {
       "type": "export",
@@ -429,9 +563,105 @@
     },
     {
       "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/api/tribe.ts",
+      "line": 8
+    },
+    {
+      "type": "export",
+      "name": "normalizeText",
+      "file": "src/lib/api/tribe.ts",
+      "line": 9
+    },
+    {
+      "type": "export",
+      "name": "normalizeHtml",
+      "file": "src/lib/api/tribe.ts",
+      "line": 10
+    },
+    {
+      "type": "export",
+      "name": "stripHtmlToPlainText",
+      "file": "src/lib/api/tribe.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "escapeHtmlAttribute",
+      "file": "src/lib/api/tribe.ts",
+      "line": 12
+    },
+    {
+      "type": "export",
+      "name": "replaceObfuscatedEmailMarkup",
+      "file": "src/lib/api/tribe.ts",
+      "line": 13
+    },
+    {
+      "type": "export",
+      "name": "normalizeEventImage",
+      "file": "src/lib/api/tribe.ts",
+      "line": 14
+    },
+    {
+      "type": "export",
+      "name": "normalizeEuroAmount",
+      "file": "src/lib/api/tribe.ts",
+      "line": 15
+    },
+    {
+      "type": "export",
+      "name": "normalizeCoordinate",
+      "file": "src/lib/api/tribe.ts",
+      "line": 16
+    },
+    {
+      "type": "export",
+      "name": "normalizeWebsiteUrl",
+      "file": "src/lib/api/tribe.ts",
+      "line": 17
+    },
+    {
+      "type": "export",
+      "name": "normalizeEvent",
+      "file": "src/lib/api/tribe.ts",
+      "line": 18
+    },
+    {
+      "type": "export",
       "name": "fetchEvents",
       "file": "src/lib/api/tribe.ts",
-      "line": 297
+      "line": 23
+    },
+    {
+      "type": "export",
+      "name": "formatDate",
+      "file": "src/lib/api/tribe.ts",
+      "line": 27
+    },
+    {
+      "type": "export",
+      "name": "getDateRange",
+      "file": "src/lib/api/tribe.ts",
+      "line": 28
+    },
+    {
+      "type": "export",
+      "name": "normalizeVenue",
+      "file": "src/lib/api/tribe.ts",
+      "line": 34
+    },
+    {
+      "type": "export",
+      "name": "normalizeOrganizer",
+      "file": "src/lib/api/tribe.ts",
+      "line": 41
+    },
+    {
+      "type": "export",
+      "name": "EventDateRange",
+      "file": "src/lib/api/tribe.ts",
+      "line": 29
     },
     {
       "type": "export",
@@ -471,60 +701,6 @@
     },
     {
       "type": "export",
-      "name": "EnhancedAPIError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 29
-    },
-    {
-      "type": "export",
-      "name": "handleNetworkError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 63
-    },
-    {
-      "type": "export",
-      "name": "handleValidationError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 96
-    },
-    {
-      "type": "export",
-      "name": "handleParseError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 129
-    },
-    {
-      "type": "export",
-      "name": "handleTimeoutError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 151
-    },
-    {
-      "type": "export",
-      "name": "DEFAULT_RETRY_CONFIG",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 173
-    },
-    {
-      "type": "export",
-      "name": "executeWithRetry",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 183
-    },
-    {
-      "type": "export",
-      "name": "APIError",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 11
-    },
-    {
-      "type": "export",
-      "name": "RetryConfig",
-      "file": "src/lib/utils/error-handling.ts",
-      "line": 166
-    },
-    {
-      "type": "export",
       "name": "decodeHtmlEntities",
       "file": "src/lib/utils/text.ts",
       "line": 35
@@ -545,7 +721,7 @@
       "type": "export",
       "name": "getDjsFromEvents",
       "file": "src/lib/utils/djs.ts",
-      "line": 272
+      "line": 301
     },
     {
       "type": "export",
@@ -576,6 +752,60 @@
       "name": "getMusicType",
       "file": "src/lib/utils/event-presentation.ts",
       "line": 48
+    },
+    {
+      "type": "export",
+      "name": "decodeHtmlEntities",
+      "file": "src/lib/api/normalizers.ts",
+      "line": 11
+    },
+    {
+      "type": "export",
+      "name": "escapeHtmlAttribute",
+      "file": "src/lib/api/normalizers.ts",
+      "line": 43
+    },
+    {
+      "type": "export",
+      "name": "replaceObfuscatedEmailMarkup",
+      "file": "src/lib/api/normalizers.ts",
+      "line": 49
+    },
+    {
+      "type": "export",
+      "name": "formatDate",
+      "file": "src/lib/api/events.ts",
+      "line": 63
+    },
+    {
+      "type": "export",
+      "name": "getDateRange",
+      "file": "src/lib/api/events.ts",
+      "line": 71
+    },
+    {
+      "type": "export",
+      "name": "fetchEvents",
+      "file": "src/lib/api/events.ts",
+      "line": 102
+    },
+    {
+      "type": "export",
+      "name": "normalizeVenue",
+      "file": "src/lib/api/venues.ts",
+      "line": 30
+    },
+    {
+      "type": "export",
+      "name": "normalizeOrganizer",
+      "file": "src/lib/api/organizers.ts",
+      "line": 37
+    },
+    {
+      "type": "export",
+      "name": "cleanDjCandidate",
+      "file": "src/lib/api/djs.ts",
+      "line": 12
     },
     {
       "type": "export",
@@ -621,6 +851,18 @@
     },
     {
       "type": "export",
+      "name": "validateOrganizer",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 183
+    },
+    {
+      "type": "export",
+      "name": "validateVenue",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 288
+    },
+    {
+      "type": "export",
       "name": "batchValidateOrganizers",
       "file": "src/lib/utils/data-validation.ts",
       "line": 465
@@ -636,6 +878,12 @@
       "name": "ValidationSeverity",
       "file": "src/lib/utils/data-validation.ts",
       "line": 33
+    },
+    {
+      "type": "export",
+      "name": "ValidationResult",
+      "file": "src/lib/utils/data-validation.ts",
+      "line": 36
     },
     {
       "type": "export",
@@ -746,6 +994,11 @@
     },
     {
       "type": "file",
+      "name": "src/lib/components/EntityList.svelte",
+      "file": "src/lib/components/EntityList.svelte"
+    },
+    {
+      "type": "file",
       "name": "src/lib/components/Heading.test.svelte",
       "file": "src/lib/components/Heading.test.svelte"
     },
@@ -768,6 +1021,21 @@
       "type": "file",
       "name": "src/lib/utils/design-tokens.ts",
       "file": "src/lib/utils/design-tokens.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/dj-presentation.ts",
+      "file": "src/lib/utils/dj-presentation.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/organizer-presentation.ts",
+      "file": "src/lib/utils/organizer-presentation.ts"
+    },
+    {
+      "type": "file",
+      "name": "src/lib/utils/venue-presentation.ts",
+      "file": "src/lib/utils/venue-presentation.ts"
     }
   ],
   "unusedDeps": [
@@ -785,5 +1053,5 @@
     }
   ],
   "unlistedDeps": [],
-  "summary": "Found 67 issues"
+  "summary": "Found 90 issues"
 }

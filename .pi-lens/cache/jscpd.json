@@ -139,7 +139,7 @@
     },
     {
       "fileA": "src/routes/ankuendigungen/+page.svelte",
-      "startA": 444,
+      "startA": 436,
       "fileB": "src/routes/event/[id]/+page.svelte",
       "startB": 702,
       "lines": 11,
@@ -147,10 +147,10 @@
     },
     {
       "fileA": "src/lib/utils/error-handling.ts",
-      "startA": 492,
+      "startA": 128,
       "fileB": "src/lib/utils/error-handling.ts",
-      "startB": 414,
-      "lines": 22,
+      "startB": 58,
+      "lines": 15,
       "tokens": 0
     },
     {
@@ -195,18 +195,18 @@
     },
     {
       "fileA": "src/lib/stores/events.svelte.ts",
-      "startA": 170,
+      "startA": 162,
       "fileB": "src/lib/stores/events.svelte.ts",
-      "startB": 116,
-      "lines": 19,
+      "startB": 119,
+      "lines": 18,
       "tokens": 0
     },
     {
       "fileA": "src/lib/stores/events.svelte.ts",
-      "startA": 199,
+      "startA": 188,
       "fileB": "src/lib/stores/events.svelte.ts",
       "startB": 138,
-      "lines": 18,
+      "lines": 11,
       "tokens": 0
     },
     {
@@ -306,22 +306,6 @@
       "tokens": 0
     },
     {
-      "fileA": "src/lib/api/tribe.ts",
-      "startA": 588,
-      "fileB": "src/lib/api/tribe.ts",
-      "startB": 559,
-      "lines": 8,
-      "tokens": 0
-    },
-    {
-      "fileA": "src/lib/api/tribe.ts",
-      "startA": 597,
-      "fileB": "src/lib/api/tribe.ts",
-      "startB": 568,
-      "lines": 9,
-      "tokens": 0
-    },
-    {
       "fileA": "src/lib/api/posts.ts",
       "startA": 58,
       "fileB": "src/lib/api/posts.ts",
@@ -335,6 +319,22 @@
       "fileB": "src/lib/api/posts.ts",
       "startB": 76,
       "lines": 6,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/api/organizers.ts",
+      "startA": 134,
+      "fileB": "src/lib/api/venues.ts",
+      "startB": 98,
+      "lines": 9,
+      "tokens": 0
+    },
+    {
+      "fileA": "src/lib/api/djs.ts",
+      "startA": 123,
+      "fileB": "src/lib/api/djs.ts",
+      "startB": 99,
+      "lines": 9,
       "tokens": 0
     },
     {
@@ -450,7 +450,7 @@
       "tokens": 0
     }
   ],
-  "duplicatedLines": 834,
-  "totalLines": 24107,
-  "percentage": 3.46
+  "duplicatedLines": 820,
+  "totalLines": 23947,
+  "percentage": 3.42
 }
