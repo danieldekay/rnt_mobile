@@ -4,21 +4,21 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
-	fetchEnhancedOrganizers,
-	fetchEnhancedVenues,
-	fetchEnhancedOrganizersWithErrorHandling,
-	fetchEnhancedVenuesWithErrorHandling,
-	fetchNextEventsRange,
-	formatDate,
-	getContinuationDateRange,
+    fetchEnhancedOrganizers,
+    fetchEnhancedVenues,
+    fetchEnhancedOrganizersWithErrorHandling,
+    fetchEnhancedVenuesWithErrorHandling,
+    fetchNextEventsRange,
+    formatDate,
+    getContinuationDateRange,
 } from "./tribe";
 import {
-	CacheUtils,
-	organizerCache,
-	venueCache,
-	generateOrganizerKey,
-	generateVenueKey,
-	CacheManager,
+    CacheUtils,
+    organizerCache,
+    venueCache,
+    generateOrganizerKey,
+    generateVenueKey,
+    CacheManager,
 } from "../utils/caching";
 import { FallbackDataGenerator } from "../utils/error-handling";
 
@@ -27,792 +27,792 @@ const mockFetch = vi.fn();
 
 // Mock data
 const mockOrganizerData = {
-	id: 1,
-	organizer: "Test Organizer",
-	slug: "test-organizer",
-	url: "https://example.com/organizer/1",
-	website: "https://test-organizer.com",
-	email: "test@test-organizer.com",
-	phone: "+49 123 456789",
-	description: "Test organizer description",
-	image: "https://example.com/image.jpg",
+    id: 1,
+    organizer: "Test Organizer",
+    slug: "test-organizer",
+    url: "https://example.com/organizer/1",
+    website: "https://test-organizer.com",
+    email: "test@test-organizer.com",
+    phone: "+49 123 456789",
+    description: "Test organizer description",
+    image: "https://example.com/image.jpg",
 };
 
 const mockVenueData = {
-	id: 1,
-	venue: "Test Venue",
-	address: "Test Street 1",
-	city: "Test City",
-	geo_lat: 49.0123,
-	geo_lng: 8.1234,
-	website: "https://test-venue.com",
+    id: 1,
+    venue: "Test Venue",
+    address: "Test Street 1",
+    city: "Test City",
+    geo_lat: 49.0123,
+    geo_lng: 8.1234,
+    website: "https://test-venue.com",
 };
 
 const mockEnhancedOrganizerData = {
-	...mockOrganizerData,
-	socialMedia: {
-		facebook: "https://facebook.com/testorganizer",
-		instagram: "https://instagram.com/testorganizer",
-	},
-	contact: {
-		phone: "+49 123 456789",
-		email: "test@test-organizer.com",
-	},
-	details: {
-		description: "Test organizer description",
-		tags: ["tango", "events"],
-	},
-	media: {
-		logo: "https://example.com/logo.jpg",
-		gallery: ["https://example.com/image1.jpg"],
-	},
-	verification: {
-		isVerified: true,
-	},
-	timestamps: {
-		createdAt: "2023-01-01T00:00:00Z",
-		updatedAt: "2023-01-01T00:00:00Z",
-	},
+    ...mockOrganizerData,
+    socialMedia: {
+        facebook: "https://facebook.com/testorganizer",
+        instagram: "https://instagram.com/testorganizer",
+    },
+    contact: {
+        phone: "+49 123 456789",
+        email: "test@test-organizer.com",
+    },
+    details: {
+        description: "Test organizer description",
+        tags: ["tango", "events"],
+    },
+    media: {
+        logo: "https://example.com/logo.jpg",
+        gallery: ["https://example.com/image1.jpg"],
+    },
+    verification: {
+        isVerified: true,
+    },
+    timestamps: {
+        createdAt: "2023-01-01T00:00:00Z",
+        updatedAt: "2023-01-01T00:00:00Z",
+    },
 };
 
 const mockEnhancedVenueData = {
-	...mockVenueData,
-	location: {
-		address: "Test Street 1",
-		city: "Test City",
-		coordinates: {
-			latitude: 49.0123,
-			longitude: 8.1234,
-		},
-	},
-	contact: {
-		phone: "+49 123 456789",
-		email: "info@test-venue.com",
-		website: "https://test-venue.com",
-	},
-	socialMedia: {
-		website: "https://test-venue.com",
-	},
-	media: {
-		logo: "https://example.com/venue-logo.jpg",
-		gallery: ["https://example.com/venue-image1.jpg"],
-	},
-	facilities: {
-		capacity: 100,
-		wheelchairAccessible: true,
-	},
-	details: {
-		description: "Test venue description",
-		tags: ["tango", "venue"],
-	},
-	accessibility: {
-		wheelchairAccessible: true,
-		accessibleParking: false,
-		accessibleEntrance: true,
-		accessibleRestrooms: true,
-		hearingAssistance: false,
-		visualAssistance: false,
-	},
-	pricing: {
-		entryFee: "10€",
-		happyHour: "5€",
-		bottleService: false,
-		privateEvents: true,
-	},
-	hours: {
-		monday: "20:00-24:00",
-		tuesday: "20:00-24:00",
-		wednesday: "20:00-24:00",
-		thursday: "20:00-24:00",
-		friday: "20:00-24:00",
-		saturday: "20:00-24:00",
-		sunday: "20:00-24:00",
-	},
-	verification: {
-		isVerified: true,
-	},
-	timestamps: {
-		createdAt: "2023-01-01T00:00:00Z",
-		updatedAt: "2023-01-01T00:00:00Z",
-	},
+    ...mockVenueData,
+    location: {
+        address: "Test Street 1",
+        city: "Test City",
+        coordinates: {
+            latitude: 49.0123,
+            longitude: 8.1234,
+        },
+    },
+    contact: {
+        phone: "+49 123 456789",
+        email: "info@test-venue.com",
+        website: "https://test-venue.com",
+    },
+    socialMedia: {
+        website: "https://test-venue.com",
+    },
+    media: {
+        logo: "https://example.com/venue-logo.jpg",
+        gallery: ["https://example.com/venue-image1.jpg"],
+    },
+    facilities: {
+        capacity: 100,
+        wheelchairAccessible: true,
+    },
+    details: {
+        description: "Test venue description",
+        tags: ["tango", "venue"],
+    },
+    accessibility: {
+        wheelchairAccessible: true,
+        accessibleParking: false,
+        accessibleEntrance: true,
+        accessibleRestrooms: true,
+        hearingAssistance: false,
+        visualAssistance: false,
+    },
+    pricing: {
+        entryFee: "10€",
+        happyHour: "5€",
+        bottleService: false,
+        privateEvents: true,
+    },
+    hours: {
+        monday: "20:00-24:00",
+        tuesday: "20:00-24:00",
+        wednesday: "20:00-24:00",
+        thursday: "20:00-24:00",
+        friday: "20:00-24:00",
+        saturday: "20:00-24:00",
+        sunday: "20:00-24:00",
+    },
+    verification: {
+        isVerified: true,
+    },
+    timestamps: {
+        createdAt: "2023-01-01T00:00:00Z",
+        updatedAt: "2023-01-01T00:00:00Z",
+    },
 };
 
 describe("Enhanced API Functions", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		// Clear cache before each test
-		organizerCache.clear();
-		venueCache.clear();
-	});
+    beforeEach(() => {
+        vi.clearAllMocks();
+        // Clear cache before each test
+        organizerCache.clear();
+        venueCache.clear();
+    });
 
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
 
-	describe("fetchEnhancedOrganizers", () => {
-		it("should fetch enhanced organizers successfully", async () => {
-			// First call: fetchOrganizers page 1
-			mockFetch.mockImplementation(() => {
-				const args = mockFetch.mock.calls.at(-1);
-				const url = args?.[0] as string;
-				if (url.includes("?per_page=") && !url.includes("_embed")) {
-					// Base organizers request (paginate: first page ok, second page fail)
-					const callCount = mockFetch.mock.calls.length;
-					if (callCount === 1) {
-						return Promise.resolve({
-							ok: true,
-							json: () =>
-								Promise.resolve({
-									organizers: [mockOrganizerData],
-									total_pages: 1,
-								}),
-						});
-					}
-					return Promise.resolve({ ok: false, status: 500 });
-				}
-				// Enhanced data request
-				return Promise.resolve({
-					ok: true,
-					json: () =>
-						Promise.resolve({
-							...mockOrganizerData,
-							_embedded: {
-								"wp:term": [[{ taxonomy: "post_tag", name: "tango" }]],
-								"wp:featuredmedia": [
-									{ source_url: "https://example.com/logo.jpg" },
-								],
-							},
-							acf: { rnt_verified: "yes" },
-						}),
-				});
-			});
+    describe("fetchEnhancedOrganizers", () => {
+        it("should fetch enhanced organizers successfully", async () => {
+            // First call: fetchOrganizers page 1
+            mockFetch.mockImplementation(() => {
+                const args = mockFetch.mock.calls.at(-1);
+                const url = args?.[0] as string;
+                if (url.includes("?per_page=") && !url.includes("_embed")) {
+                    // Base organizers request (paginate: first page ok, second page fail)
+                    const callCount = mockFetch.mock.calls.length;
+                    if (callCount === 1) {
+                        return Promise.resolve({
+                            ok: true,
+                            json: () =>
+                                Promise.resolve({
+                                    organizers: [mockOrganizerData],
+                                    total_pages: 1,
+                                }),
+                        });
+                    }
+                    return Promise.resolve({ ok: false, status: 500 });
+                }
+                // Enhanced data request
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            ...mockOrganizerData,
+                            _embedded: {
+                                "wp:term": [[{ taxonomy: "post_tag", name: "tango" }]],
+                                "wp:featuredmedia": [
+                                    { source_url: "https://example.com/logo.jpg" },
+                                ],
+                            },
+                            acf: { rnt_verified: "yes" },
+                        }),
+                });
+            });
 
-			const result = await fetchEnhancedOrganizers(mockFetch);
+            const result = await fetchEnhancedOrganizers(mockFetch);
 
-			expect(mockFetch).toHaveBeenCalled();
-			expect(result).toHaveLength(1);
-			expect(result[0].organizer).toBe("Test Organizer");
-			expect(result[0].media?.logo).toBe("https://example.com/logo.jpg");
-			expect(result[0].verification?.isVerified).toBe(true);
-		});
+            expect(mockFetch).toHaveBeenCalled();
+            expect(result).toHaveLength(1);
+            expect(result[0].organizer).toBe("Test Organizer");
+            expect(result[0].media?.logo).toBe("https://example.com/logo.jpg");
+            expect(result[0].verification?.isVerified).toBe(true);
+        });
 
-		it("should handle empty organizer list", async () => {
-			mockFetch.mockImplementationOnce(() =>
-				Promise.resolve({
-					ok: true,
-					json: () =>
-						Promise.resolve({
-							organizers: [],
-							total_pages: 0,
-						}),
-				}),
-			);
+        it("should handle empty organizer list", async () => {
+            mockFetch.mockImplementationOnce(() =>
+                Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            organizers: [],
+                            total_pages: 0,
+                        }),
+                }),
+            );
 
-			const result = await fetchEnhancedOrganizers(mockFetch);
-			expect(result).toEqual([]);
-		});
+            const result = await fetchEnhancedOrganizers(mockFetch);
+            expect(result).toEqual([]);
+        });
 
-		it("should handle network error gracefully", async () => {
-			mockFetch.mockImplementationOnce(() =>
-				Promise.resolve({
-					ok: false,
-					status: 404,
-				}),
-			);
+        it("should handle network error gracefully", async () => {
+            mockFetch.mockImplementationOnce(() =>
+                Promise.resolve({
+                    ok: false,
+                    status: 404,
+                }),
+            );
 
-			const result = await fetchEnhancedOrganizers(mockFetch);
-			expect(result).toEqual([]);
-		});
+            const result = await fetchEnhancedOrganizers(mockFetch);
+            expect(result).toEqual([]);
+        });
 
-		it("should handle JSON parsing error", async () => {
-			mockFetch.mockImplementation(() => {
-				const args = mockFetch.mock.calls.at(-1);
-				const url = args?.[0] as string;
-				if (url.includes("?per_page=") && !url.includes("_embed")) {
-					return Promise.resolve({
-						ok: true,
-						json: () =>
-							Promise.resolve({
-								organizers: [mockOrganizerData],
-								total_pages: 1,
-							}),
-					});
-				}
-				return Promise.resolve({
-					ok: true,
-					json: () => Promise.reject(new Error("Invalid JSON")),
-				});
-			});
+        it("should handle JSON parsing error", async () => {
+            mockFetch.mockImplementation(() => {
+                const args = mockFetch.mock.calls.at(-1);
+                const url = args?.[0] as string;
+                if (url.includes("?per_page=") && !url.includes("_embed")) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: () =>
+                            Promise.resolve({
+                                organizers: [mockOrganizerData],
+                                total_pages: 1,
+                            }),
+                    });
+                }
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.reject(new Error("Invalid JSON")),
+                });
+            });
 
-			const result = await fetchEnhancedOrganizers(mockFetch);
-			// Falls back to basic organizer (from catch block)
-			expect(result).toHaveLength(1);
-			expect(result[0].organizer).toBe("Test Organizer");
-		});
-	});
+            const result = await fetchEnhancedOrganizers(mockFetch);
+            // Falls back to basic organizer (from catch block)
+            expect(result).toHaveLength(1);
+            expect(result[0].organizer).toBe("Test Organizer");
+        });
+    });
 
-	describe("fetchEnhancedVenues", () => {
-		it("should fetch enhanced venues successfully", async () => {
-			mockFetch.mockImplementation(() => {
-				const args = mockFetch.mock.calls.at(-1);
-				const url = args?.[0] as string;
-				if (url.includes("/api/venues?") && !url.includes("/api/venues/")) {
-					// Base venues request
-					return Promise.resolve({
-						ok: true,
-						json: () =>
-							Promise.resolve({
-								venues: [mockVenueData],
-							}),
-					});
-				}
-				// Enhanced data request
-				return Promise.resolve({
-					ok: true,
-					json: () =>
-						Promise.resolve({
-							...mockVenueData,
-							_embedded: {
-								"wp:term": [],
-								"wp:featuredmedia": [],
-							},
-							acf: {},
-							date: "2023-01-01T00:00:00Z",
-							modified: "2023-01-01T00:00:00Z",
-						}),
-				});
-			});
+    describe("fetchEnhancedVenues", () => {
+        it("should fetch enhanced venues successfully", async () => {
+            mockFetch.mockImplementation(() => {
+                const args = mockFetch.mock.calls.at(-1);
+                const url = args?.[0] as string;
+                if (url.includes("/api/venues?") && !url.includes("/api/venues/")) {
+                    // Base venues request
+                    return Promise.resolve({
+                        ok: true,
+                        json: () =>
+                            Promise.resolve({
+                                venues: [mockVenueData],
+                            }),
+                    });
+                }
+                // Enhanced data request
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            ...mockVenueData,
+                            _embedded: {
+                                "wp:term": [],
+                                "wp:featuredmedia": [],
+                            },
+                            acf: {},
+                            date: "2023-01-01T00:00:00Z",
+                            modified: "2023-01-01T00:00:00Z",
+                        }),
+                });
+            });
 
-			const result = await fetchEnhancedVenues(mockFetch);
+            const result = await fetchEnhancedVenues(mockFetch);
 
-			expect(mockFetch).toHaveBeenCalled();
-			expect(result).toHaveLength(1);
-			expect(result[0].venue).toBe("Test Venue");
-		});
+            expect(mockFetch).toHaveBeenCalled();
+            expect(result).toHaveLength(1);
+            expect(result[0].venue).toBe("Test Venue");
+        });
 
-		it("should handle empty venue list", async () => {
-			mockFetch.mockImplementationOnce(() =>
-				Promise.resolve({
-					ok: true,
-					json: () =>
-						Promise.resolve({
-							venues: [],
-						}),
-				}),
-			);
+        it("should handle empty venue list", async () => {
+            mockFetch.mockImplementationOnce(() =>
+                Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            venues: [],
+                        }),
+                }),
+            );
 
-			const result = await fetchEnhancedVenues(mockFetch);
-			expect(result).toEqual([]);
-		});
+            const result = await fetchEnhancedVenues(mockFetch);
+            expect(result).toEqual([]);
+        });
 
-		it("should handle network error gracefully", async () => {
-			mockFetch.mockImplementationOnce(() =>
-				Promise.resolve({
-					ok: false,
-					status: 404,
-				}),
-			);
+        it("should handle network error gracefully", async () => {
+            mockFetch.mockImplementationOnce(() =>
+                Promise.resolve({
+                    ok: false,
+                    status: 404,
+                }),
+            );
 
-			const result = await fetchEnhancedVenues(mockFetch);
-			expect(result).toEqual([]);
-		});
-	});
+            const result = await fetchEnhancedVenues(mockFetch);
+            expect(result).toEqual([]);
+        });
+    });
 
-	describe("fetchEnhancedOrganizersWithErrorHandling", () => {
-		it("should return fallback data when API fails", async () => {
-			mockFetch.mockImplementationOnce(() =>
-				Promise.resolve({
-					ok: false,
-					status: 500,
-				}),
-			);
+    describe("fetchEnhancedOrganizersWithErrorHandling", () => {
+        it("should return fallback data when API fails", async () => {
+            mockFetch.mockImplementationOnce(() =>
+                Promise.resolve({
+                    ok: false,
+                    status: 500,
+                }),
+            );
 
-			const result = await fetchEnhancedOrganizersWithErrorHandling(
-				[mockOrganizerData],
-				mockFetch,
-			);
+            const result = await fetchEnhancedOrganizersWithErrorHandling(
+                [mockOrganizerData],
+                mockFetch,
+            );
 
-			expect(result.hasFallback).toBe(true);
-			expect(result.data).toHaveLength(1);
-			expect(result.data![0]).toEqual(
-				expect.objectContaining({
-					id: 1,
-					organizer: "Test Organizer",
-				}),
-			);
-			expect(result.error).toBeNull();
-			expect(result.warnings).toHaveLength(1);
-		});
+            expect(result.hasFallback).toBe(true);
+            expect(result.data).toHaveLength(1);
+            expect(result.data![0]).toEqual(
+                expect.objectContaining({
+                    id: 1,
+                    organizer: "Test Organizer",
+                }),
+            );
+            expect(result.error).toBeNull();
+            expect(result.warnings).toHaveLength(1);
+        });
 
-		it("should handle partial success in batch processing", async () => {
-			const mockOrganizers = [
-				{ ...mockOrganizerData, id: 1 },
-				{ ...mockOrganizerData, id: 2 },
-			];
+        it("should handle partial success in batch processing", async () => {
+            const mockOrganizers = [
+                { ...mockOrganizerData, id: 1 },
+                { ...mockOrganizerData, id: 2 },
+            ];
 
-			mockFetch.mockImplementation(() =>
-				Promise.resolve({
-					ok: false,
-					status: 404,
-				}),
-			);
+            mockFetch.mockImplementation(() =>
+                Promise.resolve({
+                    ok: false,
+                    status: 404,
+                }),
+            );
 
-			const result = await fetchEnhancedOrganizersWithErrorHandling(
-				mockOrganizers,
-				mockFetch,
-			);
+            const result = await fetchEnhancedOrganizersWithErrorHandling(
+                mockOrganizers,
+                mockFetch,
+            );
 
-			expect(result.hasFallback).toBe(true);
-			expect(result.data).toHaveLength(2);
-			expect(result.warnings).toHaveLength(2);
-		});
-	});
+            expect(result.hasFallback).toBe(true);
+            expect(result.data).toHaveLength(2);
+            expect(result.warnings).toHaveLength(2);
+        });
+    });
 
-	describe("fetchEnhancedVenuesWithErrorHandling", () => {
-		it("should return fallback data when API fails", async () => {
-			mockFetch.mockImplementationOnce(() =>
-				Promise.resolve({
-					ok: false,
-					status: 500,
-				}),
-			);
+    describe("fetchEnhancedVenuesWithErrorHandling", () => {
+        it("should return fallback data when API fails", async () => {
+            mockFetch.mockImplementationOnce(() =>
+                Promise.resolve({
+                    ok: false,
+                    status: 500,
+                }),
+            );
 
-			const result = await fetchEnhancedVenuesWithErrorHandling(
-				[mockVenueData],
-				mockFetch,
-			);
+            const result = await fetchEnhancedVenuesWithErrorHandling(
+                [mockVenueData],
+                mockFetch,
+            );
 
-			expect(result.hasFallback).toBe(true);
-			expect(result.data).toHaveLength(1);
-			expect(result.data![0]).toEqual(
-				expect.objectContaining({
-					id: 1,
-					venue: "Test Venue",
-				}),
-			);
-			expect(result.error).toBeNull();
-			expect(result.warnings).toHaveLength(1);
-		});
-	});
+            expect(result.hasFallback).toBe(true);
+            expect(result.data).toHaveLength(1);
+            expect(result.data![0]).toEqual(
+                expect.objectContaining({
+                    id: 1,
+                    venue: "Test Venue",
+                }),
+            );
+            expect(result.error).toBeNull();
+            expect(result.warnings).toHaveLength(1);
+        });
+    });
 });
 
 describe("Progressive event fetching", () => {
-	it("should derive the next bounded date range after the loaded window", () => {
-		const nextRange = getContinuationDateRange({
-			start: new Date(2026, 4, 1, 0, 0, 0, 0),
-			end: new Date(2026, 4, 7, 23, 59, 59, 999),
-		});
+    it("should derive the next bounded date range after the loaded window", () => {
+        const nextRange = getContinuationDateRange({
+            start: new Date(2026, 4, 1, 0, 0, 0, 0),
+            end: new Date(2026, 4, 7, 23, 59, 59, 999),
+        });
 
-		expect(formatDate(nextRange.start)).toBe("2026-05-08");
-		expect(formatDate(nextRange.end)).toBe("2026-05-14");
-	});
+        expect(formatDate(nextRange.start)).toBe("2026-05-08");
+        expect(formatDate(nextRange.end)).toBe("2026-05-14");
+    });
 
-	it("should fetch only the next bounded range for continuation browsing", async () => {
-		const continuationFetch = vi.fn();
-		const currentRange = {
-			start: new Date(2026, 4, 1, 0, 0, 0, 0),
-			end: new Date(2026, 4, 7, 23, 59, 59, 999),
-		};
+    it("should fetch only the next bounded range for continuation browsing", async () => {
+        const continuationFetch = vi.fn();
+        const currentRange = {
+            start: new Date(2026, 4, 1, 0, 0, 0, 0),
+            end: new Date(2026, 4, 7, 23, 59, 59, 999),
+        };
 
-		const mockEvent = {
-			id: 42,
-			title: "Next Week Event",
-			description: "",
-			excerpt: "",
-			slug: "next-week-event",
-			url: "https://example.com/events/42",
-			image: false,
-			all_day: false,
-			start_date: "2026-05-08 20:00:00",
-			end_date: "2026-05-08 23:00:00",
-			start_date_details: { year: "2026", month: "05", day: "08", hour: "20", minutes: "00", seconds: "00" },
-			end_date_details: { year: "2026", month: "05", day: "08", hour: "23", minutes: "00", seconds: "00" },
-			timezone: "Europe/Berlin",
-			timezone_abbr: "CEST",
-			cost: "12",
-			cost_details: {
-				currency_symbol: "€",
-				currency_code: "EUR",
-				currency_position: "suffix",
-				values: ["12"],
-			},
-			categories: [],
-			venue: null,
-			organizer: [],
-			featured: false,
-			sticky: false,
-		};
+        const mockEvent = {
+            id: 42,
+            title: "Next Week Event",
+            description: "",
+            excerpt: "",
+            slug: "next-week-event",
+            url: "https://example.com/events/42",
+            image: false,
+            all_day: false,
+            start_date: "2026-05-08 20:00:00",
+            end_date: "2026-05-08 23:00:00",
+            start_date_details: { year: "2026", month: "05", day: "08", hour: "20", minutes: "00", seconds: "00" },
+            end_date_details: { year: "2026", month: "05", day: "08", hour: "23", minutes: "00", seconds: "00" },
+            timezone: "Europe/Berlin",
+            timezone_abbr: "CEST",
+            cost: "12",
+            cost_details: {
+                currency_symbol: "€",
+                currency_code: "EUR",
+                currency_position: "suffix",
+                values: ["12"],
+            },
+            categories: [],
+            venue: null,
+            organizer: [],
+            featured: false,
+            sticky: false,
+        };
 
-		continuationFetch.mockResolvedValue({
-			ok: true,
-			json: () =>
-				Promise.resolve({
-					events: [mockEvent],
-					total: 1,
-					total_pages: 1,
-					rest_url: "/api/events",
-					next_rest_url: "",
-				}),
-		});
+        continuationFetch.mockResolvedValue({
+            ok: true,
+            json: () =>
+                Promise.resolve({
+                    events: [mockEvent],
+                    total: 1,
+                    total_pages: 1,
+                    rest_url: "/api/events",
+                    next_rest_url: "",
+                }),
+        });
 
-		const events = await fetchNextEventsRange(
-			currentRange,
-			[],
-			null,
-			continuationFetch,
-		);
+        const events = await fetchNextEventsRange(
+            currentRange,
+            [],
+            null,
+            continuationFetch,
+        );
 
-		expect(events).toHaveLength(1);
-		expect(events[0].id).toBe(42);
+        expect(events).toHaveLength(1);
+        expect(events[0].id).toBe(42);
 
-		const firstCallUrl = continuationFetch.mock.calls[0]?.[0] as string;
-		expect(firstCallUrl).toContain("start_date=2026-05-08");
-		expect(firstCallUrl).toContain("end_date=2026-05-14");
-		expect(firstCallUrl).not.toContain("start_date=2026-05-01");
-	});
+        const firstCallUrl = continuationFetch.mock.calls[0]?.[0] as string;
+        expect(firstCallUrl).toContain("start_date=2026-05-08");
+        expect(firstCallUrl).toContain("end_date=2026-05-14");
+        expect(firstCallUrl).not.toContain("start_date=2026-05-01");
+    });
 
-	it("should preserve request failures for append handling", async () => {
-		const continuationFetch = vi.fn();
-		continuationFetch.mockResolvedValue({ ok: false, status: 503 });
+    it("should preserve request failures for append handling", async () => {
+        const continuationFetch = vi.fn();
+        continuationFetch.mockResolvedValue({ ok: false, status: 503 });
 
-		await expect(
-			fetchNextEventsRange(
-				{
-					start: new Date(2026, 4, 1, 0, 0, 0, 0),
-					end: new Date(2026, 4, 7, 23, 59, 59, 999),
-				},
-				[],
-				null,
-				continuationFetch,
-			),
-		).rejects.toThrow("Failed to fetch events: 503");
-	});
+        await expect(
+            fetchNextEventsRange(
+                {
+                    start: new Date(2026, 4, 1, 0, 0, 0, 0),
+                    end: new Date(2026, 4, 7, 23, 59, 59, 999),
+                },
+                [],
+                null,
+                continuationFetch,
+            ),
+        ).rejects.toThrow("Failed to fetch events: 503");
+    });
 });
 
 describe("Caching Integration", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		organizerCache.clear();
-		venueCache.clear();
-	});
+    beforeEach(() => {
+        vi.clearAllMocks();
+        organizerCache.clear();
+        venueCache.clear();
+    });
 
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
 
-	describe("CacheUtils", () => {
-		it("should cache and retrieve organizers", async () => {
-			const cacheKey = generateOrganizerKey(1);
+    describe("CacheUtils", () => {
+        it("should cache and retrieve organizers", async () => {
+            const cacheKey = generateOrganizerKey(1);
 
-			// First call should fetch and cache
-			const result1 = await CacheUtils.getOrganizer(
-				1,
-				async () => mockEnhancedOrganizerData,
-			);
-			expect(result1).toEqual(mockEnhancedOrganizerData);
+            // First call should fetch and cache
+            const result1 = await CacheUtils.getOrganizer(
+                1,
+                async () => mockEnhancedOrganizerData,
+            );
+            expect(result1).toEqual(mockEnhancedOrganizerData);
 
-			// Second call should use cache
-			const result2 = await CacheUtils.getOrganizer(1, async () => {
-				throw new Error("Should not be called");
-			});
-			expect(result2).toEqual(mockEnhancedOrganizerData);
+            // Second call should use cache
+            const result2 = await CacheUtils.getOrganizer(1, async () => {
+                throw new Error("Should not be called");
+            });
+            expect(result2).toEqual(mockEnhancedOrganizerData);
 
-			// Verify cache contains the data
-			const cached = organizerCache.get(cacheKey);
-			expect(cached).toEqual(mockEnhancedOrganizerData);
-		});
+            // Verify cache contains the data
+            const cached = organizerCache.get(cacheKey);
+            expect(cached).toEqual(mockEnhancedOrganizerData);
+        });
 
-		it("should cache and retrieve venues", async () => {
-			const cacheKey = generateVenueKey(1);
+        it("should cache and retrieve venues", async () => {
+            const cacheKey = generateVenueKey(1);
 
-			// First call should fetch and cache
-			const result1 = await CacheUtils.getVenue(
-				1,
-				async () => mockEnhancedVenueData,
-			);
-			expect(result1).toEqual(mockEnhancedVenueData);
+            // First call should fetch and cache
+            const result1 = await CacheUtils.getVenue(
+                1,
+                async () => mockEnhancedVenueData,
+            );
+            expect(result1).toEqual(mockEnhancedVenueData);
 
-			// Second call should use cache
-			const result2 = await CacheUtils.getVenue(1, async () => {
-				throw new Error("Should not be called");
-			});
-			expect(result2).toEqual(mockEnhancedVenueData);
+            // Second call should use cache
+            const result2 = await CacheUtils.getVenue(1, async () => {
+                throw new Error("Should not be called");
+            });
+            expect(result2).toEqual(mockEnhancedVenueData);
 
-			// Verify cache contains the data
-			const cached = venueCache.get(cacheKey);
-			expect(cached).toEqual(mockEnhancedVenueData);
-		});
+            // Verify cache contains the data
+            const cached = venueCache.get(cacheKey);
+            expect(cached).toEqual(mockEnhancedVenueData);
+        });
 
-		it("should handle cache invalidation", () => {
-			const cacheKey = generateOrganizerKey(1);
+        it("should handle cache invalidation", () => {
+            const cacheKey = generateOrganizerKey(1);
 
-			// Set cache
-			organizerCache.set(cacheKey, mockEnhancedOrganizerData);
-			expect(organizerCache.get(cacheKey)).toEqual(mockEnhancedOrganizerData);
+            // Set cache
+            organizerCache.set(cacheKey, mockEnhancedOrganizerData);
+            expect(organizerCache.get(cacheKey)).toEqual(mockEnhancedOrganizerData);
 
-			// Invalidate single item
-			CacheUtils.invalidateOrganizer(1);
-			expect(organizerCache.get(cacheKey)).toBeNull();
+            // Invalidate single item
+            CacheUtils.invalidateOrganizer(1);
+            expect(organizerCache.get(cacheKey)).toBeNull();
 
-			// Invalidate all
-			organizerCache.set(cacheKey, mockEnhancedOrganizerData);
-			CacheUtils.invalidateOrganizer();
-			expect(organizerCache.get(cacheKey)).toBeNull();
-		});
+            // Invalidate all
+            organizerCache.set(cacheKey, mockEnhancedOrganizerData);
+            CacheUtils.invalidateOrganizer();
+            expect(organizerCache.get(cacheKey)).toBeNull();
+        });
 
-		it("should handle batch caching for organizers", async () => {
-			const mockOrganizers = [
-				{ ...mockEnhancedOrganizerData, id: 1 },
-				{ ...mockEnhancedOrganizerData, id: 2 },
-			];
+        it("should handle batch caching for organizers", async () => {
+            const mockOrganizers = [
+                { ...mockEnhancedOrganizerData, id: 1 },
+                { ...mockEnhancedOrganizerData, id: 2 },
+            ];
 
-			const result = await CacheUtils.getOrganizers(
-				[1, 2],
-				async () => mockOrganizers,
-			);
+            const result = await CacheUtils.getOrganizers(
+                [1, 2],
+                async () => mockOrganizers,
+            );
 
-			expect(result).toHaveLength(2);
-			expect(result[0].id).toBe(1);
-			expect(result[1].id).toBe(2);
+            expect(result).toHaveLength(2);
+            expect(result[0].id).toBe(1);
+            expect(result[1].id).toBe(2);
 
-			// Verify both are cached
-			expect(organizerCache.get("organizer:1")).toEqual(mockOrganizers[0]);
-			expect(organizerCache.get("organizer:2")).toEqual(mockOrganizers[1]);
-		});
+            // Verify both are cached
+            expect(organizerCache.get("organizer:1")).toEqual(mockOrganizers[0]);
+            expect(organizerCache.get("organizer:2")).toEqual(mockOrganizers[1]);
+        });
 
-		it("should handle batch caching for venues", async () => {
-			const mockVenues = [
-				{ ...mockEnhancedVenueData, id: 1 },
-				{ ...mockEnhancedVenueData, id: 2 },
-			];
+        it("should handle batch caching for venues", async () => {
+            const mockVenues = [
+                { ...mockEnhancedVenueData, id: 1 },
+                { ...mockEnhancedVenueData, id: 2 },
+            ];
 
-			const result = await CacheUtils.getVenues([1, 2], async () => mockVenues);
+            const result = await CacheUtils.getVenues([1, 2], async () => mockVenues);
 
-			expect(result).toHaveLength(2);
-			expect(result[0].id).toBe(1);
-			expect(result[1].id).toBe(2);
+            expect(result).toHaveLength(2);
+            expect(result[0].id).toBe(1);
+            expect(result[1].id).toBe(2);
 
-			// Verify both are cached
-			expect(venueCache.get("venue:1")).toEqual(mockVenues[0]);
-			expect(venueCache.get("venue:2")).toEqual(mockVenues[1]);
-		});
+            // Verify both are cached
+            expect(venueCache.get("venue:1")).toEqual(mockVenues[0]);
+            expect(venueCache.get("venue:2")).toEqual(mockVenues[1]);
+        });
 
-		it("should provide cache statistics", () => {
-			// Reset to clean state
-			organizerCache.clear();
-			organizerCache.set("organizer:1", mockEnhancedOrganizerData);
-			organizerCache.set("organizer:2", mockEnhancedOrganizerData);
+        it("should provide cache statistics", () => {
+            // Reset to clean state
+            organizerCache.clear();
+            organizerCache.set("organizer:1", mockEnhancedOrganizerData);
+            organizerCache.set("organizer:2", mockEnhancedOrganizerData);
 
-			const stats = CacheUtils.getStats();
+            const stats = CacheUtils.getStats();
 
-			expect(stats.organizers.totalItems).toBe(2);
-			expect(stats.organizers.totalAccessCount).toBe(2);
-			expect(stats.venues.totalItems).toBe(0);
-		});
-	});
+            expect(stats.organizers.totalItems).toBe(2);
+            expect(stats.organizers.totalAccessCount).toBe(2);
+            expect(stats.venues.totalItems).toBe(0);
+        });
+    });
 
-	describe("CacheManager", () => {
-		it("should respect TTL configuration", async () => {
-			const shortCache = new (class extends CacheManager<
-				typeof mockEnhancedOrganizerData
-			> {
-				constructor() {
-					super({ enabled: true, ttl: 100, maxSize: 10, cleanupInterval: 0 });
-				}
-			})();
+    describe("CacheManager", () => {
+        it("should respect TTL configuration", async () => {
+            const shortCache = new (class extends CacheManager<
+                typeof mockEnhancedOrganizerData
+            > {
+                constructor() {
+                    super({ enabled: true, ttl: 100, maxSize: 10, cleanupInterval: 0 });
+                }
+            })();
 
-			const cacheKey = generateOrganizerKey(1);
+            const cacheKey = generateOrganizerKey(1);
 
-			// Set cache
-			shortCache.set(cacheKey, mockEnhancedOrganizerData);
-			expect(shortCache.get(cacheKey)).toEqual(mockEnhancedOrganizerData);
+            // Set cache
+            shortCache.set(cacheKey, mockEnhancedOrganizerData);
+            expect(shortCache.get(cacheKey)).toEqual(mockEnhancedOrganizerData);
 
-			// Wait for TTL to expire
-			await new Promise((resolve) => setTimeout(resolve, 150));
+            // Wait for TTL to expire
+            await new Promise((resolve) => setTimeout(resolve, 150));
 
-			// Cache should be expired
-			expect(shortCache.get(cacheKey)).toBeNull();
+            // Cache should be expired
+            expect(shortCache.get(cacheKey)).toBeNull();
 
-			shortCache.destroy();
-		});
+            shortCache.destroy();
+        });
 
-		it("should respect max size with LRU eviction", () => {
-			const smallCache = new (class extends CacheManager<
-				typeof mockEnhancedOrganizerData
-			> {
-				constructor() {
-					super({ enabled: true, ttl: 60000, maxSize: 2, cleanupInterval: 0 });
-				}
-			})();
+        it("should respect max size with LRU eviction", () => {
+            const smallCache = new (class extends CacheManager<
+                typeof mockEnhancedOrganizerData
+            > {
+                constructor() {
+                    super({ enabled: true, ttl: 60000, maxSize: 2, cleanupInterval: 0 });
+                }
+            })();
 
-			// Add items beyond max size
-			smallCache.set("organizer:1", mockEnhancedOrganizerData);
-			smallCache.set("organizer:2", mockEnhancedOrganizerData);
-			smallCache.set("organizer:3", mockEnhancedOrganizerData);
+            // Add items beyond max size
+            smallCache.set("organizer:1", mockEnhancedOrganizerData);
+            smallCache.set("organizer:2", mockEnhancedOrganizerData);
+            smallCache.set("organizer:3", mockEnhancedOrganizerData);
 
-			// Only the least recently used item should be evicted (most recent stays)
-			expect(smallCache.get("organizer:3")).toEqual(mockEnhancedOrganizerData);
-			expect(smallCache.getStats().totalItems).toBe(2);
+            // Only the least recently used item should be evicted (most recent stays)
+            expect(smallCache.get("organizer:3")).toEqual(mockEnhancedOrganizerData);
+            expect(smallCache.getStats().totalItems).toBe(2);
 
-			smallCache.destroy();
-		});
-	});
+            smallCache.destroy();
+        });
+    });
 });
 
 describe("Fallback Data Generation", () => {
-	it("should generate fallback organizer data", () => {
-		const fallback = FallbackDataGenerator.generateFallbackOrganizer();
+    it("should generate fallback organizer data", () => {
+        const fallback = FallbackDataGenerator.generateFallbackOrganizer();
 
-		expect(fallback.id).toBe(0);
-		expect(fallback.organizer).toBe("Unknown Organizer");
-		expect(fallback.slug).toBe("unknown-organizer");
-		expect(fallback.website).toBe("");
-		expect(fallback.email).toBe("");
-		expect(fallback.phone).toBe("");
-		expect(fallback.description).toBe("");
-		expect(fallback.image).toBe("");
-		expect(fallback.socialMedia).toEqual({});
-		expect(fallback.contact).toEqual({
-			phone: "",
-			email: "",
-		});
-		expect(fallback.details).toEqual({
-			description: "",
-			tags: [],
-			organizationType: "other",
-		});
-		expect(fallback.media).toEqual({
-			logo: undefined,
-			gallery: [],
-		});
-		expect(fallback.specializations).toEqual({
-			musicStyles: [],
-			eventTypes: [],
-			targetAudience: [],
-		});
-		expect(fallback.verification).toEqual({
-			isVerified: false,
-		});
-		expect(fallback.timestamps).toEqual({
-			createdAt: expect.any(String),
-			updatedAt: expect.any(String),
-		});
-	});
+        expect(fallback.id).toBe(0);
+        expect(fallback.organizer).toBe("Unknown Organizer");
+        expect(fallback.slug).toBe("unknown-organizer");
+        expect(fallback.website).toBe("");
+        expect(fallback.email).toBe("");
+        expect(fallback.phone).toBe("");
+        expect(fallback.description).toBe("");
+        expect(fallback.image).toBe("");
+        expect(fallback.socialMedia).toEqual({});
+        expect(fallback.contact).toEqual({
+            phone: "",
+            email: "",
+        });
+        expect(fallback.details).toEqual({
+            description: "",
+            tags: [],
+            organizationType: "other",
+        });
+        expect(fallback.media).toEqual({
+            logo: undefined,
+            gallery: [],
+        });
+        expect(fallback.specializations).toEqual({
+            musicStyles: [],
+            eventTypes: [],
+            targetAudience: [],
+        });
+        expect(fallback.verification).toEqual({
+            isVerified: false,
+        });
+        expect(fallback.timestamps).toEqual({
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+        });
+    });
 
-	it("should generate fallback venue data", () => {
-		const fallback = FallbackDataGenerator.generateFallbackVenue();
+    it("should generate fallback venue data", () => {
+        const fallback = FallbackDataGenerator.generateFallbackVenue();
 
-		expect(fallback.id).toBe(0);
-		expect(fallback.venue).toBe("Unknown Venue");
-		expect(fallback.address).toBe("");
-		expect(fallback.city).toBe("");
-		expect(fallback.website).toBe("");
-		expect(fallback.geo_lat).toBeNull();
-		expect(fallback.geo_lng).toBeNull();
-		expect(fallback.location).toEqual({
-			address: "",
-			city: "",
-			coordinates: undefined,
-		});
-		expect(fallback.contact).toEqual({
-			phone: "",
-			email: "",
-			website: "",
-		});
-		expect(fallback.socialMedia).toEqual({});
-		expect(fallback.media).toEqual({
-			logo: undefined,
-			gallery: [],
-		});
-		expect(fallback.facilities).toEqual({
-			capacity: 0,
-			danceFloor: false,
-			bar: false,
-			parking: false,
-			wheelchairAccessible: false,
-		});
-		expect(fallback.details).toEqual({
-			description: "",
-			tags: [],
-			keywords: [],
-		});
-		expect(fallback.accessibility).toEqual({
-			wheelchairAccessible: false,
-			accessibleParking: false,
-			accessibleEntrance: false,
-			accessibleRestrooms: false,
-			hearingAssistance: false,
-			visualAssistance: false,
-		});
-		expect(fallback.pricing).toEqual({
-			entryFee: "",
-			happyHour: "",
-			bottleService: false,
-			privateEvents: false,
-			rentalInfo: undefined,
-		});
-		expect(fallback.hours).toEqual({
-			monday: "Geschlossen",
-			tuesday: "Geschlossen",
-			wednesday: "Geschlossen",
-			thursday: "Geschlossen",
-			friday: "Geschlossen",
-			saturday: "Geschlossen",
-			sunday: "Geschlossen",
-		});
-		expect(fallback.verification).toEqual({
-			isVerified: false,
-		});
-		expect(fallback.timestamps).toEqual({
-			createdAt: expect.any(String),
-			updatedAt: expect.any(String),
-		});
-	});
+        expect(fallback.id).toBe(0);
+        expect(fallback.venue).toBe("Unknown Venue");
+        expect(fallback.address).toBe("");
+        expect(fallback.city).toBe("");
+        expect(fallback.website).toBe("");
+        expect(fallback.geo_lat).toBeNull();
+        expect(fallback.geo_lng).toBeNull();
+        expect(fallback.location).toEqual({
+            address: "",
+            city: "",
+            coordinates: undefined,
+        });
+        expect(fallback.contact).toEqual({
+            phone: "",
+            email: "",
+            website: "",
+        });
+        expect(fallback.socialMedia).toEqual({});
+        expect(fallback.media).toEqual({
+            logo: undefined,
+            gallery: [],
+        });
+        expect(fallback.facilities).toEqual({
+            capacity: 0,
+            danceFloor: false,
+            bar: false,
+            parking: false,
+            wheelchairAccessible: false,
+        });
+        expect(fallback.details).toEqual({
+            description: "",
+            tags: [],
+            keywords: [],
+        });
+        expect(fallback.accessibility).toEqual({
+            wheelchairAccessible: false,
+            accessibleParking: false,
+            accessibleEntrance: false,
+            accessibleRestrooms: false,
+            hearingAssistance: false,
+            visualAssistance: false,
+        });
+        expect(fallback.pricing).toEqual({
+            entryFee: "",
+            happyHour: "",
+            bottleService: false,
+            privateEvents: false,
+            rentalInfo: undefined,
+        });
+        expect(fallback.hours).toEqual({
+            monday: "Geschlossen",
+            tuesday: "Geschlossen",
+            wednesday: "Geschlossen",
+            thursday: "Geschlossen",
+            friday: "Geschlossen",
+            saturday: "Geschlossen",
+            sunday: "Geschlossen",
+        });
+        expect(fallback.verification).toEqual({
+            isVerified: false,
+        });
+        expect(fallback.timestamps).toEqual({
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+        });
+    });
 
-	it("should use basic data when provided", () => {
-		const basicOrganizer = {
-			id: 42,
-			organizer: "Test Organizer",
-			slug: "test-organizer",
-			website: "https://test.com",
-			email: "test@test.com",
-			phone: "+49 123456789",
-			description: "Test description",
-			image: "https://test.com/image.jpg",
-		};
+    it("should use basic data when provided", () => {
+        const basicOrganizer = {
+            id: 42,
+            organizer: "Test Organizer",
+            slug: "test-organizer",
+            website: "https://test.com",
+            email: "test@test.com",
+            phone: "+49 123456789",
+            description: "Test description",
+            image: "https://test.com/image.jpg",
+        };
 
-		const fallback =
-			FallbackDataGenerator.generateFallbackOrganizer(basicOrganizer);
+        const fallback =
+            FallbackDataGenerator.generateFallbackOrganizer(basicOrganizer);
 
-		expect(fallback.id).toBe(42);
-		expect(fallback.organizer).toBe("Test Organizer");
-		expect(fallback.slug).toBe("test-organizer");
-		expect(fallback.website).toBe("https://test.com");
-		expect(fallback.email).toBe("test@test.com");
-		expect(fallback.phone).toBe("+49 123456789");
-		expect(fallback.description).toBe("Test description");
-		expect(fallback.image).toBe("https://test.com/image.jpg");
-	});
+        expect(fallback.id).toBe(42);
+        expect(fallback.organizer).toBe("Test Organizer");
+        expect(fallback.slug).toBe("test-organizer");
+        expect(fallback.website).toBe("https://test.com");
+        expect(fallback.email).toBe("test@test.com");
+        expect(fallback.phone).toBe("+49 123456789");
+        expect(fallback.description).toBe("Test description");
+        expect(fallback.image).toBe("https://test.com/image.jpg");
+    });
 
-	it("should use basic venue data when provided", () => {
-		const basicVenue = {
-			id: 42,
-			venue: "Test Venue",
-			address: "Test Street 1",
-			city: "Test City",
-			geo_lat: 49.0123,
-			geo_lng: 8.1234,
-			website: "https://test-venue.com",
-		};
+    it("should use basic venue data when provided", () => {
+        const basicVenue = {
+            id: 42,
+            venue: "Test Venue",
+            address: "Test Street 1",
+            city: "Test City",
+            geo_lat: 49.0123,
+            geo_lng: 8.1234,
+            website: "https://test-venue.com",
+        };
 
-		const fallback = FallbackDataGenerator.generateFallbackVenue(basicVenue);
+        const fallback = FallbackDataGenerator.generateFallbackVenue(basicVenue);
 
-		expect(fallback.id).toBe(42);
-		expect(fallback.venue).toBe("Test Venue");
-		expect(fallback.address).toBe("Test Street 1");
-		expect(fallback.city).toBe("Test City");
-		expect(fallback.geo_lat).toBe(49.0123);
-		expect(fallback.geo_lng).toBe(8.1234);
-		expect(fallback.website).toBe("https://test-venue.com");
-	});
+        expect(fallback.id).toBe(42);
+        expect(fallback.venue).toBe("Test Venue");
+        expect(fallback.address).toBe("Test Street 1");
+        expect(fallback.city).toBe("Test City");
+        expect(fallback.geo_lat).toBe(49.0123);
+        expect(fallback.geo_lng).toBe(8.1234);
+        expect(fallback.website).toBe("https://test-venue.com");
+    });
 });

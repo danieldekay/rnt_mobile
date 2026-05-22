@@ -1,7 +1,5 @@
 <script lang="ts">
-	import Card from "$lib/components/Card.svelte";
+    import Card from "$lib/components/Card.svelte";
 </script>
 
-<Card>
-	Test Content
-</Card>
+<Card>Test Content</Card>

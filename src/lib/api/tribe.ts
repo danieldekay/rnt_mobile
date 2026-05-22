@@ -5,52 +5,52 @@
 
 // --- Normalizers (internal) ---
 export {
-	decodeHtmlEntities,
-	normalizeText,
-	normalizeHtml,
-	stripHtmlToPlainText,
-	escapeHtmlAttribute,
-	replaceObfuscatedEmailMarkup,
-	normalizeEventImage,
-	normalizeEuroAmount,
-	normalizeCoordinate,
-	normalizeWebsiteUrl,
-	normalizeEvent,
+    decodeHtmlEntities,
+    normalizeText,
+    normalizeHtml,
+    stripHtmlToPlainText,
+    escapeHtmlAttribute,
+    replaceObfuscatedEmailMarkup,
+    normalizeEventImage,
+    normalizeEuroAmount,
+    normalizeCoordinate,
+    normalizeWebsiteUrl,
+    normalizeEvent,
 } from "./normalizers";
 
 // --- Events ---
 export {
-	fetchEvents,
-	fetchAllEvents,
-	fetchNextEventsRange,
-	fetchEventById,
-	fetchOrganizerEvents,
-	formatDate,
-	getContinuationDateRange,
-	getDateRange,
-	type EventDateRange,
+    fetchEvents,
+    fetchAllEvents,
+    fetchNextEventsRange,
+    fetchEventById,
+    fetchOrganizerEvents,
+    formatDate,
+    getContinuationDateRange,
+    getDateRange,
+    type EventDateRange,
 } from "./events";
 
 // --- Venues ---
 export {
-	normalizeVenue,
-	fetchVenues,
-	fetchEnhancedVenues,
+    normalizeVenue,
+    fetchVenues,
+    fetchEnhancedVenues,
 } from "./venues";
 
 // --- Organizers ---
 export {
-	normalizeOrganizer,
-	fetchOrganizers,
-	fetchEnhancedOrganizers,
+    normalizeOrganizer,
+    fetchOrganizers,
+    fetchEnhancedOrganizers,
 } from "./organizers";
 
 // --- DJs ---
 export {
-	extractDjFromDescription,
-	extractWorkshopFromDescription,
-	fetchDjCptList,
-	fetchDjCptBySlug,
+    extractDjFromDescription,
+    extractWorkshopFromDescription,
+    fetchDjCptList,
+    fetchDjCptBySlug,
 } from "./djs";
 
 // --- Formatting ---
@@ -58,17 +58,17 @@ export { formatEventCost } from "./events";
 
 // --- Error class ---
 export class EventFetchError extends Error {
-	constructor(
-		public status: number,
-		message: string,
-	) {
-		super(message);
-		this.name = "EventFetchError";
-	}
+    constructor(
+        public status: number,
+        message: string,
+    ) {
+        super(message);
+        this.name = "EventFetchError";
+    }
 }
 
 // --- Re-export error-handling utilities (used by tests) ---
 export {
-	fetchEnhancedOrganizersWithErrorHandling,
-	fetchEnhancedVenuesWithErrorHandling,
+    fetchEnhancedOrganizersWithErrorHandling,
+    fetchEnhancedVenuesWithErrorHandling,
 } from "../utils/error-handling";
