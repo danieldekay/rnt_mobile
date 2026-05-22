@@ -10,12 +10,15 @@ export const releaseNotes: ReleaseNote[] = [
     {
         version: '0.2.4',
         releasedAt: '2026-05-22',
-        headline: 'Datenanbindung erweitert und Listenansichten stabilisiert',
+        headline: 'Mehr Listenkontrolle und stabilere Verzeichnisdaten',
         summary:
-            'Dieses Release ergänzt die API-Integration für zentrale Entitäten, behebt Typ- und Bindungsprobleme in wiederverwendbaren Listenkomponenten und verbessert die visuelle Präsentation der App.',
+            'Dieses Patch-Release erweitert die mobile Eventliste um eine bessere Weiter-Navigation, ergänzt die Datenanbindung für zentrale Verzeichnisse und stabilisiert wiederverwendbare Listen- und Testbausteine.',
         highlights: [
             'Neue API-Integration für DJs, Events, Veranstalter und Tanzräume wurde ergänzt und mit der bestehenden Datenpipeline verbunden.',
             'EntityList wurde für Svelte-Props und Datumsfilter-Typen korrigiert, damit Bindings robust und fehlerfrei funktionieren.',
+            'Die Eventliste am Start zeigt jetzt am unteren Ende einen direkten Sprung nach oben und eine Aktion, um die nächsten 7 Tage nachzuladen.',
+            'Neu geladene Zeitfenster werden lokal an die bestehende Liste angehängt, nach Event-ID dedupliziert und bleiben für Suche und Filter erhalten.',
+            'API-, Store- und Komponenten-Tests decken das neue Weiterladen, Fehlerzustände und die Footer-Navigation jetzt gezielt ab.',
             'Routen- und Presentation-Utilities wurden konsistent formatiert, um Wartbarkeit und Lesbarkeit zu verbessern.',
             'Interne .pi-lens-Artefakte sind jetzt aus der Versionsverwaltung entfernt und per .gitignore ausgeschlossen.',
             'Neue Screenshots für Startseite und Kalender wurden ergänzt, um die aktuelle UI besser zu dokumentieren.'
