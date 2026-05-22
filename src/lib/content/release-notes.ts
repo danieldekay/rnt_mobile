@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.2.4',
+        releasedAt: '2026-05-22',
+        headline: 'Datenanbindung erweitert und Listenansichten stabilisiert',
+        summary:
+            'Dieses Release ergänzt die API-Integration für zentrale Entitäten, behebt Typ- und Bindungsprobleme in wiederverwendbaren Listenkomponenten und verbessert die visuelle Präsentation der App.',
+        highlights: [
+            'Neue API-Integration für DJs, Events, Veranstalter und Tanzräume wurde ergänzt und mit der bestehenden Datenpipeline verbunden.',
+            'EntityList wurde für Svelte-Props und Datumsfilter-Typen korrigiert, damit Bindings robust und fehlerfrei funktionieren.',
+            'Routen- und Presentation-Utilities wurden konsistent formatiert, um Wartbarkeit und Lesbarkeit zu verbessern.',
+            'Interne .pi-lens-Artefakte sind jetzt aus der Versionsverwaltung entfernt und per .gitignore ausgeschlossen.',
+            'Neue Screenshots für Startseite und Kalender wurden ergänzt, um die aktuelle UI besser zu dokumentieren.'
+        ]
+    },
+    {
         version: '0.2.3',
         releasedAt: '2026-05-14',
         headline: 'Datenmodule entkoppelt und Verzeichnisseiten vereinheitlicht',

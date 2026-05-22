@@ -22,9 +22,11 @@ export {
 export {
 	fetchEvents,
 	fetchAllEvents,
+	fetchNextEventsRange,
 	fetchEventById,
 	fetchOrganizerEvents,
 	formatDate,
+	getContinuationDateRange,
 	getDateRange,
 	type EventDateRange,
 } from "./events";

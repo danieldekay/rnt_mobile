@@ -97,6 +97,21 @@ export function getDateRange(filter: string): EventDateRange {
 	return { start, end };
 }
 
+export function getContinuationDateRange(
+	currentRange: EventDateRange,
+	days: number = 7,
+): EventDateRange {
+	const start = new Date(currentRange.end);
+	start.setDate(start.getDate() + 1);
+	start.setHours(0, 0, 0, 0);
+
+	const end = new Date(start);
+	end.setDate(end.getDate() + Math.max(days - 1, 0));
+	end.setHours(23, 59, 59, 999);
+
+	return { start, end };
+}
+
 // --- Single-page fetch ---
 
 export async function fetchEvents(
@@ -191,6 +206,24 @@ export async function fetchAllEvents(
 
 	clearTimeout(timeout);
 	return allEvents;
+}
+
+export async function fetchNextEventsRange(
+	currentRange: EventDateRange,
+	types: EventType[] = [],
+	music: MusicType | null = null,
+	fetcher: typeof fetch = fetch,
+	baseUrl: string = EVENTS_API_BASE,
+	days: number = 7,
+): Promise<TribeEvent[]> {
+	return fetchAllEvents(
+		types,
+		music,
+		"all",
+		fetcher,
+		baseUrl,
+		getContinuationDateRange(currentRange, days),
+	);
 }
 
 // --- Single event by ID ---

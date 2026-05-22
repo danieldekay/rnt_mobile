@@ -8,6 +8,9 @@ import {
 	fetchEnhancedVenues,
 	fetchEnhancedOrganizersWithErrorHandling,
 	fetchEnhancedVenuesWithErrorHandling,
+	fetchNextEventsRange,
+	formatDate,
+	getContinuationDateRange,
 } from "./tribe";
 import {
 	CacheUtils,
@@ -390,6 +393,99 @@ describe("Enhanced API Functions", () => {
 			expect(result.error).toBeNull();
 			expect(result.warnings).toHaveLength(1);
 		});
+	});
+});
+
+describe("Progressive event fetching", () => {
+	it("should derive the next bounded date range after the loaded window", () => {
+		const nextRange = getContinuationDateRange({
+			start: new Date(2026, 4, 1, 0, 0, 0, 0),
+			end: new Date(2026, 4, 7, 23, 59, 59, 999),
+		});
+
+		expect(formatDate(nextRange.start)).toBe("2026-05-08");
+		expect(formatDate(nextRange.end)).toBe("2026-05-14");
+	});
+
+	it("should fetch only the next bounded range for continuation browsing", async () => {
+		const continuationFetch = vi.fn();
+		const currentRange = {
+			start: new Date(2026, 4, 1, 0, 0, 0, 0),
+			end: new Date(2026, 4, 7, 23, 59, 59, 999),
+		};
+
+		const mockEvent = {
+			id: 42,
+			title: "Next Week Event",
+			description: "",
+			excerpt: "",
+			slug: "next-week-event",
+			url: "https://example.com/events/42",
+			image: false,
+			all_day: false,
+			start_date: "2026-05-08 20:00:00",
+			end_date: "2026-05-08 23:00:00",
+			start_date_details: { year: "2026", month: "05", day: "08", hour: "20", minutes: "00", seconds: "00" },
+			end_date_details: { year: "2026", month: "05", day: "08", hour: "23", minutes: "00", seconds: "00" },
+			timezone: "Europe/Berlin",
+			timezone_abbr: "CEST",
+			cost: "12",
+			cost_details: {
+				currency_symbol: "€",
+				currency_code: "EUR",
+				currency_position: "suffix",
+				values: ["12"],
+			},
+			categories: [],
+			venue: null,
+			organizer: [],
+			featured: false,
+			sticky: false,
+		};
+
+		continuationFetch.mockResolvedValue({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					events: [mockEvent],
+					total: 1,
+					total_pages: 1,
+					rest_url: "/api/events",
+					next_rest_url: "",
+				}),
+		});
+
+		const events = await fetchNextEventsRange(
+			currentRange,
+			[],
+			null,
+			continuationFetch,
+		);
+
+		expect(events).toHaveLength(1);
+		expect(events[0].id).toBe(42);
+
+		const firstCallUrl = continuationFetch.mock.calls[0]?.[0] as string;
+		expect(firstCallUrl).toContain("start_date=2026-05-08");
+		expect(firstCallUrl).toContain("end_date=2026-05-14");
+		expect(firstCallUrl).not.toContain("start_date=2026-05-01");
+	});
+
+	it("should preserve request failures for append handling", async () => {
+		const continuationFetch = vi.fn();
+		continuationFetch.mockResolvedValue({ ok: false, status: 503 });
+
+		await expect(
+			fetchNextEventsRange(
+				{
+					start: new Date(2026, 4, 1, 0, 0, 0, 0),
+					end: new Date(2026, 4, 7, 23, 59, 59, 999),
+				},
+				[],
+				null,
+				continuationFetch,
+			),
+		).rejects.toThrow("Failed to fetch events: 503");
 	});
 });
 

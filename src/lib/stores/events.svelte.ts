@@ -1,4 +1,11 @@
-import { fetchAllEvents, extractDjFromDescription } from "$lib/api/tribe";
+import {
+	fetchAllEvents,
+	getContinuationDateRange,
+	fetchNextEventsRange,
+	getDateRange,
+	type EventDateRange,
+	extractDjFromDescription,
+} from "$lib/api/tribe";
 import { trackFeatureEvent } from "$lib/matomo";
 import { writable } from "svelte/store";
 import type {
@@ -20,6 +27,9 @@ interface EventStoreData {
 	allEvents: TribeEvent[];
 	loading: boolean;
 	error: string | null;
+	appendLoading: boolean;
+	appendError: string | null;
+	canLoadMore: boolean;
 	searchQuery: string;
 	filters: Filters;
 }
@@ -32,6 +42,9 @@ class EventStore {
 	allEvents = $state.raw<TribeEvent[]>([]);
 	loading = $state.raw(false);
 	error = $state.raw<string | null>(null);
+	appendLoading = $state.raw(false);
+	appendError = $state.raw<string | null>(null);
+	canLoadMore = $state.raw(false);
 	searchQuery = $state.raw("");
 	filters = $state.raw({
 		types: [] as EventType[],
@@ -41,6 +54,7 @@ class EventStore {
 	// Cache tracking (not reactive to consumers)
 	lastFetchedDate: DateFilter | null = null;
 	lastFetchedMonthKey: string | null = null;
+	currentRange: EventDateRange | null = null;
 	// Precomputed search index (event -> searchable text) for fast filtering
 	private searchIndex: Map<number, string> = new Map();
 
@@ -63,6 +77,35 @@ class EventStore {
 		end.setHours(23, 59, 59, 999);
 
 		return { start, end };
+	}
+
+	private sortEvents(events: TribeEvent[]): TribeEvent[] {
+		return [...events].sort((left, right) => {
+			const dateCompare = left.start_date.localeCompare(right.start_date);
+			if (dateCompare !== 0) return dateCompare;
+			return left.id - right.id;
+		});
+	}
+
+	private mergeEvents(existing: TribeEvent[], incoming: TribeEvent[]): TribeEvent[] {
+		const eventsById = new Map<number, TribeEvent>();
+
+		for (const event of existing) {
+			eventsById.set(event.id, event);
+		}
+
+		for (const event of incoming) {
+			eventsById.set(event.id, event);
+		}
+
+		return this.sortEvents(Array.from(eventsById.values()));
+	}
+
+	private resetProgressiveState(dateFilter: DateFilter = this.filters.date) {
+		this.appendLoading = false;
+		this.appendError = null;
+		this.canLoadMore = dateFilter === "week";
+		this.currentRange = this.canLoadMore ? getDateRange(dateFilter) : null;
 	}
 
 	private applyFilters(): TribeEvent[] {
@@ -123,6 +166,7 @@ class EventStore {
 		const requestId = ++activeRequestId;
 		this.loading = true;
 		this.error = null;
+		this.resetProgressiveState(this.filters.date);
 		this.notify();
 
 		try {
@@ -132,8 +176,8 @@ class EventStore {
 
 			this.lastFetchedDate = this.filters.date;
 			this.lastFetchedMonthKey = null;
-			this.allEvents = fetchedEvents;
-			this.buildSearchIndex(fetchedEvents);
+			this.allEvents = this.sortEvents(fetchedEvents);
+			this.buildSearchIndex(this.allEvents);
 			this.events = this.applyFilters();
 			this.loading = false;
 			this.notify();
@@ -167,6 +211,7 @@ class EventStore {
 		const requestId = ++activeRequestId;
 		this.loading = true;
 		this.error = null;
+		this.resetProgressiveState("all");
 		this.notify();
 
 		try {
@@ -183,8 +228,8 @@ class EventStore {
 
 			this.lastFetchedMonthKey = monthKey;
 			this.lastFetchedDate = null;
-			this.allEvents = fetchedEvents;
-			this.buildSearchIndex(fetchedEvents);
+			this.allEvents = this.sortEvents(fetchedEvents);
+			this.buildSearchIndex(this.allEvents);
 			this.events = this.applyFilters();
 			this.loading = false;
 			this.notify();
@@ -228,9 +273,45 @@ class EventStore {
 		this.setMusic(this.filters.music === music ? null : music);
 	}
 
+	async loadNextRange() {
+		if (!this.currentRange || !this.canLoadMore || this.loading || this.appendLoading) {
+			return [] as TribeEvent[];
+		}
+
+		const requestId = ++activeRequestId;
+		this.appendLoading = true;
+		this.appendError = null;
+		this.notify();
+
+		try {
+			const fetchedEvents = await fetchNextEventsRange(this.currentRange);
+
+			if (requestId !== activeRequestId) return [] as TribeEvent[];
+
+			this.currentRange = getContinuationDateRange(this.currentRange);
+			const mergedEvents = this.mergeEvents(this.allEvents, fetchedEvents);
+			this.allEvents = mergedEvents;
+			this.buildSearchIndex(mergedEvents);
+			this.events = this.applyFilters();
+			this.appendLoading = false;
+			this.notify();
+
+			return fetchedEvents;
+		} catch (e) {
+			if (requestId !== activeRequestId) return [] as TribeEvent[];
+
+			this.appendLoading = false;
+			this.appendError = e instanceof Error ? e.message : "Failed to load more events";
+			this.notify();
+
+			return [] as TribeEvent[];
+		}
+	}
+
 	setDateFilter(date: DateFilter) {
 		if (this.filters.date === date) return;
 		this.filters.date = date;
+		this.resetProgressiveState(date);
 		void this.loadEvents();
 	}
 
@@ -260,6 +341,9 @@ class EventStore {
 			allEvents: this.allEvents,
 			loading: this.loading,
 			error: this.error,
+			appendLoading: this.appendLoading,
+			appendError: this.appendError,
+			canLoadMore: this.canLoadMore,
 			searchQuery: this.searchQuery,
 			filters: this.filters,
 		});
@@ -273,6 +357,9 @@ const store = writable<EventStoreData>({
 	allEvents: [],
 	loading: false,
 	error: null,
+	appendLoading: false,
+	appendError: null,
+	canLoadMore: false,
 	searchQuery: "",
 	filters: { types: [], music: null, date: "week" },
 });

@@ -9,6 +9,7 @@
 	import { consentStore } from '$lib/stores/consent.svelte';
 	import { eventStore } from '$lib/stores/events.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
+	import ListFooterNavigation from '$lib/components/ListFooterNavigation.svelte';
 	import FilterChip from '$lib/components/FilterChip.svelte';
 	import MusicFilterChip from '$lib/components/MusicFilterChip.svelte';
 	import DateFilter from '$lib/components/DateFilter.svelte';
@@ -35,6 +36,9 @@
 	const searchCount = $derived($eventStore.events.length);
 	const totalCount = $derived($eventStore.allEvents.length);
 	const showInlineLoading = $derived($eventStore.loading && totalCount > 0);
+	const nextPeriodLabel = $derived(
+		$eventStore.filters.date === 'week' ? 'Nächste 7 Tage laden' : 'Mehr laden'
+	);
 
 	const typeCounts = $derived.by(() => {
 		const counts: Record<EventType, number> = { milonga: 0, practica: 0, workshop: 0, kurs: 0 };
@@ -214,6 +218,16 @@
 
 	async function handleRefresh() {
 		await eventStore.loadEvents(true);
+	}
+
+	async function handleLoadNextRange() {
+		trackFeatureEvent('home', 'load_more_click', $eventStore.filters.date);
+		await eventStore.loadNextRange();
+	}
+
+	function handleJumpToTop() {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+		trackFeatureEvent('home', 'jump_to_top', $eventStore.filters.date);
 	}
 
 	function handleDateFilterChange(date: 'today' | 'week' | 'month' | 'all') {
@@ -451,6 +465,15 @@
 					{$eventStore.loading ? 'Lädt…' : 'Aktualisieren'}
 				</button>
 			</div>
+
+			<ListFooterNavigation
+				onJumpToTop={handleJumpToTop}
+				onLoadMore={$eventStore.canLoadMore ? handleLoadNextRange : null}
+				canLoadMore={$eventStore.canLoadMore}
+				appendLoading={$eventStore.appendLoading}
+				appendError={$eventStore.appendError}
+				nextLabel={nextPeriodLabel}
+			/>
 		</div>
 		{/if}
 	{/if}
