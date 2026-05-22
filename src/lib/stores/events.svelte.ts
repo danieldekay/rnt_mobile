@@ -1,4 +1,3 @@
-import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
 import { fetchAllEvents, extractDjFromDescription } from "$lib/api/tribe";
 import { trackFeatureEvent } from "$lib/matomo";
 import { writable } from "svelte/store";
@@ -11,6 +10,8 @@ import type {
 } from "$lib/types";
 
 let activeRequestId = 0;
+const SEARCH_DEBOUNCE_MS = 250;
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,8 @@ class EventStore {
 	// Cache tracking (not reactive to consumers)
 	lastFetchedDate: DateFilter | null = null;
 	lastFetchedMonthKey: string | null = null;
+	// Precomputed search index (event -> searchable text) for fast filtering
+	private searchIndex: Map<number, string> = new Map();
 
 	// Svelte store contract
 	subscribe(run: (value: EventStoreData) => void) {
@@ -62,53 +65,46 @@ class EventStore {
 		return { start, end };
 	}
 
-	private eventMatchesTypes(event: TribeEvent, filters: Filters): boolean {
-		if (filters.types.length === 0) return true;
-
-		const categorySlugs =
-			event.categories?.map((category) => category.slug) ?? [];
-		return filters.types.some((type) =>
-			categorySlugs.includes(EVENT_TYPE_SLUGS[type]),
-		);
-	}
-
-	private eventMatchesMusic(event: TribeEvent, filters: Filters): boolean {
-		if (!filters.music) return true;
-
-		const categorySlugs =
-			event.categories?.map((category) => category.slug) ?? [];
-		return categorySlugs.includes(MUSIC_SLUGS[filters.music]);
-	}
-
 	private applyFilters(): TribeEvent[] {
 		const query = this.searchQuery.toLowerCase();
+		if (!query.trim()) {
+			return this.allEvents;
+		}
+
 		return this.allEvents.filter((event) => {
-			if (
-				!this.eventMatchesTypes(event, this.filters) ||
-				!this.eventMatchesMusic(event, this.filters)
-			) {
-				return false;
-			}
+			// Use precomputed index when available, fall back to runtime computation
+			const indexedText = this.searchIndex.get(event.id);
+			if (indexedText) return indexedText.includes(query);
 
-			if (!this.searchQuery.trim()) {
-				return true;
-			}
+			// Fallback: compute searchable text at runtime (first search after load)
+			const searchable = [
+				event.title,
+				event.venue?.venue,
+				event.venue?.city,
+				event.description,
+				extractDjFromDescription(event),
+				event.organizer?.[0]?.organizer,
+			].filter(Boolean).join(" ").toLowerCase();
 
-			const title = event.title?.toLowerCase() ?? "";
-			const venue = event.venue?.venue?.toLowerCase() ?? "";
-			const city = event.venue?.city?.toLowerCase() ?? "";
-			const description = event.description?.toLowerCase() ?? "";
-			const dj = extractDjFromDescription(event)?.toLowerCase() ?? "";
-			const organizer = event.organizer?.[0]?.organizer?.toLowerCase() ?? "";
-			return (
-				title.includes(query) ||
-				venue.includes(query) ||
-				city.includes(query) ||
-				description.includes(query) ||
-				dj.includes(query) ||
-				organizer.includes(query)
-			);
+			// Cache for future searches
+			this.searchIndex.set(event.id, searchable);
+			return searchable.includes(query);
 		});
+	}
+
+	private buildSearchIndex(events: TribeEvent[]): void {
+		this.searchIndex.clear();
+		for (const event of events) {
+			const searchable = [
+				event.title,
+				event.venue?.venue,
+				event.venue?.city,
+				event.description,
+				extractDjFromDescription(event),
+				event.organizer?.[0]?.organizer,
+			].filter(Boolean).join(" ").toLowerCase();
+			this.searchIndex.set(event.id, searchable);
+		}
 	}
 
 	// ── Actions ────────────────────────────────────────────────────────────
@@ -137,6 +133,7 @@ class EventStore {
 			this.lastFetchedDate = this.filters.date;
 			this.lastFetchedMonthKey = null;
 			this.allEvents = fetchedEvents;
+			this.buildSearchIndex(fetchedEvents);
 			this.events = this.applyFilters();
 			this.loading = false;
 			this.notify();
@@ -187,6 +184,7 @@ class EventStore {
 			this.lastFetchedMonthKey = monthKey;
 			this.lastFetchedDate = null;
 			this.allEvents = fetchedEvents;
+			this.buildSearchIndex(fetchedEvents);
 			this.events = this.applyFilters();
 			this.loading = false;
 			this.notify();
@@ -237,9 +235,15 @@ class EventStore {
 	}
 
 	setSearchQuery(query: string) {
-		this.searchQuery = query;
-		this.events = this.applyFilters();
-		this.notify();
+		if (searchDebounceTimer) {
+			clearTimeout(searchDebounceTimer);
+		}
+		searchDebounceTimer = setTimeout(() => {
+			this.searchQuery = query;
+			this.events = this.applyFilters();
+			this.notify();
+			searchDebounceTimer = null;
+		}, SEARCH_DEBOUNCE_MS);
 	}
 
 	clearSearch() {

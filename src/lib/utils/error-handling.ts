@@ -3,10 +3,197 @@
  */
 
 import type { EnhancedOrganizer, EnhancedVenue } from "$lib/types";
-import {
-    sanitizeAndValidateOrganizer,
-    sanitizeAndValidateVenue,
-} from "./data-validation";
+
+// ── Inline sanitization helpers (previously in data-validation.ts) ──────────
+
+const URL_PATTERN = /^https?:\/\/.+(\.[a-z]{2,})+$/i;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^[+]?[\d\s\-()]+$/;
+const COORDINATE_PATTERN = /^-?\d+(\.\d+)?$/;
+
+function sanitizeString(value: any, maxLength: number = 500): string {
+    if (typeof value !== "string") return "";
+    return value.trim().replace(/[<>"']/g, "").substring(0, maxLength);
+}
+
+function sanitizeUrl(value: any, baseUrl?: string): string | null {
+    if (typeof value !== "string" || !value.trim()) return null;
+    let url = value.trim();
+    if (baseUrl && url.startsWith("/")) url = baseUrl + url;
+    if (!URL_PATTERN.test(url)) return null;
+    try { return new URL(url).href; } catch { return null; }
+}
+
+function sanitizeEmail(value: any): string | null {
+    if (typeof value !== "string" || !value.trim()) return null;
+    const email = value.trim().toLowerCase();
+    return EMAIL_PATTERN.test(email) ? email : null;
+}
+
+function sanitizePhone(value: any): string | null {
+    if (typeof value !== "string" || !value.trim()) return null;
+    const phone = value.trim();
+    return PHONE_PATTERN.test(phone) ? phone.replace(/[^\d+]/g, "") : null;
+}
+
+function sanitizeCoordinate(value: any): number | null {
+    if (typeof value !== "number" && typeof value !== "string") return null;
+    const coord = typeof value === "string" ? parseFloat(value) : value;
+    if (typeof coord !== "number" || !COORDINATE_PATTERN.test(coord.toString())) return null;
+    return coord >= -180 && coord <= 180 ? coord : null;
+}
+
+function sanitizeSocialMedia(socialMedia: any): Record<string, string | null> {
+    if (typeof socialMedia !== "object" || socialMedia === null) return {};
+    const result: Record<string, string | null> = {};
+    const SOCIAL_MEDIA_PATTERNS: Record<string, RegExp> = {
+        facebook: /^https:\/\/(www\.)?facebook\.com\/.+/i,
+        instagram: /^https:\/\/(www\.)?instagram\.com\/.+/i,
+        twitter: /^https:\/\/(www\.)?twitter\.com\/.+/i,
+        youtube: /^https:\/\/(www\.)?youtube\.com\/.+/i,
+        spotify: /^https:\/\/(www\.)?spotify\.com\/.+/i,
+        soundcloud: /^https:\/\/(www\.)?soundcloud\.com\/.+/i,
+    };
+    for (const [platform, url] of Object.entries(socialMedia)) {
+        if (typeof url === "string") {
+            const pattern = SOCIAL_MEDIA_PATTERNS[platform as keyof typeof SOCIAL_MEDIA_PATTERNS];
+            result[platform] = pattern ? (pattern.test(url) ? url : null) : sanitizeUrl(url);
+        }
+    }
+    return result;
+}
+
+// ── Inline validators (previously in data-validation.ts) ────────────────────
+
+function validateOrganizer(organizer: any): { isValid: boolean; sanitized: any; errors: string[]; warnings: string[] } {
+    const result: { isValid: boolean; sanitized: any; errors: string[]; warnings: string[] } = {
+        isValid: true,
+        sanitized: { ...organizer },
+        errors: [],
+        warnings: [],
+    };
+
+    if (!organizer.id || typeof organizer.id !== "number") {
+        result.errors.push("Organizer ID is required and must be a number");
+        result.isValid = false;
+    }
+    if (!organizer.organizer || typeof organizer.organizer !== "string") {
+        result.errors.push("Organizer name is required");
+        result.isValid = false;
+    } else {
+        result.sanitized.organizer = sanitizeString(organizer.organizer, 100);
+    }
+    if (!organizer.slug || typeof organizer.slug !== "string") {
+        result.errors.push("Organizer slug is required");
+        result.isValid = false;
+    } else {
+        result.sanitized.slug = sanitizeString(organizer.slug, 50);
+    }
+    result.sanitized.website = sanitizeUrl(organizer.website);
+    if (!result.sanitized.website) result.warnings.push("Website URL is invalid");
+    if (organizer.phone) {
+        result.sanitized.phone = sanitizePhone(organizer.phone);
+        if (!result.sanitized.phone) result.warnings.push("Phone number format is invalid");
+    }
+    if (organizer.email) {
+        result.sanitized.email = sanitizeEmail(organizer.email);
+        if (!result.sanitized.email) result.warnings.push("Email format is invalid");
+    }
+    if (organizer.description) {
+        result.sanitized.description = sanitizeString(organizer.description, 2000);
+    }
+    if (organizer.socialMedia) {
+        result.sanitized.socialMedia = sanitizeSocialMedia(organizer.socialMedia);
+    }
+    if (organizer.media?.featuredImage) {
+        result.sanitized.media = result.sanitized.media || {};
+        result.sanitized.media.featuredImage = sanitizeUrl(organizer.media.featuredImage);
+    }
+    if (organizer.media?.gallery) {
+        result.sanitized.media = result.sanitized.media || {};
+        result.sanitized.media.gallery = (organizer.media.gallery as string[])
+            ?.filter((url: string) => sanitizeUrl(url))
+            .slice(0, 10);
+    }
+    return result;
+}
+
+function validateVenue(venue: any): { isValid: boolean; sanitized: any; errors: string[]; warnings: string[] } {
+    const result: { isValid: boolean; sanitized: any; errors: string[]; warnings: string[] } = {
+        isValid: true,
+        sanitized: { ...venue },
+        errors: [],
+        warnings: [],
+    };
+
+    if (!venue.id || typeof venue.id !== "number") {
+        result.errors.push("Venue ID is required and must be a number");
+        result.isValid = false;
+    }
+    if (!venue.venue || typeof venue.venue !== "string") {
+        result.errors.push("Venue name is required");
+        result.isValid = false;
+    } else {
+        result.sanitized.venue = sanitizeString(venue.venue, 100);
+    }
+    if (!venue.city || typeof venue.city !== "string") {
+        result.errors.push("City is required");
+        result.isValid = false;
+    } else {
+        result.sanitized.city = sanitizeString(venue.city, 50);
+    }
+    if (venue.address) {
+        result.sanitized.address = sanitizeString(venue.address, 200);
+    }
+    if (venue.geo_lat !== undefined) {
+        result.sanitized.geo_lat = sanitizeCoordinate(venue.geo_lat);
+        if (result.sanitized.geo_lat === null && venue.geo_lat !== null) {
+            result.warnings.push("Invalid latitude value");
+        }
+    }
+    if (venue.geo_lng !== undefined) {
+        result.sanitized.geo_lng = sanitizeCoordinate(venue.geo_lng);
+        if (result.sanitized.geo_lng === null && venue.geo_lng !== null) {
+            result.warnings.push("Invalid longitude value");
+        }
+    }
+    result.sanitized.website = sanitizeUrl(venue.website);
+    if (!result.sanitized.website) result.warnings.push("Website URL is invalid");
+    if (venue.contact?.phone) {
+        result.sanitized.contact = result.sanitized.contact || {};
+        result.sanitized.contact.phone = sanitizePhone(venue.contact.phone);
+        if (!result.sanitized.contact.phone) result.warnings.push("Phone number format is invalid");
+    }
+    if (venue.contact?.email) {
+        result.sanitized.contact = result.sanitized.contact || {};
+        result.sanitized.contact.email = sanitizeEmail(venue.contact.email);
+        if (!result.sanitized.contact.email) result.warnings.push("Email format is invalid");
+    }
+    if (venue.socialMedia) {
+        result.sanitized.socialMedia = sanitizeSocialMedia(venue.socialMedia);
+    }
+    return result;
+}
+
+// ── Public API (previously exported from data-validation.ts) ────────────────
+
+function sanitizeAndValidateOrganizer(organizer: any): EnhancedOrganizer | null {
+    const validation = validateOrganizer(organizer);
+    if (!validation.isValid) {
+        console.error("Invalid organizer data:", validation.errors);
+        return null;
+    }
+    return validation.sanitized as EnhancedOrganizer;
+}
+
+function sanitizeAndValidateVenue(venue: any): EnhancedVenue | null {
+    const validation = validateVenue(venue);
+    if (!validation.isValid) {
+        console.error("Invalid venue data:", validation.errors);
+        return null;
+    }
+    return validation.sanitized as EnhancedVenue;
+}
 
 /**
  * Wrapper for enhanced organizer fetching with error handling

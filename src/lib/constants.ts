@@ -1,5 +1,8 @@
 import type { EventType, MusicType } from "$lib/types";
 
+/** Centralized WordPress origin — change if the site moves. */
+export const WORDPRESS_ORIGIN = "https://www.rhein-neckar-tango.de";
+
 export const EVENT_TYPE_SLUGS: Record<EventType, string> = {
 	milonga: "typ_milonga",
 	practica: "typ_practica",

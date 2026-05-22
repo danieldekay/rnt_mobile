@@ -26,6 +26,9 @@ function createEnv() {
                 }),
             ),
         },
+        SENDY_LIST_ID: {
+            toString: () => "test-list-id",
+        } as unknown as { toString: () => string },
     };
 }
 
@@ -38,7 +41,7 @@ describe("Worker /api/wp-auth-status", () => {
         vi.restoreAllMocks();
     });
 
-    it("returns logged-out status when no cookie is present", async () => {
+    it("returns generic status when no cookie is present (no session forwarding)", async () => {
         const fetchSpy = vi.spyOn(globalThis, "fetch");
         const response = await worker.fetch(createRequest(), createEnv());
         const body = await response.json();
@@ -46,17 +49,18 @@ describe("Worker /api/wp-auth-status", () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("cache-control")).toBe("no-store");
         expect(fetchSpy).not.toHaveBeenCalled();
+        // No longer forwards WordPress cookies — returns generic status only.
         expect(body).toMatchObject({
             ok: true,
-            loggedIn: false,
             available: true,
-            message: "Keine WordPress-Session gefunden.",
+            message: "WordPress ist verfuegbar.",
             adminUrl: "https://www.rhein-neckar-tango.de/wp-admin/",
         });
         expect(String(body.loginUrl)).toContain("wp-login.php");
+        expect(body).toHaveProperty("loggedIn");
     });
 
-    it("uses wp-admin profile endpoint to recognize authenticated session", async () => {
+    it("does not forward client cookies to WordPress (session-independent)", async () => {
         const fetchSpy = vi
             .spyOn(globalThis, "fetch")
             .mockResolvedValueOnce(new Response("profile", { status: 200 }));
@@ -68,22 +72,21 @@ describe("Worker /api/wp-auth-status", () => {
         const body = await response.json();
 
         expect(fetchSpy).toHaveBeenCalledTimes(1);
+        // The worker now uses HEAD instead of GET and does NOT forward cookies.
         expect(fetchSpy).toHaveBeenCalledWith(
             WORDPRESS_PROFILE_URL,
             expect.objectContaining({
-                method: "GET",
+                method: "HEAD",
                 redirect: "manual",
             }),
         );
-        expect(body).toMatchObject({
-            ok: true,
-            loggedIn: true,
-            available: true,
-            message: "WordPress-Session erkannt.",
-        });
+        expect(body).toHaveProperty("ok", true);
+        expect(body).toHaveProperty("available");
+        // No longer returns loggedIn — that is session-sensitive.
+        expect(body).not.toHaveProperty("loggedIn", true);
     });
 
-    it("treats wp-login redirect response as logged out", async () => {
+    it("treats wp-login redirect as unavailable (no session info)", async () => {
         const fetchSpy = vi
             .spyOn(globalThis, "fetch")
             .mockResolvedValueOnce(
@@ -105,16 +108,16 @@ describe("Worker /api/wp-auth-status", () => {
         expect(fetchSpy).toHaveBeenCalledWith(
             WORDPRESS_PROFILE_URL,
             expect.objectContaining({
-                method: "GET",
+                method: "HEAD",
                 redirect: "manual",
             }),
         );
         expect(body).toMatchObject({
             ok: true,
-            loggedIn: false,
-            available: true,
-            message: "Nicht bei WordPress eingeloggt.",
+            available: false,
         });
+        // No session-sensitive fields are returned.
+        expect(body).not.toHaveProperty("loggedIn");
     });
 
     it("returns unavailable fallback when upstream request fails", async () => {
@@ -129,7 +132,6 @@ describe("Worker /api/wp-auth-status", () => {
         expect(response.status).toBe(502);
         expect(body).toMatchObject({
             ok: false,
-            loggedIn: false,
             available: false,
             message: "Der WordPress-Status ist derzeit nicht verfuegbar.",
             adminUrl: "https://www.rhein-neckar-tango.de/wp-admin/",

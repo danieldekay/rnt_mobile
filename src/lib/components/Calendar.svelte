@@ -153,7 +153,7 @@
 					<button
 						onclick={() => onselectDate(day)}
 						type="button"
-						class="relative aspect-square flex flex-col items-center justify-center rounded-control border text-sm transition-colors duration-150 {selected ? 'border-border-accent bg-action-primary text-text-inverse' : isToday(day) ? 'border-border-accent bg-surface-card text-text-default' : hasEvents ? 'border-border-default bg-surface-subtle text-text-default hover:bg-action-secondary' : 'border-transparent bg-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'} {past && !isToday(day) && !selected ? 'opacity-50' : ''}"
+						class="relative aspect-square flex flex-col items-center justify-center rounded-control border text-sm transition-colors duration-150 {selected ? 'border-border-accent bg-action-primary text-text-inverse' : isToday(day) ? 'border-border-accent bg-surface-card text-text-default' : hasEvents ? 'border-border-default bg-surface-subtle text-text-default hover:bg-action-secondary' : 'border-transparent bg-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'} {past && !isToday(day) && !selected ? 'border-transparent bg-transparent text-text-subtle hover:border-border-default hover:bg-surface-card' : ''}"
 						aria-pressed={selected}
 						aria-label={getDateLabel(day, dayEvents.length)}
 						aria-current={isToday(day) ? 'date' : undefined}

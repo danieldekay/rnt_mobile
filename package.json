@@ -6,7 +6,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "bundle-analysis": "node scripts/bundle-analysis.mjs"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
