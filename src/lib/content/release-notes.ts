@@ -8,20 +8,28 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.2.5',
+        releasedAt: '2026-05-23',
+        headline: 'Events laden wieder zuverlaessig',
+        summary:
+            'Dieses Patch-Release behebt einen Fehler, durch den die Startseite und der Kalender zeitweise keine Veranstaltungen laden konnten.',
+        highlights: [
+            'Die Event-API sendet Datumswerte jetzt wieder im Format, das der Veranstaltungskalender erwartet.',
+            'Dadurch erscheinen Veranstaltungen auf Startseite und Kalender wieder normal statt mit einer Fehlermeldung.',
+            'Die Anfrage-Logik wurde mit gezielten Tests abgesichert, damit derselbe Fehler nicht unbemerkt zurueckkehrt.'
+        ]
+    },
+    {
         version: '0.2.4',
         releasedAt: '2026-05-22',
         headline: 'Mehr Listenkontrolle und stabilere Verzeichnisdaten',
         summary:
-            'Dieses Patch-Release erweitert die mobile Eventliste um eine bessere Weiter-Navigation, ergänzt die Datenanbindung für zentrale Verzeichnisse und stabilisiert wiederverwendbare Listen- und Testbausteine.',
+            'Dieses Patch-Release macht die Eventliste angenehmer im Alltag: du kannst leichter weiterblaettern, schneller zum Anfang zurueckspringen und Verzeichnisseiten zeigen Daten zuverlaessiger an.',
         highlights: [
-            'Neue API-Integration für DJs, Events, Veranstalter und Tanzräume wurde ergänzt und mit der bestehenden Datenpipeline verbunden.',
-            'EntityList wurde für Svelte-Props und Datumsfilter-Typen korrigiert, damit Bindings robust und fehlerfrei funktionieren.',
-            'Die Eventliste am Start zeigt jetzt am unteren Ende einen direkten Sprung nach oben und eine Aktion, um die nächsten 7 Tage nachzuladen.',
-            'Neu geladene Zeitfenster werden lokal an die bestehende Liste angehängt, nach Event-ID dedupliziert und bleiben für Suche und Filter erhalten.',
-            'API-, Store- und Komponenten-Tests decken das neue Weiterladen, Fehlerzustände und die Footer-Navigation jetzt gezielt ab.',
-            'Routen- und Presentation-Utilities wurden konsistent formatiert, um Wartbarkeit und Lesbarkeit zu verbessern.',
-            'Interne .pi-lens-Artefakte sind jetzt aus der Versionsverwaltung entfernt und per .gitignore ausgeschlossen.',
-            'Neue Screenshots für Startseite und Kalender wurden ergänzt, um die aktuelle UI besser zu dokumentieren.'
+            'Unter der Eventliste kannst du jetzt die naechsten 7 Tage nachladen und danach direkt wieder nach oben springen.',
+            'Nachgeladene Veranstaltungen bleiben sauber in Suche und Filtern erhalten, ohne doppelte Eintraege zu erzeugen.',
+            'DJs, Veranstalter und Tanzraeume greifen jetzt robuster auf ihre Daten zu, damit weniger leere oder widerspruechliche Angaben auftauchen.',
+            'Die App wurde in diesem Bereich mit zusaetzlichen Tests abgesichert, damit Listen- und Ladefehler schneller auffallen.'
         ]
     },
     {
@@ -29,14 +37,12 @@ export const releaseNotes: ReleaseNote[] = [
         releasedAt: '2026-05-14',
         headline: 'Datenmodule entkoppelt und Verzeichnisseiten vereinheitlicht',
         summary:
-            'Dieses Patch-Release strukturiert die API-Schicht neu, verbessert Listen- und Kartenlayouts fuer DJs, Veranstalter und Tanzraeume und stabilisiert die Anzeige von Profil- und Stilinformationen.',
+            'Dieses Patch-Release verbessert die Profile und Verzeichnisse: Karten wirken konsistenter, Informationen zu DJs und Veranstaltern werden klarer gezeigt und die App bleibt dabei stabiler.',
         highlights: [
-            'Die bisher monolithische Tribe-API wurde in fokussierte Module fuer Events, Organizers, Venues, DJs und Normalisierung aufgeteilt.',
-            'Der zentrale Export in tribe.ts bleibt als Kompatibilitaetsschicht bestehen, waehrend interne Verantwortlichkeiten klar getrennt wurden.',
-            'DJs uebernehmen Stilinformationen jetzt robuster aus Eventdaten und nutzen CPT-Praeferenzen als Fallback, wenn keine Event-Signale vorliegen.',
-            'Veranstalter-, DJ- und Venue-Karten wurden im Layout vereinheitlicht: sauberere Aktionen, bessere Lesbarkeit und konsistentere Darstellung von Terminen.',
-            'Die linke Desktop-Navigation wurde verfeinert, inklusive klarerer Bezeichnungen und erweitertem WordPress-Backendzugriff.',
-            'Die Release- und Verzeichnisdarstellung wurde durch neue Praesentations-Utilities und wiederverwendbare List-Patterns weiter modularisiert.'
+            'DJ-Profile zeigen Musikstil und Schwerpunkte verlaesslicher an, auch wenn einzelne Quelldaten fehlen.',
+            'Karten fuer DJs, Veranstalter und Tanzraeume wurden optisch angeglichen und lassen sich dadurch schneller scannen.',
+            'Die Desktop-Navigation ist klarer beschriftet und fuehrt direkter zu wichtigen Bereichen.',
+            'Im Hintergrund wurde die Datenverarbeitung aufgeraumt, damit kuenftige Aenderungen weniger leicht sichtbare Nebenwirkungen ausloesen.'
         ]
     },
     {
@@ -44,13 +50,12 @@ export const releaseNotes: ReleaseNote[] = [
         releasedAt: '2026-05-14',
         headline: 'WordPress-Session und Matomo-Tracking stabilisiert',
         summary:
-            'Dieses Patch-Release korrigiert den WordPress-Loginstatus in der Sidebar und stellt sicher, dass Matomo direkt beim ersten consentierten Seitenaufruf trackt.',
+            'Dieses Patch-Release sorgt dafuer, dass der WordPress-Status in der Seitenleiste verlaesslicher ist und Besuche nach deiner Einwilligung sauber gemessen werden.',
         highlights: [
-            'WordPress-Status prueft jetzt die wp-admin-Session robust ueber profile.php statt nonce-abhaengiger REST-Erkennung.',
-            'Die Sidebar zeigt damit den Loginzustand zuverlaessiger und bleibt bei Ausfaellen mit klaren Fallback-Meldungen nutzbar.',
-            'Matomo sendet jetzt den ersten Pageview sofort nach aktivierter Analytics-Einwilligung auf der aktuellen Seite.',
-            'Duplicate-Prevention fuer identische URLs bleibt aktiv, damit nachfolgende SPA-Navigationen keinen doppelten Initial-Hit erzeugen.',
-            'Neue Tests decken WordPress-Statusfaelle und Consent-Tracking-Flows explizit ab.'
+            'Die Seitenleiste erkennt jetzt besser, ob gerade eine aktive WordPress-Sitzung vorhanden ist.',
+            'Wenn WordPress kurzfristig nicht erreichbar ist, bleiben die Hinweise trotzdem verstaendlich statt verwirrend.',
+            'Statistikzaehlung startet nach deiner Analytics-Einwilligung sofort auf der aktuellen Seite.',
+            'Doppelte Zaehlungen bei direkter Navigation werden weiterhin vermieden.'
         ]
     },
     {
@@ -58,13 +63,12 @@ export const releaseNotes: ReleaseNote[] = [
         releasedAt: '2026-05-14',
         headline: 'Venue-Karten mit Termin-Vorschau und verbessertes Filter',
         summary:
-            'Tanzräume zeigen jetzt den nächsten Termin direkt in der Karte an, haben ein konsistentes Layout und können nach Termine gefiltert werden.',
+            'Tanzraeume zeigen jetzt schneller, ob sich ein Blick lohnt: der naechste Termin steht direkt in der Karte und passende Orte lassen sich leichter finden.',
         highlights: [
-            'VenueCard zeigt jetzt den ersten bevorstehenden Termin direkt in der Karte an – passend zum OrganizerCard-Layout.',
-            'Venue-Karten haben jetzt ein 40×40px farbiges Initialen-Avatar – wie bei Organizern und DJs.',
-            'Neuer "Nur mit Termine" Filter auf der Tanzräume-Seite – standardmäßig aktiviert.',
-            'Alle Venues werden angezeigt, aber mit Terminen zuerst – nicht mehr ausgefiltert.',
-            'Verbesserte Sortierung: Venues mit Terminen erscheinen vor solchen ohne bevorstehende Events.'
+            'Jede Tanzraum-Karte zeigt jetzt direkt den naechsten bevorstehenden Termin.',
+            'Ein neuer Filter hebt Orte mit aktuellen Terminen zuerst hervor.',
+            'Tanzraeume ohne baldige Events verschwinden nicht, rutschen aber weiter nach unten.',
+            'Das Kartenlayout wurde an DJs und Veranstalter angepasst und wirkt dadurch vertrauter.'
         ]
     },
     {
@@ -72,15 +76,13 @@ export const releaseNotes: ReleaseNote[] = [
         releasedAt: '2026-05-09',
         headline: 'Profile, Redaktion und Verzeichnisse wachsen zusammen',
         summary:
-            'Dieses Minor-Release bringt mehr App-eigene Detailseiten, bessere Redaktionszugriffe auf WordPress und einheitliche Filter für DJs, Veranstalter und Tanzraeume.',
+            'Dieses groessere Update bringt mehr eigene Detailseiten in der App und verbindet Veranstaltungen, Profile und Redaktion enger miteinander.',
         highlights: [
-            'Blogbeitraege, Ankuendigungen, DJs und Veranstalter haben jetzt eigene Detailseiten direkt in der App.',
-            'Event- und Listenansichten verlinken jetzt auf interne DJ- und Veranstalterprofile statt nur auf externe Ziele.',
-            'Ankuendigungen verknuepfen sich jetzt mit passenden Terminen, Veranstalterprofilen und dem WordPress-Backend.',
-            'Die linke Desktop-Seitenleiste zeigt jetzt WordPress-Loginstatus und Schnellzugriffe auf wichtige Admin-Bereiche.',
-            'Links und Ankuendigungen wurden für Desktop klarer neu strukturiert: Filter liegen direkt ueber dem Inhalt und Raster wirken konsistenter.',
-            'DJs, Veranstalter und Tanzraeume teilen sich jetzt dieselben Datumsfilter für Nächste 7 Tage, diesen Monat und Nächste 3 Monate.',
-            'Der Kalender wurde auf Desktop weiter verfeinert und direkte Aufrufe dynamischer Seiten laufen in Produktion jetzt stabil ueber den Worker-Assets-Stack.'
+            'Blogbeitraege, Ankuendigungen, DJs und Veranstalter haben jetzt eigene Seiten direkt in der App.',
+            'Veranstaltungen verlinken staerker auf interne Profile, sodass du weniger oft aus der App heraus springen musst.',
+            'Ankuendigungen, Termine und Veranstalter sind enger miteinander verbunden und geben dadurch mehr Kontext.',
+            'Auf Desktop gibt es klarere Schnellzugriffe fuer Redaktion und WordPress.',
+            'DJs, Veranstalter und Tanzraeume nutzen jetzt dieselben Datumsfilter und verhalten sich dadurch einheitlicher.'
         ]
     },
     {

@@ -403,8 +403,8 @@ describe("Progressive event fetching", () => {
             end: new Date(2026, 4, 7, 23, 59, 59, 999),
         });
 
-        expect(formatDate(nextRange.start)).toBe("2026-05-08");
-        expect(formatDate(nextRange.end)).toBe("2026-05-14");
+        expect(formatDate(nextRange.start)).toBe("2026-05-08 00:00:00");
+        expect(formatDate(nextRange.end)).toBe("2026-05-14 23:59:59");
     });
 
     it("should fetch only the next bounded range for continuation browsing", async () => {
@@ -466,9 +466,9 @@ describe("Progressive event fetching", () => {
         expect(events[0].id).toBe(42);
 
         const firstCallUrl = continuationFetch.mock.calls[0]?.[0] as string;
-        expect(firstCallUrl).toContain("start_date=2026-05-08");
-        expect(firstCallUrl).toContain("end_date=2026-05-14");
-        expect(firstCallUrl).not.toContain("start_date=2026-05-01");
+        expect(firstCallUrl).toContain("start_date=2026-05-08+00%3A00%3A00");
+        expect(firstCallUrl).toContain("end_date=2026-05-14+23%3A59%3A59");
+        expect(firstCallUrl).not.toContain("start_date=2026-05-01+00%3A00%3A00");
     });
 
     it("should preserve request failures for append handling", async () => {
