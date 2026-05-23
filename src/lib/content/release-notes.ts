@@ -8,6 +8,18 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.2.6',
+        releasedAt: '2026-05-23',
+        headline: 'Produktions-Hotfix fuer die Event-API',
+        summary:
+            'Dieses Patch-Release behebt einen Worker-Fehler in Produktion, damit die Veranstaltungsdaten auf der Live-Seite wieder stabil geladen werden.',
+        highlights: [
+            'Die Event-API auf mobile.rhein-neckar-tango.de antwortet wieder korrekt, statt mit einem Serverfehler abzubrechen.',
+            'Ein Fehler in internen Worker-Cache-Keys wurde behoben, der nur im echten Cloudflare-Worker sichtbar wurde.',
+            'Der Produktionspfad ist jetzt mit einem gezielten Worker-Test abgesichert.'
+        ]
+    },
+    {
         version: '0.2.5',
         releasedAt: '2026-05-23',
         headline: 'Events laden wieder zuverlaessig',

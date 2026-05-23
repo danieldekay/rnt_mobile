@@ -81,12 +81,19 @@ function getClientIp(request: Request): string {
 	return request.headers.get("cf-connecting-ip") ?? request.headers.get("x-real-ip") ?? "unknown";
 }
 
+function createWorkerCacheKey(request: Request, path: string): Request {
+	return new Request(new URL(path, request.url).toString());
+}
+
 async function checkRateLimit(request: Request): Promise<Response | null> {
 	const ip = getClientIp(request);
 	if (ip === "unknown") return null;
 
 	const cache = getDefaultCache();
-	const cacheKey = new Request(`rate-limit/${ip}`);
+	const cacheKey = createWorkerCacheKey(
+		request,
+		`/__worker-cache/rate-limit/${encodeURIComponent(ip)}`,
+	);
 	const cached = await cache.match(cacheKey);
 
 	if (cached) {
@@ -368,7 +375,10 @@ async function handleNewsletterNonce(request: Request): Promise<Response> {
 
 	// Generate a random nonce and store it in the cache with TTL.
 	const nonce = crypto.randomUUID();
-	const cacheKey = new Request(`${NEWSLETTER_NONCE_PATH}/${nonce}`);
+	const cacheKey = createWorkerCacheKey(
+		request,
+		`${NEWSLETTER_NONCE_PATH}/${encodeURIComponent(nonce)}`,
+	);
 	const cache = getDefaultCache();
 	const nonceValue = JSON.stringify({ nonce });
 	await cache.put(cacheKey, new Response(nonceValue));
@@ -412,7 +422,10 @@ async function handleNewsletterSubscribe(
 	if (!nonce) {
 		return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
 	}
-	const nonceCacheKey = new Request(`${NEWSLETTER_NONCE_PATH}/${nonce}`);
+	const nonceCacheKey = createWorkerCacheKey(
+		request,
+		`${NEWSLETTER_NONCE_PATH}/${encodeURIComponent(nonce)}`,
+	);
 	const nonceCache = getDefaultCache();
 	const nonceResponse = await nonceCache.match(nonceCacheKey);
 	if (!nonceResponse) {
@@ -501,7 +514,10 @@ async function handleNewsletterUnsubscribe(
 	if (!nonce) {
 		return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
 	}
-	const nonceCacheKey = new Request(`${NEWSLETTER_NONCE_PATH}/${nonce}`);
+	const nonceCacheKey = createWorkerCacheKey(
+		request,
+		`${NEWSLETTER_NONCE_PATH}/${encodeURIComponent(nonce)}`,
+	);
 	const nonceCache = getDefaultCache();
 	const nonceResponse = await nonceCache.match(nonceCacheKey);
 	if (!nonceResponse) {
