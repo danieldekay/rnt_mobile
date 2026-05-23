@@ -8,6 +8,7 @@ import {
 } from "$lib/api/tribe";
 import { trackFeatureEvent } from "$lib/matomo";
 import { writable } from "svelte/store";
+import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
 import type {
     TribeEvent,
     EventType,
@@ -108,13 +109,31 @@ class EventStore {
         this.currentRange = this.canLoadMore ? getDateRange(dateFilter) : null;
     }
 
+    private matchesCategoryFilters(event: TribeEvent): boolean {
+        const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
+
+        const matchesType =
+            this.filters.types.length === 0 ||
+            this.filters.types.some((type) => categorySlugs.includes(EVENT_TYPE_SLUGS[type]));
+
+        const matchesMusic =
+            this.filters.music === null ||
+            categorySlugs.includes(MUSIC_SLUGS[this.filters.music]);
+
+        return matchesType && matchesMusic;
+    }
+
     private applyFilters(): TribeEvent[] {
         const query = this.searchQuery.toLowerCase();
-        if (!query.trim()) {
-            return this.allEvents;
-        }
-
         return this.allEvents.filter((event) => {
+            if (!this.matchesCategoryFilters(event)) {
+                return false;
+            }
+
+            if (!query.trim()) {
+                return true;
+            }
+
             // Use precomputed index when available, fall back to runtime computation
             const indexedText = this.searchIndex.get(event.id);
             if (indexedText) return indexedText.includes(query);
