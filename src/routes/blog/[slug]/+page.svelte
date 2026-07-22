@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapWordPressSeo } from '$lib/seo/from-wordpress';
 	import { sanitizeHtml } from '$lib/utils/html';
 	import type { BlogPost } from '$lib/types';
 	import type { PageProps } from './$types';
@@ -41,6 +43,9 @@
 	const media = $derived(post ? getFeaturedMedia(post) : null);
 	const categories = $derived(post ? getPostCategories(post) : []);
 	const safeContent = $derived(post?.content?.rendered ? sanitizeHtml(post.content.rendered) : '');
+	const seo = $derived(
+		post ? mapWordPressSeo(post, `${title} - Blog - RNT Kalender`) : null
+	);
 
 	function decodeHtmlEntities(value: string): string {
 		return value.replace(/&(#x?[\da-f]+|[a-z]+);/gi, (match, entity: string) => {
@@ -120,9 +125,9 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{post ? `${title} - Blog - RNT Kalender` : 'Blog - RNT Kalender'}</title>
-</svelte:head>
+{#if seo}
+	<SeoHead {seo} />
+{/if}
 
 <div class="mx-auto max-w-3xl space-y-6">
 	<a

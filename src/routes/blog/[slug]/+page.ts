@@ -1,7 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { fetchBlogPostBySlug } from '$lib/api/posts';
+import { fetchWpContentSlugs } from '$lib/seo/wp-slugs';
 import type { BlogPost } from '$lib/types';
-import type { PageLoad } from './$types';
+import type { EntryGenerator, PageLoad } from './$types';
 
 type BlogDetailPost = BlogPost & {
 	content?: {
@@ -36,4 +37,10 @@ export const load: PageLoad = async ({ fetch, params }) => {
 	}
 };
 
-export const prerender = false;
+export const prerender = true;
+export const ssr = true;
+
+export const entries: EntryGenerator = async () => {
+	const slugs = await fetchWpContentSlugs('posts');
+	return slugs.map((slug) => ({ slug }));
+};

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapWordPressSeo } from '$lib/seo/from-wordpress';
 	import { sanitizeHtml, sanitizeText } from '$lib/utils/html';
 	import type { BlogPost, TribeEvent, TribeOrganizer } from '$lib/types';
 	import type { PageProps } from './$types';
@@ -36,6 +38,9 @@
 	const listHref = resolve('/ankuendigungen');
 	const relatedEventHref = $derived(relatedEvent ? resolve(`/event/${relatedEvent.id}`) : '');
 	const relatedOrganizerHref = $derived(relatedOrganizer?.slug ? resolve(`/veranstalter/${relatedOrganizer.slug}`) : '');
+	const seo = $derived(
+		post ? mapWordPressSeo(post, `${title} - Ankuendigungen - RNT Kalender`) : null
+	);
 
 	function getFeaturedMedia(currentPost: AnnouncementPost): FeaturedMedia | null {
 		const embeddedMedia = currentPost._embedded?.['wp:featuredmedia']?.[0];
@@ -89,10 +94,9 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{title} - Ankuendigungen - RNT Kalender</title>
-	<meta name="description" content={excerpt || `${title} auf dem RNT Kalender`} />
-</svelte:head>
+{#if seo}
+	<SeoHead {seo} />
+{/if}
 
 <article class="space-y-6">
 	<a

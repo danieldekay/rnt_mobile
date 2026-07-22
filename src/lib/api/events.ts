@@ -15,8 +15,9 @@ import {
     normalizeText,
     normalizeEuroAmount,
 } from "./normalizers";
+import { apiBase } from "./resolve-api-base";
 
-const EVENTS_API_BASE = "/api/events";
+const EVENTS_API_BASE = apiBase("events");
 
 // --- Cost formatting ---
 

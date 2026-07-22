@@ -1,7 +1,8 @@
 import type { BlogPost } from "$lib/types";
+import { apiBase } from "./resolve-api-base";
 
-const BLOG_API_BASE = "/api/posts";
-const ANNOUNCEMENTS_API_BASE = "/api/announcements";
+const BLOG_API_BASE = apiBase("posts");
+const ANNOUNCEMENTS_API_BASE = apiBase("announcements");
 
 type FetchLike = typeof fetch;
 

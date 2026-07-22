@@ -43,6 +43,25 @@ const EVENTS_LIST_PATH = "/api/events";
 const EVENT_DETAIL_PATH = /^\/api\/events\/(\d+)$/;
 const VENUES_LIST_PATH = "/api/venues";
 const ORGANIZERS_LIST_PATH = "/api/organizers";
+const SITEMAP_PATH = "/sitemap.xml";
+const MOBILE_ORIGIN = "https://mobile.rhein-neckar-tango.de";
+const SITEMAP_CACHE_TTL_SECONDS = 60;
+const SITEMAP_SWR_SECONDS = 300;
+const STATIC_SITEMAP_PATHS = [
+    "",
+    "/blog",
+    "/ankuendigungen",
+    "/kalender",
+    "/djs",
+    "/tanzraeume",
+    "/veranstalter",
+    "/links",
+    "/newsletter",
+    "/impressum",
+    "/datenschutz",
+    "/cookie-richtlinie",
+    "/was-ist-neu",
+];
 const WP_POSTS_BASE_URL =
     "https://www.rhein-neckar-tango.de/wp-json/wp/v2/posts";
 const WP_ANNOUNCEMENTS_BASE_URL =
@@ -216,6 +235,10 @@ export default {
 
         if (url.pathname === NEWSLETTER_NONCE_PATH) {
             return handleNewsletterNonce(request);
+        }
+
+        if (url.pathname === SITEMAP_PATH) {
+            return handleSitemap(request);
         }
 
         return env.ASSETS.fetch(request);
@@ -1068,6 +1091,141 @@ async function proxyRssFeed(request: Request): Promise<Response> {
         return json(
             { ok: false, message: "Feed konnte nicht geladen werden." },
             502,
+        );
+    }
+}
+type WpSitemapEntry = {
+    slug: string;
+    modified?: string;
+};
+
+async function fetchWpSitemapEntries(
+    baseUrl: string,
+): Promise<WpSitemapEntry[]> {
+    const entries: WpSitemapEntry[] = [];
+    let page = 1;
+
+    while (page <= 50) {
+        const url = new URL(baseUrl);
+        url.searchParams.set("per_page", "100");
+        url.searchParams.set("page", String(page));
+        url.searchParams.set("_fields", "slug,modified");
+        url.searchParams.set("status", "publish");
+
+        const response = await fetchWithTimeout(url.toString(), {
+            method: "GET",
+            headers: {
+                accept: "application/json",
+            },
+        });
+
+        if (!response.ok) break;
+
+        const batch = (await response.json()) as Array<{
+            slug?: string;
+            modified?: string;
+        }>;
+
+        if (!Array.isArray(batch) || batch.length === 0) break;
+
+        for (const item of batch) {
+            if (item.slug) {
+                entries.push({ slug: item.slug, modified: item.modified });
+            }
+        }
+
+        if (batch.length < 100) break;
+        page += 1;
+    }
+
+    return entries;
+}
+
+function escapeXml(value: string): string {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
+
+function formatSitemapLastmod(modified?: string): string | undefined {
+    if (!modified) return undefined;
+    const parsed = new Date(modified);
+    if (Number.isNaN(parsed.getTime())) return undefined;
+    return parsed.toISOString().slice(0, 10);
+}
+
+function buildSitemapXml(
+    urls: Array<{ loc: string; lastmod?: string }>,
+): string {
+    const body = urls
+        .map((url) => {
+            const lastmodLine = url.lastmod
+                ? `\n    <lastmod>${escapeXml(url.lastmod)}</lastmod>`
+                : "";
+            return `  <url>\n    <loc>${escapeXml(url.loc)}</loc>${lastmodLine}\n  </url>`;
+        })
+        .join("\n");
+
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
+}
+
+async function handleSitemap(request: Request): Promise<Response> {
+    if (request.method !== "GET") {
+        return json({ ok: false, message: "Methode nicht erlaubt." }, 405);
+    }
+
+    const cache = getDefaultCache();
+    const cacheKey = createWorkerCacheKey(request, SITEMAP_PATH);
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const [posts, announcements] = await Promise.all([
+            fetchWpSitemapEntries(WP_POSTS_BASE_URL),
+            fetchWpSitemapEntries(WP_ANNOUNCEMENTS_BASE_URL),
+        ]);
+
+        const urls: Array<{ loc: string; lastmod?: string }> = [];
+
+        for (const path of STATIC_SITEMAP_PATHS) {
+            urls.push({ loc: `${MOBILE_ORIGIN}${path}` });
+        }
+
+        for (const post of posts) {
+            urls.push({
+                loc: `${MOBILE_ORIGIN}/blog/${post.slug}`,
+                lastmod: formatSitemapLastmod(post.modified),
+            });
+        }
+
+        for (const announcement of announcements) {
+            urls.push({
+                loc: `${MOBILE_ORIGIN}/ankuendigungen/${announcement.slug}`,
+                lastmod: formatSitemapLastmod(announcement.modified),
+            });
+        }
+
+        const xml = buildSitemapXml(urls);
+        const response = new Response(xml, {
+            status: 200,
+            headers: {
+                "content-type": "application/xml; charset=utf-8",
+                "cache-control": `public, s-maxage=${SITEMAP_CACHE_TTL_SECONDS}, stale-while-revalidate=${SITEMAP_SWR_SECONDS}`,
+            },
+        });
+
+        await cache.put(cacheKey, response.clone());
+        return response;
+    } catch (error) {
+        const status = isAbortError(error) ? 504 : 502;
+        return json(
+            { ok: false, message: "Sitemap konnte nicht erzeugt werden." },
+            status,
         );
     }
 }

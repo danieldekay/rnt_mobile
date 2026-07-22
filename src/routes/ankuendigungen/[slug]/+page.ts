@@ -1,10 +1,12 @@
 import { error } from "@sveltejs/kit";
+import { apiBase } from "$lib/api/resolve-api-base";
 import { fetchAnnouncementBySlug } from "$lib/api/posts";
 import { fetchAllEvents, fetchOrganizers } from "$lib/api/tribe";
+import { fetchWpContentSlugs } from "$lib/seo/wp-slugs";
 import type { BlogPost, TribeEvent, TribeOrganizer } from "$lib/types";
-import type { PageLoad } from "./$types";
+import type { EntryGenerator, PageLoad } from "./$types";
 
-const EVENTS_API_BASE = "/api/events";
+const EVENTS_API_BASE = apiBase("events");
 const WORDPRESS_ADMIN_BASE =
   "https://www.rhein-neckar-tango.de/wp-admin/post.php";
 
@@ -191,4 +193,10 @@ export const load: PageLoad = async ({ fetch, params }) => {
   }
 };
 
-export const prerender = false;
+export const prerender = true;
+export const ssr = true;
+
+export const entries: EntryGenerator = async () => {
+	const slugs = await fetchWpContentSlugs("ankuendigung");
+	return slugs.map((slug) => ({ slug }));
+};

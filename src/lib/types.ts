@@ -112,6 +112,14 @@ export interface EventsResponse {
   next_rest_url: string;
 }
 
+export interface YoastHeadJson {
+  title?: string;
+  robots?: Record<string, string>;
+  canonical?: string;
+  schema?: Record<string, unknown>;
+  twitter_misc?: Record<string, string>;
+}
+
 export interface BlogPost {
   id: number;
   date: string;
@@ -122,6 +130,8 @@ export interface BlogPost {
   content?: { rendered: string };
   link: string;
   categories: number[];
+  yoast_head?: string;
+  yoast_head_json?: YoastHeadJson;
   meta?: {
     rnt_termin?: string | null;
     rnt_veranstalter?: number | string | null;

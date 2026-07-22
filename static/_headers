@@ -6,3 +6,9 @@
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
   Cache-Control: public, max-age=0, must-revalidate
   X-XSS-Protection: 1; mode=block
+
+/_app/immutable/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/llms.txt
+  Cache-Control: public, max-age=86400

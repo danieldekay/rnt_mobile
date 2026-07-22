@@ -1,0 +1,44 @@
+# Rhein-Neckar-Tango Mobile PWA (RNT Kalender)
+
+> Mobile event calendar for tango milongas, practicas, workshops, and community news in the Rhein-Neckar region, Germany.
+
+## Canonical site
+
+- https://mobile.rhein-neckar-tango.de
+
+## Primary content paths
+
+- / — upcoming tango events (milongas, practicas, workshops, courses)
+- /kalender — calendar view of events
+- /blog — community blog posts
+- /blog/{slug} — individual blog articles
+- /ankuendigungen — community announcements
+- /ankuendigungen/{slug} — individual announcements
+- /event/{id} — single event details
+- /veranstalter — event organizers
+- /veranstalter/{slug} — organizer profiles
+- /tanzraeume — dance venues
+- /djs — DJ profiles
+- /links — curated links
+- /newsletter — newsletter signup
+
+## Legal
+
+- /impressum
+- /datenschutz
+- /cookie-richtlinie
+
+## Crawl rules
+
+- Prefer semantic HTML: article, main, header, section
+- Blog and announcement articles include JSON-LD schema from WordPress Yoast SEO
+- Event data is sourced from WordPress (The Events Calendar / Tribe Events API)
+- Canonical URLs for articles point to the primary WordPress site (www.rhein-neckar-tango.de)
+
+## Sitemap
+
+- https://mobile.rhein-neckar-tango.de/sitemap.xml
+
+## Related
+
+- Primary website: https://www.rhein-neckar-tango.de

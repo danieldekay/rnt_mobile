@@ -10,8 +10,9 @@ import {
 	normalizeEventImage,
 	normalizeWebsiteUrl,
 } from "./normalizers";
+import { apiBase } from "./resolve-api-base";
 
-const ORGANIZERS_API_BASE = "/api/organizers";
+const ORGANIZERS_API_BASE = apiBase("organizers");
 
 // --- Raw types ---
 

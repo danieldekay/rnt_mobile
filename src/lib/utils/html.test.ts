@@ -14,6 +14,15 @@ describe("sanitizeHtml", () => {
 		expect(typeof result).toBe("string");
 		expect(result.length).toBeGreaterThan(0);
 	});
+
+	it("should strip inline styles and empty div wrappers", () => {
+		const result = sanitizeHtml(
+			'<div style="color:red"></div><p style="margin:0">Hello</p>',
+		);
+		expect(result).not.toContain("style=");
+		expect(result).not.toMatch(/<div\b[^>]*>\s*<\/div>/i);
+		expect(result).toContain("Hello");
+	});
 });
 
 describe("sanitizeText", () => {
