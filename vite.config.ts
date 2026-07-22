@@ -5,6 +5,11 @@ import type { ServerResponse } from "node:http";
 import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig, type Plugin } from "vite";
+import {
+	generateSitemapXml,
+	SITEMAP_CACHE_CONTROL,
+	SITEMAP_PATH,
+} from "./src/lib/seo/sitemap";
 
 const WORDPRESS_ORIGIN = "https://www.rhein-neckar-tango.de";
 const WORDPRESS_ADMIN_URL = `${WORDPRESS_ORIGIN}/wp-admin/`;
@@ -19,7 +24,9 @@ const pkg = JSON.parse(
 };
 
 function getAppCommitHash(): string {
-	const envHash = process.env["GITHUB_SHA"]?.trim();
+	const envHash =
+		process.env["GITHUB_SHA"]?.trim() ||
+		process.env["CF_PAGES_COMMIT_SHA"]?.trim();
 	if (envHash) {
 		return envHash.slice(0, 7);
 	}
@@ -61,7 +68,36 @@ function rntApiDevProxy(): Plugin {
 				const url = req.url;
 				const incoming = url ? new URL(url, "http://localhost") : null;
 
-				if (!url || req.method !== "GET" || !incoming) {
+				if (!url || !incoming) {
+					next();
+					return;
+				}
+
+				if (incoming.pathname === SITEMAP_PATH) {
+					if (req.method !== "GET" && req.method !== "HEAD") {
+						next();
+						return;
+					}
+
+					try {
+						const xml = await generateSitemapXml(fetch);
+						res.statusCode = 200;
+						res.setHeader("cache-control", SITEMAP_CACHE_CONTROL);
+						res.setHeader("content-type", "application/xml; charset=utf-8");
+						res.end(req.method === "HEAD" ? undefined : xml);
+					} catch (error) {
+						server.config.logger.error(
+							`Sitemap generation failed: ${String(error)}`,
+						);
+						writeJson(res, 502, {
+							ok: false,
+							message: "Sitemap konnte nicht erzeugt werden.",
+						});
+					}
+					return;
+				}
+
+				if (req.method !== "GET") {
 					next();
 					return;
 				}

@@ -555,8 +555,9 @@
                 </p>
                 <p class="meta-text">© {currentYear} Rhein-Neckar-Tango</p>
                 <div class="space-y-2">
-                    <p class="meta-text">App-Version {__APP_VERSION__}</p>
-                    <p class="meta-text">Deploy {__APP_COMMIT_HASH__}</p>
+                    <p class="meta-text">
+                        App-Version {__APP_VERSION__} · {__APP_COMMIT_HASH__}
+                    </p>
                     <p class="meta-text">{pwaUpdateStore.statusText}</p>
                     <p
                         class="meta-text flex flex-wrap justify-center gap-x-4 gap-y-2"
