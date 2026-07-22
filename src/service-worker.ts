@@ -28,18 +28,19 @@ self.addEventListener("install", (event: ExtendableEvent) => {
 	self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: clean old caches and take control of open clients
 self.addEventListener("activate", (event: ExtendableEvent) => {
 	event.waitUntil(
-		caches.keys().then((names) =>
-			Promise.all(
+		(async () => {
+			const names = await caches.keys();
+			await Promise.all(
 				names
 					.filter((name) => name !== CACHE_NAME)
 					.map((name) => caches.delete(name)),
-			),
-		),
+			);
+			await self.clients.claim();
+		})(),
 	);
-	self.claimClients();
 });
 
 // Fetch: cache-first for app-shell, network-first for API/data

@@ -48,7 +48,7 @@ export async function fetchBlogPosts(
 ): Promise<BlogPost[]> {
 	const url = new URL(BLOG_API_BASE, "http://localhost");
 	url.searchParams.set("per_page", String(normalizePerPage(perPage)));
-	url.searchParams.set("_embed", "");
+	url.searchParams.set("_embed", "wp:featuredmedia");
 
 	const payload = await fetchJsonWithFallback<BlogPost[]>(
 		`${BLOG_API_BASE}?${url.searchParams.toString()}`,
@@ -77,7 +77,7 @@ export async function fetchBlogPostBySlug(
 ): Promise<BlogPost | null> {
 	const url = new URL(BLOG_API_BASE, "http://localhost");
 	url.searchParams.set("slug", slug);
-	url.searchParams.set("_embed", "");
+	url.searchParams.set("_embed", "wp:featuredmedia");
 
 	const payload = await fetchJsonWithFallback<BlogPost[]>(
 		`${BLOG_API_BASE}?${url.searchParams.toString()}`,
@@ -106,7 +106,7 @@ export async function fetchAnnouncements(
 ): Promise<BlogPost[]> {
 	const url = new URL(ANNOUNCEMENTS_API_BASE, "http://localhost");
 	url.searchParams.set("per_page", String(normalizePerPage(perPage)));
-	url.searchParams.set("_embed", "");
+	url.searchParams.set("_embed", "wp:featuredmedia");
 
 	const payload = await fetchJsonWithFallback<BlogPost[]>(
 		`${ANNOUNCEMENTS_API_BASE}?${url.searchParams.toString()}`,
@@ -135,7 +135,7 @@ export async function fetchAnnouncementBySlug(
 ): Promise<BlogPost | null> {
 	const url = new URL(ANNOUNCEMENTS_API_BASE, "http://localhost");
 	url.searchParams.set("slug", slug);
-	url.searchParams.set("_embed", "");
+	url.searchParams.set("_embed", "wp:featuredmedia");
 
 	const payload = await fetchJsonWithFallback<BlogPost[]>(
 		`${ANNOUNCEMENTS_API_BASE}?${url.searchParams.toString()}`,
