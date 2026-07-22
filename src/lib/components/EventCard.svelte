@@ -4,7 +4,7 @@
 	import { de } from 'date-fns/locale';
 	import type { TribeEvent } from '$lib/types';
 	import { extractDjFromDescription, formatEventCost } from '$lib/api/tribe';
-	import { getEventAccentClass, getEventMusicBadgeClass, getEventMusicLabel, getEventTypeBadgeClass, getEventTypeLabel } from '$lib/utils/event-presentation';
+	import { getEventAccentClass, getEventHighlights, getEventMusicBadgeClass, getEventMusicLabel, getEventTypeBadgeClass, getEventTypeLabel } from '$lib/utils/event-presentation';
 	import Card from '$lib/components/Card.svelte';
 	import Heading from '$lib/components/Heading.svelte';
 	import Text from '$lib/components/Text.svelte';
@@ -32,6 +32,7 @@
 	const eventTypeBadgeClass = $derived(getEventTypeBadgeClass(event));
 	const musicLabel = $derived(getEventMusicLabel(event));
 	const musicBadgeClass = $derived(getEventMusicBadgeClass(event));
+	const eventHighlights = $derived(getEventHighlights(event));
 	const accentClass = $derived(getEventAccentClass(event));
 
 </script>
@@ -95,6 +96,16 @@
 								</div>
 							{/if}
 						</div>
+
+						{#if eventHighlights.length > 0}
+							<div class="mt-2 flex flex-wrap gap-2" data-testid="event-card-highlights">
+								{#each eventHighlights as highlight (highlight)}
+									<span class="inline-flex items-center rounded-full border border-border-default/70 bg-surface-subtle px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-default">
+										{highlight}
+									</span>
+								{/each}
+							</div>
+						{/if}
 
 						{#if event.organizer?.length > 0 || dj}
 							<div class="mt-1 flex flex-wrap gap-x-4 gap-y-1.5 text-[0.8125rem]">

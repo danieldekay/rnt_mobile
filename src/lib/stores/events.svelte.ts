@@ -8,7 +8,7 @@ import {
 } from "$lib/api/tribe";
 import { trackFeatureEvent } from "$lib/matomo";
 import { writable } from "svelte/store";
-import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
+import { getEventType, getMusicType } from "$lib/utils/event-presentation";
 import type {
     TribeEvent,
     EventType,
@@ -110,15 +110,16 @@ class EventStore {
     }
 
     private matchesCategoryFilters(event: TribeEvent): boolean {
-        const categorySlugs = event.categories?.map((category) => category.slug) ?? [];
+        const eventType = getEventType(event);
+        const musicType = getMusicType(event);
 
         const matchesType =
             this.filters.types.length === 0 ||
-            this.filters.types.some((type) => categorySlugs.includes(EVENT_TYPE_SLUGS[type]));
+            (eventType !== null && this.filters.types.includes(eventType));
 
         const matchesMusic =
             this.filters.music === null ||
-            categorySlugs.includes(MUSIC_SLUGS[this.filters.music]);
+            musicType === this.filters.music;
 
         return matchesType && matchesMusic;
     }

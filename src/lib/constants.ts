@@ -80,3 +80,8 @@ export const MUSIC_TYPE_ACCENT_CLASSES: Record<MusicType, string> = {
 	mixed: "event-accent-mixed",
 	neo: "event-accent-neo",
 };
+
+export const EVENT_HIGHLIGHT_LABELS = {
+	livemusik: 'Live-Musik',
+	feature_show: 'Show'
+} as const;

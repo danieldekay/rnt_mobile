@@ -213,14 +213,22 @@ describe("eventStore progressive browsing", () => {
             createCategory(2, MUSIC_SLUGS.traditional, "Traditionell"),
         ];
 
-        const workshopNeo = createEvent(2, "2026-05-02 20:00:00");
+        const mixedMilongaTraditional = createEvent(2, "2026-05-02 20:00:00");
+        mixedMilongaTraditional.categories = [
+            createCategory(3, EVENT_TYPE_SLUGS.practica, "Practica"),
+            createCategory(4, EVENT_TYPE_SLUGS.milonga, "Milonga"),
+            createCategory(5, MUSIC_SLUGS.traditional, "Traditionell"),
+        ];
+
+        const workshopNeo = createEvent(3, "2026-05-03 20:00:00");
         workshopNeo.categories = [
-            createCategory(3, EVENT_TYPE_SLUGS.workshop, "Workshop"),
-            createCategory(4, MUSIC_SLUGS.neo, "Neo"),
+            createCategory(6, EVENT_TYPE_SLUGS.workshop, "Workshop"),
+            createCategory(7, MUSIC_SLUGS.neo, "Neo"),
         ];
 
         fetchAllEventsMock.mockResolvedValueOnce([
             milongaTraditional,
+            mixedMilongaTraditional,
             workshopNeo,
         ]);
 
@@ -233,17 +241,23 @@ describe("eventStore progressive browsing", () => {
         await eventStore.loadEvents(true);
         eventStore.toggleType("milonga");
 
-        expect(latest?.events.map((event) => event.id)).toEqual([1]);
+        expect(latest?.events.map((event) => event.id)).toEqual([1, 2]);
 
-        eventStore.toggleMusic("traditional");
-
-        expect(latest?.events.map((event) => event.id)).toEqual([1]);
-
-        eventStore.toggleMusic("traditional");
         eventStore.toggleType("milonga");
-        eventStore.toggleType("workshop");
+        eventStore.toggleType("practica");
 
-        expect(latest?.events.map((event) => event.id)).toEqual([2]);
+        expect(latest?.events).toEqual([]);
+
+        eventStore.toggleType("practica");
+        eventStore.toggleMusic("traditional");
+
+        expect(latest?.events.map((event) => event.id)).toEqual([1, 2]);
+
+        eventStore.toggleMusic("traditional");
+        eventStore.toggleType("workshop");
+        eventStore.toggleMusic("neo");
+
+        expect(latest?.events.map((event) => event.id)).toEqual([3]);
 
         unsubscribe();
     });

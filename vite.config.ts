@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { Buffer } from "node:buffer";
+import { execSync } from "node:child_process";
 import type { ServerResponse } from "node:http";
 import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
@@ -16,6 +17,26 @@ const pkg = JSON.parse(
 ) as {
 	version: string;
 };
+
+function getAppCommitHash(): string {
+	const envHash = process.env["GITHUB_SHA"]?.trim();
+	if (envHash) {
+		return envHash.slice(0, 7);
+	}
+
+	try {
+		return execSync("git rev-parse --short HEAD", {
+			cwd: new URL(".", import.meta.url),
+			stdio: ["ignore", "pipe", "ignore"],
+		})
+			.toString()
+			.trim();
+	} catch {
+		return "local";
+	}
+}
+
+const appCommitHash = getAppCommitHash();
 const DJ_API_BASE = `${WORDPRESS_ORIGIN}/wp-json/wp/v2/dj`;
 
 const DEV_API_TARGETS: Record<string, string> = {
@@ -171,6 +192,7 @@ function writeJson(
 export default defineConfig({
 	define: {
 		__APP_VERSION__: JSON.stringify(pkg.version),
+		__APP_COMMIT_HASH__: JSON.stringify(appCommitHash),
 	},
 	plugins: [tailwindcss(), rntApiDevProxy(), sveltekit()],
 });

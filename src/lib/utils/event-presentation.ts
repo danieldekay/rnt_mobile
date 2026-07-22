@@ -4,6 +4,7 @@ import {
 	EVENT_TYPE_ACCENT_CLASSES,
 	EVENT_TYPE_FILTER_ACTIVE_CLASSES,
 	EVENT_TYPE_FILTER_INACTIVE_CLASSES,
+	EVENT_HIGHLIGHT_LABELS,
 	EVENT_TYPE_SLUGS,
 	MUSIC_SLUGS,
 	MUSIC_TYPE_NAMES,
@@ -69,4 +70,10 @@ export function getEventMusicBadgeClass(event: TribeEvent): string {
 
 export function getMusicFilterClass(music: MusicType, active: boolean): string {
 	return active ? MUSIC_TYPE_FILTER_ACTIVE_CLASSES[music] ?? '' : MUSIC_TYPE_FILTER_INACTIVE_CLASSES[music] ?? '';
+}
+
+export function getEventHighlights(event: TribeEvent): string[] {
+	return Object.entries(EVENT_HIGHLIGHT_LABELS)
+		.filter(([slug]) => hasCategorySlug(event, slug))
+		.map(([, label]) => label);
 }
