@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.2.7',
+        releasedAt: '2026-07-22',
+        headline: 'SEO, Ankuendigungsbilder und klarere Event-Karten',
+        summary:
+            'Dieses Release macht Blog und Ankuendigungen besser auffindbar, stellt Titelbilder zuverlaessig wieder her und zeigt in der Eventliste zusaetzliche Hinweise wie Livemusik oder Show.',
+        highlights: [
+            'Blog- und Ankuendigungsseiten werden mit Yoast-Metadaten, JSON-LD und einer edge-gecachten Sitemap fuer Suchmaschinen vorbereitet.',
+            'Ankuendigungen laden Featured Images wieder korrekt nach und zeigen Landschaftsaufnahmen im passenden Seitenverhaeltnis.',
+            'Event-Karten im Kalender und auf der Startseite koennen kompakte Hinweise wie Livemusik oder Show anzeigen.',
+            'Die Kategoriefilter fuer Veranstaltungen funktionieren wieder zuverlaessig.',
+            'Die Sitemap-Logik ist jetzt zwischen Worker und lokaler Entwicklung geteilt, damit /sitemap.xml ueberall gleich funktioniert.'
+        ]
+    },
+    {
         version: '0.2.6',
         releasedAt: '2026-05-23',
         headline: 'Produktions-Hotfix fuer die Event-API',
