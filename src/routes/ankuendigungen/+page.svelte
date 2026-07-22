@@ -32,26 +32,20 @@
 
     let { data }: PageProps = $props();
     let activeArchive = $state<string | null>(null);
-    let localPosts = $state<AnnouncementPost[]>([]);
-    let localLoadError = $state(false);
+    let localPosts = $state<AnnouncementPost[] | null>(null);
+    let localLoadError = $state(Boolean(data.loadError));
     let retrying = $state(false);
 
-    const posts = $derived(localPosts);
+    // Prefer live client fetch; fall back to prerendered data until then.
+    const posts = $derived(
+        localPosts ?? ((data.posts as AnnouncementPost[]) ?? []),
+    );
     const sortedPosts = $derived.by(() =>
         [...posts].sort(compareAnnouncementPosts),
     );
     const upcomingPosts = $derived.by(() =>
         sortedPosts.filter((post) => isUpcomingAnnouncement(post)),
     );
-
-    $effect(() => {
-        if (retrying) {
-            return;
-        }
-
-        localPosts = (data.posts as AnnouncementPost[]) ?? [];
-        localLoadError = Boolean(data.loadError);
-    });
 
     $effect(() => {
         if (
@@ -73,10 +67,6 @@
     );
 
     onMount(() => {
-        if (posts.length > 0 || retrying) {
-            return;
-        }
-
         void retryLoad();
     });
 
@@ -91,6 +81,9 @@
         } catch (error) {
             console.error("Failed to recover announcements:", error);
             localLoadError = true;
+            if (localPosts === null) {
+                localPosts = [];
+            }
         } finally {
             retrying = false;
         }

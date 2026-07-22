@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { fetchAnnouncementBySlug } from '$lib/api/posts';
 	import { mapWordPressSeo } from '$lib/seo/from-wordpress';
 	import { sanitizeHtml, sanitizeText } from '$lib/utils/html';
 	import type { BlogPost, TribeEvent, TribeOrganizer } from '$lib/types';
@@ -24,8 +26,22 @@
 	};
 
 	let { data }: PageProps = $props();
+	let livePost = $state<AnnouncementPost | null>(null);
 
-	const post = $derived(data.post as AnnouncementPost);
+	const post = $derived((livePost ?? data.post) as AnnouncementPost);
+
+	onMount(() => {
+		const slug = post?.slug;
+		if (!slug) return;
+
+		void fetchAnnouncementBySlug(slug, globalThis.fetch)
+			.then((fresh) => {
+				if (fresh) livePost = fresh as AnnouncementPost;
+			})
+			.catch((error) => {
+				console.error('Failed to refresh announcement:', error);
+			});
+	});
 	const relatedEvent = $derived((data.relatedEvent as TribeEvent | null) ?? null);
 	const relatedOrganizer = $derived((data.relatedOrganizer as TribeOrganizer | null) ?? null);
 	const backendUrl = $derived((data.backendUrl as string | null) ?? null);
