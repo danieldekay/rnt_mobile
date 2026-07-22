@@ -22,10 +22,6 @@
             <p class="text-sm font-medium text-text-default">
                 {visibleCount} von {totalCount} Meldungen sichtbar
             </p>
-            <p class="meta-text">
-                Die Filterleiste liegt jetzt direkt ueber dem Raster,
-                nicht mehr in einer Seitenleiste.
-            </p>
         </div>
         {#if hasArchiveFilter}
             <p class="meta-text">

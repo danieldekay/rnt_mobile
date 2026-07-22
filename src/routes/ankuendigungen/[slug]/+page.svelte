@@ -21,6 +21,8 @@
 		source_url?: string | null;
 		alt_text?: string | null;
 		media_details?: {
+			width?: number;
+			height?: number;
 			sizes?: Record<string, { source_url?: string }>;
 		};
 	};
@@ -50,6 +52,15 @@
 	const content = $derived(post?.content?.rendered ? sanitizeHtml(post.content.rendered) : '');
 	const media = $derived(post ? getFeaturedMedia(post) : null);
 	const imageUrl = $derived(getLandscapeImageUrl(media));
+	const imageAspectRatio = $derived.by(() => {
+		const width = media?.media_details?.width;
+		const height = media?.media_details?.height;
+		if (!width || !height || width <= 0 || height <= 0) {
+			return '16 / 9';
+		}
+		if (height > width) return '1 / 1';
+		return `${width} / ${height}`;
+	});
 	const formattedDate = $derived(post ? getRelevantDateLabel(post) : '');
 	const listHref = resolve('/ankuendigungen');
 	const relatedEventHref = $derived(relatedEvent ? resolve(`/event/${relatedEvent.id}`) : '');
@@ -135,7 +146,7 @@
 
 	{#if media}
 		<figure class="overflow-hidden rounded-card bg-surface-subtle shadow-sm">
-			<div class="aspect-[16/9] w-full lg:aspect-[21/9]">
+			<div class="w-full" style={`aspect-ratio: ${imageAspectRatio}`}>
 				<img
 					src={imageUrl ?? media.source_url ?? ''}
 					alt={media.alt_text?.trim() || title}

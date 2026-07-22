@@ -19,6 +19,8 @@
         source_url?: string | null;
         alt_text?: string | null;
         media_details?: {
+            width?: number;
+            height?: number;
             sizes?: Record<string, { source_url?: string }>;
         };
     };
