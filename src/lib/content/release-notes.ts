@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.3.0',
+        releasedAt: '2026-07-23',
+        headline: 'Einheitlichere Navigation und Bedienung',
+        summary:
+            'Dieses Release bringt mobile und Desktop-Ansicht enger zusammen: dieselbe Navigation, konsistentere Filter und klarere Rueckmeldungen beim Laden oder bei Fehlern.',
+        highlights: [
+            'Das mobile Menue fuehrt jetzt zu allen acht Bereichen der App – mit denselben Bezeichnungen wie in der Desktop-Navigation.',
+            'Startseite und Kalender teilen sich ein einheitliches Seitenlayout; der Kalender aendert beim Oeffnen nicht mehr den Datumsfilter der Liste.',
+            'Filter, Suchfelder und Zuruecksetzen-Buttons verhalten sich auf Veranstaltungen, Blog, Links und Verzeichnissen aehnlicher.',
+            'Lade-, Leer- und Fehlerzustaende sind auf den wichtigsten Seiten einheitlicher und bieten wo noetig einen erneuten Versuch.',
+            'Kalender, Event-Karten und Bedienelemente haben groessere Touch-Ziele fuer die Nutzung auf dem Handy.'
+        ]
+    },
+    {
         version: '0.2.7',
         releasedAt: '2026-07-22',
         headline: 'SEO, Ankuendigungsbilder und klarere Event-Karten',
