@@ -106,7 +106,7 @@
 				<button
 					onclick={() => changeMonth(-1)}
 					type="button"
-					class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary"
+					class="inline-flex min-h-12 min-w-12 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary"
 					aria-label="Vorherigen Monat anzeigen"
 				>
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -117,7 +117,7 @@
 				<button
 					onclick={() => changeMonth(1)}
 					type="button"
-					class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary"
+					class="inline-flex min-h-12 min-w-12 items-center justify-center rounded-control border border-border-default bg-surface-card text-text-default transition-colors hover:bg-action-secondary"
 					aria-label="Nächsten Monat anzeigen"
 				>
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -153,7 +153,7 @@
 					<button
 						onclick={() => onselectDate(day)}
 						type="button"
-						class="relative aspect-square flex flex-col items-center justify-center rounded-control border text-sm transition-colors duration-150 {selected ? 'border-border-accent bg-action-primary text-text-inverse' : isToday(day) ? 'border-border-accent bg-surface-card text-text-default' : hasEvents ? 'border-border-default bg-surface-subtle text-text-default hover:bg-action-secondary' : 'border-transparent bg-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'} {past && !isToday(day) && !selected ? 'border-transparent bg-transparent text-text-subtle hover:border-border-default hover:bg-surface-card' : ''}"
+						class="relative flex min-h-11 min-w-11 flex-col items-center justify-center rounded-control border text-sm transition-colors duration-150 {selected ? 'border-border-accent bg-action-primary text-text-inverse' : isToday(day) ? 'border-border-accent bg-surface-card text-text-default' : hasEvents ? 'border-border-default bg-surface-subtle text-text-default hover:bg-action-secondary' : 'border-transparent bg-transparent text-text-muted hover:border-border-default hover:bg-surface-card hover:text-text-default'} {past && !isToday(day) && !selected ? 'border-transparent bg-transparent text-text-subtle hover:border-border-default hover:bg-surface-card' : ''}"
 						aria-pressed={selected}
 						aria-label={getDateLabel(day, dayEvents.length)}
 						aria-current={isToday(day) ? 'date' : undefined}
@@ -176,7 +176,7 @@
 						{/if}
 					</button>
 				{:else}
-					<div class="aspect-square"></div>
+					<div class="min-h-11 min-w-11"></div>
 				{/if}
 			{/each}
 	</div>

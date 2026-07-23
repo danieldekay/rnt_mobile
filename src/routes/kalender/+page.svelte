@@ -4,8 +4,7 @@
 	import Calendar from '$lib/components/Calendar.svelte';
 	import DateSelector from '$lib/components/DateSelector.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
-	import FilterChip from '$lib/components/FilterChip.svelte';
-	import MusicFilterChip from '$lib/components/MusicFilterChip.svelte';
+	import CalendarEventFilters from '$lib/components/CalendarEventFilters.svelte';
 	import type { EventType, MusicType, TribeEvent } from '$lib/types';
 	import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from '$lib/constants';
 	import { trackFeatureEvent } from '$lib/matomo';
@@ -40,7 +39,6 @@
 	});
 
 	onMount(() => {
-		eventStore.setFilters({ date: 'all' });
 		void eventStore.loadCalendarMonth(currentMonth, true);
 	});
 
@@ -71,6 +69,18 @@
 		}
 	}
 
+	function handleTypeToggle(type: EventType) {
+		eventStore.toggleType(type);
+	}
+
+	function handleMusicToggle(music: MusicType) {
+		eventStore.toggleMusic(music);
+	}
+
+	async function handleRetry() {
+		await eventStore.loadCalendarMonth(currentMonth, true);
+	}
+
 	const eventsForSelectedDate = $derived(selectedDate ? getEventsForDate(selectedDate) : []);
 </script>
 
@@ -78,10 +88,10 @@
 	<title>RNT Kalender - Monatsansicht</title>
 </svelte:head>
 
-<div class="space-y-4">
+<div class="page-stack">
 	<section class="space-y-3">
 		<p class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted">Kalenderansicht</p>
-		<h2 class="font-display text-[2rem] font-semibold text-text-default">Monat im Überblick</h2>
+		<h1 class="font-display text-[2rem] font-semibold text-text-default">Monat im Überblick</h1>
 		<p class="meta-text max-w-[36ch]">Wähle einen Tag und springe direkt zu den Veranstaltungen, ohne die Chronologie der Liste zu verlieren.</p>
 	</section>
 
@@ -92,117 +102,107 @@
 		Zu den Filtern springen
 	</a>
 
-	<section class="space-y-3 lg:hidden" aria-labelledby="calendar-filters-heading-mobile">
-		<h3 id="calendar-filters-heading-mobile" class="text-[0.9375rem] font-medium text-text-default">Filter</h3>
-		<div class="flex flex-wrap gap-2 items-center">
-			{#each musicTypes as music (music)}
-				<MusicFilterChip
-					{music}
-					active={$eventStore.filters.music === music}
-					onclick={() => eventStore.toggleMusic(music)}
-					count={musicCounts[music]}
-				/>
-			{/each}
-		</div>
-		<div class="flex flex-wrap gap-2 items-center">
-			{#each eventTypes as type (type)}
-				<FilterChip
-					{type}
-					active={$eventStore.filters.types.includes(type)}
-					onclick={() => eventStore.toggleType(type)}
-					count={typeCounts[type]}
-				/>
-			{/each}
-		</div>
+	<section class="lg:hidden" aria-labelledby="calendar-filters-heading-mobile">
+		<CalendarEventFilters
+			{eventTypes}
+			{musicTypes}
+			activeTypes={$eventStore.filters.types}
+			activeMusic={$eventStore.filters.music}
+			{typeCounts}
+			{musicCounts}
+			onToggleType={handleTypeToggle}
+			onToggleMusic={handleMusicToggle}
+			headingId="calendar-filters-heading-mobile"
+		/>
 	</section>
 
-	{#if showInlineLoading}
-		<div class="card flex items-center gap-3 p-3 lg:hidden" role="status" aria-live="polite">
-			<div class="h-4 w-4 animate-spin rounded-full border-2 border-action-secondary border-t-action-primary"></div>
-			<p class="meta-text">Kalenderdaten werden aktualisiert…</p>
-		</div>
-	{/if}
-
-	<div class="space-y-4 lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start lg:gap-4 lg:space-y-0 xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-5 2xl:grid-cols-[minmax(0,1fr)_18rem]">
-		<section class="space-y-4 lg:min-w-0">
-			<div class="w-full max-w-[42rem] space-y-4">
-				<div class="w-full">
-					<Calendar
-						events={$eventStore.events}
-						{currentMonth}
-						{selectedDate}
-						onselectDate={handleDateSelect}
-						onmonthchange={handleMonthChange}
-					/>
-				</div>
-
-				<div class="w-full">
-					<DateSelector
-						selectedDate={selectedDate}
-						eventsForDate={eventsForSelectedDate}
-						ondatechange={(date) => { selectedDate = date; }}
-					/>
-				</div>
-
-				{#if selectedDate && eventsForSelectedDate.length > 0}
-					<div class="space-y-3">
-						<h3 class="section-title">
-							Events am {selectedDate.toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })}
-						</h3>
-						{#each eventsForSelectedDate as event (event.id)}
-							<EventCard {event} />
-						{/each}
-					</div>
-				{:else if selectedDate}
-					<div class="card p-6 text-center">
-						<p class="text-[1rem] font-medium text-text-default">Keine Events an diesem Tag</p>
-						<p class="meta-text mt-2">Wähle einen anderen Tag oder springe mit „Heute“ zurück.</p>
-					</div>
-				{:else}
-					<div class="card p-6 text-center">
-						<p class="text-[1rem] font-medium text-text-default">Tippe auf einen Tag, um Events zu sehen</p>
-						<p class="meta-text mt-2">Die Monatsansicht bleibt die Orientierung, die Liste darunter zeigt die Details.</p>
-					</div>
-				{/if}
+	{#if $eventStore.error}
+		<div class="status-error-panel" role="alert">
+			<p class="status-error-title">Kalenderdaten konnten nicht geladen werden</p>
+			<p class="meta-text mt-2">{$eventStore.error}</p>
+			<div class="pt-3">
+				<button type="button" class="btn-primary" onclick={() => void handleRetry()}>
+					Erneut versuchen
+				</button>
 			</div>
-		</section>
+		</div>
+	{:else}
+		{#if showInlineLoading}
+			<div class="card flex items-center gap-3 p-3 lg:hidden" role="status" aria-live="polite">
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-action-secondary border-t-action-primary"></div>
+				<p class="meta-text">Kalenderdaten werden aktualisiert…</p>
+			</div>
+		{/if}
 
-		<aside
-			id="calendar-filters-region"
-			class="hidden space-y-4 lg:block lg:sticky lg:top-6"
-			aria-labelledby="calendar-filters-heading"
-			tabindex="-1"
-		>
-			<section class="space-y-3">
-				<h3 id="calendar-filters-heading" class="text-[0.9375rem] font-medium text-text-default">Filter</h3>
-				<div class="flex flex-wrap gap-2 items-center">
-					{#each musicTypes as music (music)}
-						<MusicFilterChip
-							{music}
-							active={$eventStore.filters.music === music}
-							onclick={() => eventStore.toggleMusic(music)}
-							count={musicCounts[music]}
+		<div class="page-stack lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start lg:gap-4 lg:space-y-0 xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-5 2xl:grid-cols-[minmax(0,1fr)_18rem]">
+			<section class="page-stack lg:min-w-0">
+				<div class="page-stack">
+					<div class="w-full">
+						<Calendar
+							events={$eventStore.events}
+							{currentMonth}
+							{selectedDate}
+							onselectDate={handleDateSelect}
+							onmonthchange={handleMonthChange}
 						/>
-					{/each}
-				</div>
-				<div class="flex flex-wrap gap-2 items-center">
-					{#each eventTypes as type (type)}
-						<FilterChip
-							{type}
-							active={$eventStore.filters.types.includes(type)}
-							onclick={() => eventStore.toggleType(type)}
-							count={typeCounts[type]}
+					</div>
+
+					<div class="w-full">
+						<DateSelector
+							selectedDate={selectedDate}
+							eventsForDate={eventsForSelectedDate}
+							ondatechange={(date) => { selectedDate = date; }}
 						/>
-					{/each}
+					</div>
+
+					{#if selectedDate && eventsForSelectedDate.length > 0}
+						<div class="space-y-3">
+							<h2 class="section-title">
+								Events am {selectedDate.toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })}
+							</h2>
+							{#each eventsForSelectedDate as event (event.id)}
+								<EventCard {event} showImage={false} />
+							{/each}
+						</div>
+					{:else if selectedDate}
+						<div class="card p-6 text-center">
+							<p class="text-[1rem] font-medium text-text-default">Keine Events an diesem Tag</p>
+							<p class="meta-text mt-2">Wähle einen anderen Tag oder springe mit „Heute“ zurück.</p>
+						</div>
+					{:else}
+						<div class="card p-6 text-center">
+							<p class="text-[1rem] font-medium text-text-default">Tippe auf einen Tag, um Events zu sehen</p>
+							<p class="meta-text mt-2">Die Monatsansicht bleibt die Orientierung, die Liste darunter zeigt die Details.</p>
+						</div>
+					{/if}
 				</div>
 			</section>
 
-			{#if showInlineLoading}
-				<div class="card flex items-center gap-3 p-3" role="status" aria-live="polite">
-					<div class="h-4 w-4 animate-spin rounded-full border-2 border-action-secondary border-t-action-primary"></div>
-					<p class="meta-text">Kalenderdaten werden aktualisiert…</p>
-				</div>
-			{/if}
-		</aside>
-	</div>
+			<aside
+				id="calendar-filters-region"
+				class="hidden lg:block lg:sticky lg:top-6"
+				aria-labelledby="calendar-filters-heading"
+				tabindex="-1"
+			>
+				<CalendarEventFilters
+					{eventTypes}
+					{musicTypes}
+					activeTypes={$eventStore.filters.types}
+					activeMusic={$eventStore.filters.music}
+					{typeCounts}
+					{musicCounts}
+					onToggleType={handleTypeToggle}
+					onToggleMusic={handleMusicToggle}
+					headingId="calendar-filters-heading"
+				/>
+
+				{#if showInlineLoading}
+					<div class="card mt-4 flex items-center gap-3 p-3" role="status" aria-live="polite">
+						<div class="h-4 w-4 animate-spin rounded-full border-2 border-action-secondary border-t-action-primary"></div>
+						<p class="meta-text">Kalenderdaten werden aktualisiert…</p>
+					</div>
+				{/if}
+			</aside>
+		</div>
+	{/if}
 </div>

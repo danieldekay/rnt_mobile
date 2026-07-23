@@ -22,6 +22,7 @@
     import { consentStore } from "$lib/stores/consent.svelte";
     import { pwaUpdateStore } from "$lib/stores/pwa-update.svelte";
     import { pwaInstallStore } from "$lib/stores/pwa-install.svelte";
+    import { isNavActive, navItems } from "$lib/nav";
 
     let {
         children,
@@ -32,32 +33,6 @@
     let stagedMaps = $state(false);
     let mobileMenuOpen = $state(false);
     const currentYear = new Date().getFullYear();
-
-    const mobileNavItems = [
-        {
-            href: "/",
-            label: "Liste",
-            iconPath: "M4 6h16M4 10h16M4 14h16M4 18h16",
-        },
-        {
-            href: "/kalender",
-            label: "Kalender",
-            iconPath:
-                "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-        },
-        {
-            href: "/blog",
-            label: "News",
-            iconPath:
-                "M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2zm3 4h8m-8 4h8m-8 4h5",
-        },
-        {
-            href: "/ankuendigungen",
-            label: "Ankuendigungen",
-            iconPath:
-                "M7 8h10M7 12h10M7 16h6M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
-        },
-    ] as const;
 
     $effect(() => {
         if (consentStore.settingsOpen) {
@@ -109,14 +84,9 @@
     });
 
     function isMobileNavActive(href: string): boolean {
-        if (href === "/") {
-            return $page.url.pathname === "/";
-        }
-
-        return (
-            $page.url.pathname === href ||
-            $page.url.pathname.startsWith(`${href}/`)
-        );
+        const item = navItems.find((entry) => entry.href === href);
+        if (!item) return false;
+        return isNavActive($page.url.pathname, item);
     }
 
     function toggleMobileMenu() {
@@ -197,7 +167,7 @@
                         type="button"
                         onclick={openConsentSettings}
                     >
-                        Auswaehlen
+                        Auswählen
                     </button>
                     <button
                         class="btn-primary"
@@ -313,7 +283,7 @@
                                 Eingebettete Karten
                             </p>
                             <p class="meta-text">
-                                Laedt erst dann externe OpenStreetMap-Kacheln
+                                Lädt erst dann externe OpenStreetMap-Kacheln
                                 für Listen- und Veranstaltungsansichten.
                             </p>
                         </div>
@@ -352,7 +322,7 @@
         <header
             class="sticky top-0 z-50 border-b border-border-default bg-surface-canvas/95 backdrop-blur-sm lg:hidden"
         >
-            <div class="mx-auto max-w-xl px-4 py-4 md:px-5">
+            <div class="mx-auto max-w-xl px-4 py-4 md:px-5 app-content-shell">
                 <div class="flex items-center justify-between gap-4">
                     <a
                         href={resolve("/")}
@@ -427,9 +397,9 @@
                             class="flex flex-col gap-2"
                             aria-label="Hauptnavigation"
                         >
-                            {#each mobileNavItems as item (item.href)}
+                            {#each navItems as item (item.href)}
                                 <a
-                                    href={resolve(item.href)}
+                                    href={resolve(item.href as "/")}
                                     class={`inline-flex min-h-13 w-full items-center gap-3 rounded-control border px-4 py-3 text-left text-base font-medium transition-colors ${
                                         isMobileNavActive(item.href)
                                             ? "border-border-accent bg-action-secondary text-text-default"
@@ -468,7 +438,7 @@
 
         {#if pwaUpdateStore.hasUpdate || pwaUpdateStore.checkState === "error"}
             <div
-                class="mx-auto w-full max-w-xl px-4 pt-5 md:px-5 lg:max-w-none lg:px-0"
+                class="mx-auto w-full px-4 pt-5 md:px-5 lg:px-0 app-content-shell"
             >
                 <PwaUpdateBanner
                     hasUpdate={pwaUpdateStore.hasUpdate}
@@ -485,7 +455,7 @@
         <!-- Main content -->
         <main
             id="main-content"
-            class="mx-auto flex-1 w-full max-w-xl px-4 py-5 md:px-5 lg:max-w-none lg:px-0"
+            class="app-content-shell mx-auto flex-1 w-full px-4 py-5 md:px-5 lg:px-0"
             tabindex="-1"
         >
             {@render children()}
@@ -494,7 +464,7 @@
         <!-- Footer -->
         <footer class="mt-auto border-t border-border-default py-5">
             <div
-                class="mx-auto max-w-xl space-y-2 px-4 text-center md:px-5 lg:max-w-none lg:px-0"
+                class="mx-auto space-y-2 px-4 text-center md:px-5 lg:px-0 app-content-shell"
             >
                 <NewsletterSignup />
                 <p

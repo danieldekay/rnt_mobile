@@ -41,6 +41,11 @@
     const searchCount = $derived($eventStore.events.length);
     const totalCount = $derived($eventStore.allEvents.length);
     const showInlineLoading = $derived($eventStore.loading && totalCount > 0);
+    const hasActiveFilters = $derived(
+        $eventStore.filters.types.length > 0 ||
+            $eventStore.filters.music !== null ||
+            $eventStore.searchQuery.trim().length > 0,
+    );
     const nextPeriodLabel = $derived(
         $eventStore.filters.date === "week"
             ? "Nächste 7 Tage laden"
@@ -292,22 +297,28 @@
         consentStore.savePreferences({ maps: true });
         trackFeatureEvent("home", "map_enable");
     }
+
+    function resetFilters() {
+        eventStore.setFilters({ types: [], music: null });
+        eventStore.clearSearch();
+        trackFeatureEvent("home", "filter_reset");
+    }
 </script>
 
 <svelte:head>
     <title>RNT Kalender - Tango Events</title>
 </svelte:head>
 
-<div class="space-y-4">
+<div class="page-stack">
     <section class="space-y-2">
         <p
             class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted"
         >
             Region Rhein-Neckar
         </p>
-        <h2 class="font-display text-[2rem] font-semibold text-text-default">
+        <h1 class="font-display text-[2rem] font-semibold text-text-default">
             Nächste Veranstaltungen
-        </h2>
+        </h1>
         <p class="meta-text max-w-[36ch]">
             Datum, Ort und Format zuerst. Alles Wichtige bleibt auf dem Handy
             schnell lesbar.
@@ -468,7 +479,17 @@
 
         <!-- Type filters + toggles -->
         <div class="space-y-3">
-            <p class="text-[0.9375rem] font-medium text-text-default">Filter</p>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-[0.9375rem] font-medium text-text-default">Filter</p>
+                <button
+                    type="button"
+                    onclick={resetFilters}
+                    disabled={!hasActiveFilters}
+                    class="inline-flex min-h-12 items-center justify-center rounded-control border border-border-default bg-surface-subtle px-4 py-2 text-[0.95rem] font-medium text-text-default transition-colors enabled:hover:bg-action-secondary disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                    Zurücksetzen
+                </button>
+            </div>
             <div class="flex flex-wrap gap-2 items-center">
                 {#each musicTypes as music (music)}
                     <MusicFilterChip
@@ -510,7 +531,7 @@
             {#if !mapConsentGranted}
                 <ConsentPlaceholder
                     title="Karte erst nach Zustimmung"
-                    description="Die Kartenansicht laedt externe OpenStreetMap-Kacheln. Aktiviere Karten nur, wenn du diese externen Anfragen zulassen willst."
+                    description="Die Kartenansicht lädt externe OpenStreetMap-Kacheln. Aktiviere Karten nur, wenn du diese externen Anfragen zulassen willst."
                     actionLabel="Karten aktivieren"
                     onEnable={enableMaps}
                 />

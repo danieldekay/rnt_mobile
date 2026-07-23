@@ -33,10 +33,6 @@
 			ondatechange(next);
 		}
 	}
-
-	function goToToday() {
-		ondatechange(new Date());
-	}
 </script>
 
 {#if selectedDate}
@@ -59,13 +55,5 @@
 				</svg>
 			</button>
 		</div>
-		
-		<button 
-			onclick={goToToday}
-			class="btn-secondary w-full"
-			type="button"
-		>
-			Heute
-		</button>
 	</div>
 {/if}

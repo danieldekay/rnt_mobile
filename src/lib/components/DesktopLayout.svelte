@@ -24,11 +24,11 @@
 			<LeftSidebar />
 		</div>
 
-		<main class="min-w-0 lg:px-8 lg:py-8 xl:px-12 flex justify-center">
-			<div class="w-full max-w-4xl">
+		<div class="min-w-0 lg:px-8 lg:py-8 xl:px-12 flex justify-center">
+			<div class="app-content-shell w-full">
 				{@render children()}
 			</div>
-		</main>
+		</div>
 
 		{#if rightSidebar}
 			<div class="hidden lg:block">

@@ -127,6 +127,11 @@
 		activeCategory = activeCategory === categoryId ? null : categoryId;
 	}
 
+	function resetCategoryFilter(): void {
+		activeCategory = null;
+	}
+
+	const hasActiveCategoryFilter = $derived(activeCategory !== null);
 </script>
 
 <svelte:head>
@@ -136,7 +141,17 @@
 {#snippet categoryFilterPanel()}
 	<section class="card space-y-4 p-5">
 		<div>
-			<p class="meta-text">Kategorien</p>
+			<div class="flex flex-wrap items-center justify-between gap-2">
+				<p class="meta-text">Kategorien</p>
+				<button
+					type="button"
+					onclick={resetCategoryFilter}
+					disabled={!hasActiveCategoryFilter}
+					class="inline-flex min-h-12 items-center justify-center rounded-control border border-border-default bg-surface-subtle px-4 py-2 text-[0.95rem] font-medium text-text-default transition-colors enabled:hover:bg-action-secondary disabled:cursor-not-allowed disabled:opacity-55"
+				>
+					Zurücksetzen
+				</button>
+			</div>
 			<div class="mt-3 flex flex-wrap gap-2">
 				<button
 					type="button"
@@ -171,7 +186,7 @@
 		<hr class="border-border-default" />
 
 		<div class="space-y-1">
-			<p class="text-sm font-medium text-text-default">{visibleCount} Beitraege</p>
+			<p class="text-sm font-medium text-text-default">{visibleCount} Beiträge</p>
 			{#if activeCategory !== null}
 				{@const activeCategoryName = categoryStats.find((category) => category.id === activeCategory)?.name}
 				{#if activeCategoryName}
@@ -182,13 +197,13 @@
 	</section>
 {/snippet}
 
-<div class="space-y-6">
-	<div class="space-y-6">
+<div class="page-stack">
+	<div class="page-stack">
 		<section class="space-y-3">
 			<p class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted">Neuigkeiten</p>
 			<h1 class="font-display text-[2rem] font-semibold text-text-default">Blog</h1>
 			<p class="meta-text max-w-[58ch]">
-				Aktuelle Berichte, Hintergrundbeitraege und Updates aus der Rhein-Neckar-Tango-Community.
+				Aktuelle Berichte, Hintergrundbeiträge und Updates aus der Rhein-Neckar-Tango-Community.
 			</p>
 		</section>
 
@@ -198,25 +213,25 @@
 
 		{#if showLoading}
 			<div class="space-y-4" role="status" aria-live="polite">
-				<p class="sr-only">Blogbeitraege laden</p>
+				<p class="sr-only">Blogbeiträge laden</p>
 				{#each Array.from({ length: 4 }) as _, index (index)}
 					<SkeletonCard variant="horizontal" imageSize="md" lines={2} />
 				{/each}
 			</div>
 		{:else if localLoadError}
 			<section class="card space-y-2 p-6 text-center" role="alert">
-				<p class="text-[1rem] font-semibold text-text-default">Beitraege konnten nicht geladen werden</p>
-				<p class="meta-text">Bitte versuche es spaeter erneut.</p>
+				<p class="text-[1rem] font-semibold text-text-default">Beiträge konnten nicht geladen werden</p>
+				<p class="meta-text">Bitte versuche es später erneut.</p>
 				<div class="pt-2">
 					<button type="button" class="btn-secondary" onclick={() => void retryLoad()} disabled={retrying}>
-						{retrying ? 'Laedt...' : 'Erneut versuchen'}
+						{retrying ? 'Lädt…' : 'Erneut versuchen'}
 					</button>
 				</div>
 			</section>
 		{:else if posts.length === 0}
 			<section class="card space-y-2 p-6 text-center">
-				<p class="text-[1rem] font-semibold text-text-default">Keine Beitraege gefunden</p>
-				<p class="meta-text">Sobald neue Blogposts verfuegbar sind, erscheinen sie hier.</p>
+				<p class="text-[1rem] font-semibold text-text-default">Keine Beiträge gefunden</p>
+				<p class="meta-text">Sobald neue Blogposts verfügbar sind, erscheinen sie hier.</p>
 			</section>
 		{:else if filteredPosts.length === 0}
 			<section class="card space-y-2 p-6 text-center">

@@ -113,8 +113,8 @@
     <title>DJs - RNT Kalender</title>
 </svelte:head>
 
-<div class="space-y-4">
-    <div class="space-y-4">
+<div class="page-stack">
+    <div class="page-stack">
         <section class="space-y-3">
             <p
                 class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted"

@@ -14,7 +14,7 @@
 		showImage?: boolean;
 	}
 
-	let { event, showImage = true }: Props = $props();
+	let { event, showImage = false }: Props = $props();
 
 	const startDate = $derived(parseISO(event.start_date));
 	const endDate = $derived(parseISO(event.end_date));

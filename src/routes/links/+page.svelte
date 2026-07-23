@@ -70,7 +70,7 @@
     <title>Links & Ressourcen - RNT Kalender</title>
 </svelte:head>
 
-<div class="space-y-6">
+<div class="page-stack">
     <section class="space-y-3">
         <p
             class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted"
@@ -94,10 +94,12 @@
                 <button
                     type="button"
                     onclick={() => selectCategory("all")}
-                    class="inline-flex items-center rounded-full border border-border-default bg-surface-card px-[0.875rem] py-2 text-[0.875rem] font-medium text-text-default transition-all hover:border-action-primary hover:bg-action-secondary/40 {activeCategory ===
-                    'all'
-                        ? 'bg-action-primary border-action-primary text-white'
-                        : ''}"
+                    class={`filter-chip ${
+                        activeCategory === "all"
+                            ? "filter-chip-active"
+                            : "filter-chip-inactive"
+                    }`}
+                    aria-pressed={activeCategory === "all"}
                 >
                     Alle ({data.links.length})
                 </button>
@@ -105,10 +107,12 @@
                     <button
                         type="button"
                         onclick={() => selectCategory(category)}
-                        class="inline-flex items-center rounded-full border border-border-default bg-surface-card px-[0.875rem] py-2 text-[0.875rem] font-medium text-text-default transition-all hover:border-action-primary hover:bg-action-secondary/40 {activeCategory ===
-                        category
-                            ? 'bg-action-primary border-action-primary text-white'
-                            : ''}"
+                        class={`filter-chip ${
+                            activeCategory === category
+                                ? "filter-chip-active"
+                                : "filter-chip-inactive"
+                        }`}
+                        aria-pressed={activeCategory === category}
                     >
                         {category} ({categoryCounts.get(category) ?? 0})
                     </button>
@@ -127,7 +131,7 @@
                         type="search"
                         bind:value={searchQuery}
                         placeholder="Nach Name, Beschreibung oder Quelle suchen"
-                        class="min-h-12 w-full rounded-control border border-border-default bg-surface-card px-4 py-2 text-[0.95rem] text-text-default outline-none transition-colors placeholder:text-text-muted focus:border-action-primary"
+                        class="field-input"
                     />
                 </label>
 
@@ -136,7 +140,7 @@
                     onclick={resetFilters}
                     class="btn-secondary min-h-12"
                 >
-                    Zuruecksetzen
+                    Zurücksetzen
                 </button>
             </div>
         </div>
@@ -162,7 +166,7 @@
                 Keine passenden Links gefunden
             </p>
             <p class="meta-text mt-2">
-                Passe Suche oder Typfilter an, um weitere Eintraege zu sehen.
+                Passe Suche oder Typfilter an, um weitere Einträge zu sehen.
             </p>
         </section>
     {:else}

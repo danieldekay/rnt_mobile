@@ -233,11 +233,11 @@
 </script>
 
 <svelte:head>
-    <title>Ankuendigungen - RNT Kalender</title>
+    <title>Ankündigungen - RNT Kalender</title>
 </svelte:head>
 
-<div class="space-y-6">
-    <div class="space-y-6">
+<div class="page-stack">
+    <div class="page-stack">
         <section class="space-y-3">
             <p
                 class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted"
@@ -247,7 +247,7 @@
             <h1
                 class="font-display text-[2rem] font-semibold text-text-default"
             >
-                Ankuendigungen
+                Ankündigungen
             </h1>
             <p class="meta-text max-w-[58ch]">
                 Wichtige Hinweise und aktuelle Meldungen aus der
@@ -266,7 +266,7 @@
 
         {#if showLoading}
             <div class="space-y-4" role="status" aria-live="polite">
-                <p class="sr-only">Ankuendigungen laden</p>
+                <p class="sr-only">Ankündigungen laden</p>
                 {#each Array.from({ length: 4 }) as _, index (index)}
                     <SkeletonCard
                         variant="horizontal"
@@ -278,9 +278,9 @@
         {:else if localLoadError}
             <section class="card space-y-2 p-6 text-center" role="alert">
                 <p class="text-[1rem] font-semibold text-text-default">
-                    Ankuendigungen konnten nicht geladen werden
+                    Ankündigungen konnten nicht geladen werden
                 </p>
-                <p class="meta-text">Bitte versuche es spaeter erneut.</p>
+                <p class="meta-text">Bitte versuche es später erneut.</p>
                 <div class="pt-2">
                     <button
                         type="button"
@@ -288,17 +288,17 @@
                         onclick={() => void retryLoad()}
                         disabled={retrying}
                     >
-                        {retrying ? "Laedt..." : "Erneut versuchen"}
+                        {retrying ? "Lädt…" : "Erneut versuchen"}
                     </button>
                 </div>
             </section>
         {:else if posts.length === 0}
             <section class="card space-y-2 p-6 text-center">
                 <p class="text-[1rem] font-semibold text-text-default">
-                    Keine Ankuendigungen vorhanden
+                    Keine Ankündigungen vorhanden
                 </p>
                 <p class="meta-text">
-                    Sobald neue Meldungen verfuegbar sind, erscheinen sie hier.
+                    Sobald neue Meldungen verfügbar sind, erscheinen sie hier.
                 </p>
             </section>
         {:else if visiblePosts.length === 0}
@@ -307,7 +307,7 @@
                     Keine Meldungen für diesen Zeitraum
                 </p>
                 <p class="meta-text">
-                    Waehle ein anderes Archiv oder zeige alle Monate an.
+                    Wähle ein anderes Archiv oder zeige alle Monate an.
                 </p>
             </section>
         {:else}

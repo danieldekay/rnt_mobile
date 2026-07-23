@@ -510,7 +510,7 @@ img {
   }
 
   .filter-chip {
-    @apply inline-flex min-h-8 items-center justify-center gap-1.5 rounded-badge border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[0.75rem] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer select-none;
+    @apply inline-flex min-h-12 items-center justify-center gap-1.5 rounded-badge border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[0.75rem] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer select-none;
   }
 
   .filter-chip-active {
@@ -531,6 +531,30 @@ img {
 
   .meta-text {
     @apply text-[0.9375rem] text-text-muted;
+  }
+
+  .page-stack {
+    @apply space-y-4;
+  }
+
+  .app-content-shell {
+    width: 100%;
+    max-width: var(--desktop-content-max-width);
+  }
+
+  .reading-width {
+    max-width: 65ch;
+  }
+
+  .status-error-panel {
+    @apply rounded-card border p-6 text-center;
+    border-color: rgb(var(--error) / 0.3);
+    background-color: rgb(var(--error) / 0.1);
+  }
+
+  .status-error-title {
+    @apply text-[1rem] font-semibold;
+    color: rgb(var(--error) / 1);
   }
 
   .event-badge-default {

@@ -2,12 +2,13 @@
     import { onMount } from "svelte";
     import { resolve } from "$app/paths";
     import { page } from "$app/stores";
-
-    type NavItem = {
-        label: string;
-        href: string;
-        match: "exact" | "prefix";
-    };
+    import { consentStore } from "$lib/stores/consent.svelte";
+    import {
+        footerLinks,
+        isNavActive,
+        navItems,
+        type NavItem,
+    } from "$lib/nav";
 
     type ExternalNavItem = {
         label: string;
@@ -29,24 +30,6 @@
         WORDPRESS_ADMIN_URL,
     )}`;
     const WORDPRESS_STATUS_API = "/api/wp-auth-status";
-
-    const navItems: NavItem[] = [
-        { label: "Veranstaltungen", href: "/", match: "exact" },
-        { label: "Kalender", href: "/kalender", match: "prefix" },
-        { label: "News", href: "/blog", match: "prefix" },
-        { label: "Ankündigungen", href: "/ankuendigungen", match: "prefix" },
-        { label: "DJs", href: "/djs", match: "prefix" },
-        { label: "Veranstalter", href: "/veranstalter", match: "prefix" },
-        { label: "Tanzräume", href: "/tanzraeume", match: "prefix" },
-        { label: "Links", href: "/links", match: "prefix" },
-    ];
-
-    const footerLinks = [
-        { label: "Impressum", href: "/impressum" },
-        { label: "Datenschutz", href: "/datenschutz" },
-        { label: "Cookie-Richtlinie", href: "/cookie-richtlinie" },
-        { label: "Einwilligung", href: "/datenschutz#einwilligung" },
-    ];
 
     const wordpressPageLinks: ExternalNavItem[] = [
         {
@@ -150,14 +133,11 @@
     }
 
     function isActive(item: NavItem): boolean {
-        if (item.match === "exact") {
-            return $page.url.pathname === item.href;
-        }
+        return isNavActive($page.url.pathname, item);
+    }
 
-        return (
-            $page.url.pathname === item.href ||
-            $page.url.pathname.startsWith(`${item.href}/`)
-        );
+    function openConsentSettings() {
+        consentStore.openSettings();
     }
 </script>
 
@@ -204,7 +184,7 @@
                 <a
                     href={toHref(item.href)}
                     aria-current={active ? "page" : undefined}
-                    class={`inline-flex min-h-10 items-center rounded-control border-l-4 px-3 py-2 text-[0.95rem] transition-colors ${
+                    class={`inline-flex min-h-12 items-center rounded-control border-l-4 px-3 py-2 text-[0.95rem] transition-colors ${
                         active
                             ? "border-action-primary bg-surface-subtle text-text-default"
                             : "border-transparent text-text-muted hover:bg-action-secondary hover:text-text-default"
@@ -251,13 +231,23 @@
             class="mt-2 flex flex-col gap-1 border-t border-border-default/50 pt-2"
             aria-label="Rechtliches"
         >
-            {#each footerLinks as link (link.href)}
-                <a
-                    href={toHref(link.href)}
-                    class="rounded-control px-2 py-1 text-sm text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
-                >
-                    {link.label}
-                </a>
+            {#each footerLinks as link (link.label)}
+                {#if link.action === "consent"}
+                    <button
+                        type="button"
+                        onclick={openConsentSettings}
+                        class="rounded-control px-2 py-1 text-left text-sm text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
+                    >
+                        {link.label}
+                    </button>
+                {:else}
+                    <a
+                        href={toHref(link.href)}
+                        class="rounded-control px-2 py-1 text-sm text-text-muted transition-colors hover:bg-action-secondary hover:text-text-default"
+                    >
+                        {link.label}
+                    </a>
+                {/if}
             {/each}
         </nav>
     </div>
