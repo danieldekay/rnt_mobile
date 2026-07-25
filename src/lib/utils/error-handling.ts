@@ -11,12 +11,12 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^[+]?[\d\s\-()]+$/;
 const COORDINATE_PATTERN = /^-?\d+(\.\d+)?$/;
 
-function sanitizeString(value: any, maxLength: number = 500): string {
+function sanitizeString(value: unknown, maxLength: number = 500): string {
     if (typeof value !== "string") return "";
     return value.trim().replace(/[<>"']/g, "").substring(0, maxLength);
 }
 
-function sanitizeUrl(value: any, baseUrl?: string): string | null {
+function sanitizeUrl(value: unknown, baseUrl?: string): string | null {
     if (typeof value !== "string" || !value.trim()) return null;
     let url = value.trim();
     if (baseUrl && url.startsWith("/")) url = baseUrl + url;
@@ -24,26 +24,26 @@ function sanitizeUrl(value: any, baseUrl?: string): string | null {
     try { return new URL(url).href; } catch { return null; }
 }
 
-function sanitizeEmail(value: any): string | null {
+function sanitizeEmail(value: unknown): string | null {
     if (typeof value !== "string" || !value.trim()) return null;
     const email = value.trim().toLowerCase();
     return EMAIL_PATTERN.test(email) ? email : null;
 }
 
-function sanitizePhone(value: any): string | null {
+function sanitizePhone(value: unknown): string | null {
     if (typeof value !== "string" || !value.trim()) return null;
     const phone = value.trim();
     return PHONE_PATTERN.test(phone) ? phone.replace(/[^\d+]/g, "") : null;
 }
 
-function sanitizeCoordinate(value: any): number | null {
+function sanitizeCoordinate(value: unknown): number | null {
     if (typeof value !== "number" && typeof value !== "string") return null;
     const coord = typeof value === "string" ? parseFloat(value) : value;
     if (typeof coord !== "number" || !COORDINATE_PATTERN.test(coord.toString())) return null;
     return coord >= -180 && coord <= 180 ? coord : null;
 }
 
-function sanitizeSocialMedia(socialMedia: any): Record<string, string | null> {
+function sanitizeSocialMedia(socialMedia: unknown): Record<string, string | null> {
     if (typeof socialMedia !== "object" || socialMedia === null) return {};
     const result: Record<string, string | null> = {};
     const SOCIAL_MEDIA_PATTERNS: Record<string, RegExp> = {
@@ -54,7 +54,7 @@ function sanitizeSocialMedia(socialMedia: any): Record<string, string | null> {
         spotify: /^https:\/\/(www\.)?spotify\.com\/.+/i,
         soundcloud: /^https:\/\/(www\.)?soundcloud\.com\/.+/i,
     };
-    for (const [platform, url] of Object.entries(socialMedia)) {
+    for (const [platform, url] of Object.entries(socialMedia as Record<string, unknown>)) {
         if (typeof url === "string") {
             const pattern = SOCIAL_MEDIA_PATTERNS[platform as keyof typeof SOCIAL_MEDIA_PATTERNS];
             result[platform] = pattern ? (pattern.test(url) ? url : null) : sanitizeUrl(url);
