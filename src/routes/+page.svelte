@@ -19,6 +19,7 @@
     import type { EventType, MusicType, TribeEvent } from "$lib/types";
     import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
     import "leaflet/dist/leaflet.css";
+    import type * as L from "leaflet";
 
     const eventTypes: EventType[] = ["milonga", "practica", "workshop", "kurs"];
     const musicTypes: MusicType[] = ["traditional", "mixed", "neo"];
@@ -26,9 +27,9 @@
     let showImages = $state(false);
     let showMap = $state(false);
     let mapContainer = $state<HTMLDivElement | null>(null);
-    let map: any = null;
-    let markerLayer: any = null;
-    let leaflet: any = null;
+    let map: L.Map | null = null;
+    let markerLayer: L.FeatureGroup | null = null;
+    let leaflet: typeof L | null = null;
 
     const eventsWithGeo = $derived(
         $eventStore.events.filter((e) => e.venue?.geo_lat && e.venue?.geo_lng),
@@ -195,8 +196,8 @@
         renderMarkers(L);
     }
 
-    function createSingleMarkerIcon(L: any) {
-        return L.divIcon({
+    function createSingleMarkerIcon(leafletObj: typeof L) {
+        return leafletObj.divIcon({
             className: "custom-marker",
             html: `<div style="background: #0ea5e9; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"><svg style="transform: rotate(45deg); width: 14px; height: 14px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>`,
             iconSize: [28, 28],
@@ -205,8 +206,8 @@
         });
     }
 
-    function createGroupMarkerIcon(L: any, count: number) {
-        return L.divIcon({
+    function createGroupMarkerIcon(leafletObj: typeof L, count: number) {
+        return leafletObj.divIcon({
             className: "custom-marker custom-marker--group",
             html: `<div class="map-cluster-marker"><span>${count}</span></div>`,
             iconSize: [36, 36],
@@ -215,7 +216,7 @@
         });
     }
 
-    function renderMarkers(L: any) {
+    function renderMarkers(leafletObj: typeof L) {
         if (!map) {
             return;
         }
@@ -225,15 +226,15 @@
         const markers = groupedEventsWithGeo.map((group) => {
             const icon =
                 group.events.length > 1
-                    ? createGroupMarkerIcon(L, group.events.length)
-                    : createSingleMarkerIcon(L);
+                    ? createGroupMarkerIcon(leafletObj, group.events.length)
+                    : createSingleMarkerIcon(leafletObj);
 
-            return L.marker([group.lat, group.lng], { icon }).bindPopup(
+            return leafletObj.marker([group.lat, group.lng], { icon }).bindPopup(
                 buildPopupContent(group),
             );
         });
 
-        markerLayer = L.featureGroup(markers).addTo(map);
+        markerLayer = leafletObj.featureGroup(markers).addTo(map);
 
         if (markers.length > 0) {
             map.fitBounds(markerLayer.getBounds().pad(0.1), { maxZoom: 13 });
