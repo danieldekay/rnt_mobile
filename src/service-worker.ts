@@ -48,6 +48,12 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 	const { request } = event;
 	const url = new URL(request.url);
 
+	// Never intercept cross-origin requests (OSM tiles, Matomo, fonts, etc.).
+	// Handling them and returning Response.error() breaks map tiles in the PWA.
+	if (url.origin !== self.location.origin) {
+		return;
+	}
+
 	// API requests: network-first with stale-while-revalidate
 	if (url.pathname.startsWith("/api/")) {
 		event.respondWith(networkFirst(request));
