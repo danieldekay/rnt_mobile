@@ -484,6 +484,12 @@ img {
   height: auto;
 }
 
+/* Leaflet tiles set explicit pixel sizes; the global img reset collapses them. */
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+
 ::selection {
   background: rgb(var(--action-highlight) / 0.28);
 }

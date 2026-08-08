@@ -57,7 +57,7 @@
   const widthClass = fullWidth ? 'w-full' : '';
 
   // Handle click
-  const handleClick = (e?: MouseEvent) => {
+  const handleClick = (e: MouseEvent | undefined = undefined) => {
     if (!disabled && !loading) {
       onclick?.(e ?? new MouseEvent('click'));
     }
