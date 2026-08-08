@@ -8,6 +8,19 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.3.2',
+        releasedAt: '2026-08-08',
+        headline: 'Kartenmarker und PWA-Kartenkacheln repariert',
+        summary:
+            'Dieses Patch-Release verbessert die Kartenansicht: OpenStreetMap-Kacheln laden wieder in der installierten App, und Marker bleiben pro Veranstaltungsort getrennt.',
+        highlights: [
+            'Der Service Worker greift nicht mehr in OpenStreetMap-Kacheln ein – die Karte zeigt in Browser und PWA wieder Kacheln.',
+            'Mehrere Termine am selben Ort teilen sich einen Pin; verschiedene Veranstaltungsorte bleiben eigene Marker.',
+            'Die Karte zoomt naeher heran, damit nahe beieinander liegende Orte nicht wie zusammengefasst wirken.',
+            'Statt grosser Nummern-Bubble gibt es einen normalen Pin mit kleinem Zaehler fuer mehrere Events am Ort.'
+        ]
+    },
+    {
         version: '0.3.1',
         releasedAt: '2026-08-08',
         headline: 'Kartenkacheln wieder sichtbar und Abhaengigkeiten aktualisiert',
