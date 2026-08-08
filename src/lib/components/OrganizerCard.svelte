@@ -1,3 +1,4 @@
+
 <!--
   OrganizerCard component using design tokens and enhanced organizer data
   
@@ -18,6 +19,7 @@
     import Text from "./Text.svelte";
     import Badge from "./Badge.svelte";
     import Button from "./Button.svelte";
+    import EntityFavoriteControl from "./EntityFavoriteControl.svelte";
     import { resolve } from "$app/paths";
     import type {
         EnhancedOrganizer,
@@ -210,22 +212,25 @@
 
         <!-- Name and badges -->
         <div class="organizer-header">
-            <Heading
-                level={3}
-                size="base"
-                weight="semibold"
-                id="organizer-name"
-            >
-                <a
-                    href={organizer.slug
-                        ? resolve(`/veranstalter/${organizer.slug}`)
-                        : undefined}
-                    data-sveltekit-preload-data="hover"
-                    class="transition-colors hover:text-action-primary"
+            <div class="flex items-start justify-between gap-2">
+                <Heading
+                    level={3}
+                    size="base"
+                    weight="semibold"
+                    id="organizer-name"
                 >
-                    {organizer.organizer}
-                </a>
-            </Heading>
+                    <a
+                        href={organizer.slug
+                            ? resolve(`/veranstalter/${organizer.slug}`)
+                            : undefined}
+                        data-sveltekit-preload-data="hover"
+                        class="transition-colors hover:text-action-primary"
+                    >
+                        {organizer.organizer}
+                    </a>
+                </Heading>
+                <EntityFavoriteControl kind="organizer" id={organizer.id} size="sm" />
+            </div>
             {#if organizer.details?.organizationType}
                 <Badge variant="muted" size="sm">
                     {organizer.details.organizationType}

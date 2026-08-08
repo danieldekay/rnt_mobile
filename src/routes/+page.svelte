@@ -16,6 +16,7 @@
     import FilterChip from "$lib/components/FilterChip.svelte";
     import MusicFilterChip from "$lib/components/MusicFilterChip.svelte";
     import DateFilter from "$lib/components/DateFilter.svelte";
+    import FavoritesFilterChip from "$lib/components/FavoritesFilterChip.svelte";
     import type { EventType, MusicType, TribeEvent } from "$lib/types";
     import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
     import "leaflet/dist/leaflet.css";
@@ -45,6 +46,7 @@
     const hasActiveFilters = $derived(
         $eventStore.filters.types.length > 0 ||
             $eventStore.filters.music !== null ||
+            $eventStore.filters.favoritesOnly ||
             $eventStore.searchQuery.trim().length > 0,
     );
     const nextPeriodLabel = $derived(
@@ -300,9 +302,17 @@
     }
 
     function resetFilters() {
-        eventStore.setFilters({ types: [], music: null });
+        eventStore.setFilters({ types: [], music: null, favoritesOnly: false });
         eventStore.clearSearch();
         trackFeatureEvent("home", "filter_reset");
+    }
+
+    function handleFavoritesToggle() {
+        eventStore.toggleFavoritesOnly();
+        trackFeatureEvent(
+            "home",
+            $eventStore.filters.favoritesOnly ? "favorites_on" : "favorites_off",
+        );
     }
 </script>
 
@@ -492,6 +502,10 @@
                 </button>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
+                <FavoritesFilterChip
+                    active={$eventStore.filters.favoritesOnly}
+                    onclick={handleFavoritesToggle}
+                />
                 {#each musicTypes as music (music)}
                     <MusicFilterChip
                         {music}

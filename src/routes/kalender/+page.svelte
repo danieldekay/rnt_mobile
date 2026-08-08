@@ -1,3 +1,4 @@
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { eventStore } from '$lib/stores/events.svelte';
@@ -5,6 +6,7 @@
 	import DateSelector from '$lib/components/DateSelector.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import CalendarEventFilters from '$lib/components/CalendarEventFilters.svelte';
+	import FavoritesFilterChip from '$lib/components/FavoritesFilterChip.svelte';
 	import type { EventType, MusicType, TribeEvent } from '$lib/types';
 	import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from '$lib/constants';
 	import { trackFeatureEvent } from '$lib/matomo';
@@ -77,6 +79,14 @@
 		eventStore.toggleMusic(music);
 	}
 
+	function handleFavoritesToggle() {
+		eventStore.toggleFavoritesOnly();
+		trackFeatureEvent(
+			'calendar',
+			$eventStore.filters.favoritesOnly ? 'favorites_on' : 'favorites_off',
+		);
+	}
+
 	async function handleRetry() {
 		await eventStore.loadCalendarMonth(currentMonth, true);
 	}
@@ -103,6 +113,12 @@
 	</a>
 
 	<section class="lg:hidden" aria-labelledby="calendar-filters-heading-mobile">
+		<div class="mb-3">
+			<FavoritesFilterChip
+				active={$eventStore.filters.favoritesOnly}
+				onclick={handleFavoritesToggle}
+			/>
+		</div>
 		<CalendarEventFilters
 			{eventTypes}
 			{musicTypes}
@@ -184,6 +200,12 @@
 				aria-labelledby="calendar-filters-heading"
 				tabindex="-1"
 			>
+				<div class="mb-3">
+					<FavoritesFilterChip
+						active={$eventStore.filters.favoritesOnly}
+						onclick={handleFavoritesToggle}
+					/>
+				</div>
 				<CalendarEventFilters
 					{eventTypes}
 					{musicTypes}

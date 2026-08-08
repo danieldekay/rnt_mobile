@@ -1,3 +1,4 @@
+
 <script lang="ts">
     import { resolve } from "$app/paths";
     import type { PageProps } from "./$types";
@@ -25,6 +26,7 @@
         getEventTypeLabel,
     } from "$lib/utils/event-presentation";
     import EventActions from "$lib/components/EventActions.svelte";
+    import EventFavoriteControl from "$lib/components/EventFavoriteControl.svelte";
     import EventSidebar from "$lib/components/EventSidebar.svelte";
     import EventQuickInfo from "$lib/components/EventQuickInfo.svelte";
     import EventMap from "$lib/components/EventMap.svelte";
@@ -281,11 +283,14 @@
                                 </span>
                             {/if}
                         </div>
-                        <h1
-                            class="font-display text-[2rem] font-semibold leading-tight text-text-default"
-                        >
-                            {event.title}
-                        </h1>
+                        <div class="flex items-start justify-between gap-3">
+                            <h1
+                                class="font-display text-[2rem] font-semibold leading-tight text-text-default"
+                            >
+                                {event.title}
+                            </h1>
+                            <EventFavoriteControl {event} />
+                        </div>
                         <p class="meta-text max-w-[40ch]">
                             Zeit, Ort und Zugang zuerst. Weitere Details folgen
                             darunter in klar getrennten Abschnitten.

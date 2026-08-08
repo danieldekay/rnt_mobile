@@ -1,3 +1,4 @@
+
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { format, parseISO } from 'date-fns';
@@ -8,6 +9,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import Heading from '$lib/components/Heading.svelte';
 	import Text from '$lib/components/Text.svelte';
+	import EventFavoriteControl from '$lib/components/EventFavoriteControl.svelte';
 
 	interface Props {
 		event: TribeEvent;
@@ -37,10 +39,14 @@
 
 </script>
 
-<a
-	href={resolve(`/event/${event.id}`)}
-	class="group block overflow-hidden transition-all duration-200 hover:border-border-accent hover:shadow-card-hover"
->
+<div class="group relative block overflow-hidden transition-all duration-200 hover:border-border-accent hover:shadow-card-hover">
+	<div class="absolute right-3 top-3 z-10">
+		<EventFavoriteControl {event} size="sm" />
+	</div>
+	<a
+		href={resolve(`/event/${event.id}`)}
+		class="block"
+	>
 	<Card variant="outlined" shadow="md" padding="md" radius="lg" responsive={true}>
 		<div class="flex items-start gap-4">
 			<!-- Date Badge & Format Badges -->
@@ -151,4 +157,5 @@
 			</div>
 		</div>
 	</Card>
-</a>
+	</a>
+</div>

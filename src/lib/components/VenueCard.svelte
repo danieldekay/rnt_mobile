@@ -1,6 +1,8 @@
+
 <script lang="ts">
     import Card from "./Card.svelte";
     import Badge from "./Badge.svelte";
+    import EntityFavoriteControl from "./EntityFavoriteControl.svelte";
     import { resolve } from "$app/paths";
     import type { EnhancedVenue, VenueNextEventSummary } from "$lib/types";
 
@@ -34,15 +36,18 @@
     <div class="venue-info">
         <!-- Name and City -->
         <div class="venue-header">
-            <h2 class="venue-name">
-                <a
-                    href={resolve(`/?venue=${venue.id}`)}
-                    data-sveltekit-preload-data="hover"
-                    class="transition-colors hover:text-action-primary"
-                >
-                    {venue.venue}
-                </a>
-            </h2>
+            <div class="flex items-start justify-between gap-2">
+                <h2 class="venue-name">
+                    <a
+                        href={resolve(`/?venue=${venue.id}`)}
+                        data-sveltekit-preload-data="hover"
+                        class="transition-colors hover:text-action-primary"
+                    >
+                        {venue.venue}
+                    </a>
+                </h2>
+                <EntityFavoriteControl kind="venue" id={venue.id} size="sm" />
+            </div>
             <div class="venue-badges">
                 {#if venue.city}
                     <Badge variant="muted" size="sm">{venue.city}</Badge>

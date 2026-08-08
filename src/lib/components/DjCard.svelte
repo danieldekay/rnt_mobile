@@ -1,3 +1,4 @@
+
 <script lang="ts">
     import { resolve } from "$app/paths";
     import type { DjProfileSummary } from "$lib/types";
@@ -10,6 +11,7 @@
         getUpcomingCount,
     } from "$lib/utils/dj-presentation";
     import { MUSIC_TYPE_NAMES, MUSIC_TYPE_BADGE_CLASSES } from "$lib/constants";
+    import EntityFavoriteControl from "$lib/components/EntityFavoriteControl.svelte";
     import type { MusicType } from "$lib/types";
 
     let {
@@ -62,17 +64,20 @@
         </div>
 
         <div class="flex-1 min-w-0">
-            <h2
-                class="text-lg font-bold leading-tight text-text-default truncate"
-            >
-                <a
-                    href={resolve(`/djs/${dj.slug}`)}
-                    data-sveltekit-preload-data="hover"
-                    class="transition-colors hover:text-action-primary"
+            <div class="flex items-start justify-between gap-2">
+                <h2
+                    class="text-lg font-bold leading-tight text-text-default truncate"
                 >
-                    {dj.name}
-                </a>
-            </h2>
+                    <a
+                        href={resolve(`/djs/${dj.slug}`)}
+                        data-sveltekit-preload-data="hover"
+                        class="transition-colors hover:text-action-primary"
+                    >
+                        {dj.name}
+                    </a>
+                </h2>
+                <EntityFavoriteControl kind="dj" id={dj.slug} size="sm" />
+            </div>
         </div>
     </div>
 

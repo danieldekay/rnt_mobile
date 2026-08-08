@@ -1,3 +1,4 @@
+
 import {
     fetchAllEvents,
     getContinuationDateRange,
@@ -9,6 +10,8 @@ import {
 import { trackFeatureEvent } from "$lib/matomo";
 import { writable } from "svelte/store";
 import { getEventType, getMusicType } from "$lib/utils/event-presentation";
+import { favoritesStore } from "$lib/stores/favorites.svelte";
+import { matchesFavoriteEvent } from "$lib/utils/favorites";
 import type {
     TribeEvent,
     EventType,
@@ -51,6 +54,7 @@ class EventStore {
         types: [] as EventType[],
         music: null as MusicType | null,
         date: "week" as DateFilter,
+        favoritesOnly: false,
     });
     // Cache tracking (not reactive to consumers)
     lastFetchedDate: DateFilter | null = null;
@@ -128,6 +132,13 @@ class EventStore {
         const query = this.searchQuery.toLowerCase();
         return this.allEvents.filter((event) => {
             if (!this.matchesCategoryFilters(event)) {
+                return false;
+            }
+
+            if (
+                this.filters.favoritesOnly &&
+                !matchesFavoriteEvent(event, favoritesStore.snapshot)
+            ) {
                 return false;
             }
 
@@ -268,6 +279,17 @@ class EventStore {
         }
     }
 
+    toggleFavoritesOnly() {
+        this.filters.favoritesOnly = !this.filters.favoritesOnly;
+        this.events = this.applyFilters();
+        this.notify();
+    }
+
+    refreshFilters() {
+        this.events = this.applyFilters();
+        this.notify();
+    }
+
     setFilters(newFilters: Partial<Filters>) {
         Object.assign(this.filters, newFilters);
         this.events = this.applyFilters();
@@ -381,7 +403,7 @@ const store = writable<EventStoreData>({
     appendError: null,
     canLoadMore: false,
     searchQuery: "",
-    filters: { types: [], music: null, date: "week" },
+    filters: { types: [], music: null, date: "week", favoritesOnly: false },
 });
 
 export const eventStore = new EventStore();

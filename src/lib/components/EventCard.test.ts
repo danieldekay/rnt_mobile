@@ -10,6 +10,21 @@ vi.mock('$app/paths', () => ({
 	resolve: (path: string) => path
 }));
 
+vi.mock('$lib/stores/favorites.svelte', () => ({
+	favoritesStore: {
+		getEventState: () => ({ isFavorite: false, isSingle: false, isSeries: false }),
+		addEventSingle: vi.fn(),
+		addEventSeries: vi.fn(),
+		removeEvent: vi.fn()
+	}
+}));
+
+vi.mock('$lib/stores/events.svelte', () => ({
+	eventStore: {
+		refreshFilters: vi.fn()
+	}
+}));
+
 function createEvent(overrides: Partial<TribeEvent> = {}): TribeEvent {
 	return {
 		id: 133680,

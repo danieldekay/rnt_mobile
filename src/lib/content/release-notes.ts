@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.4.0',
+        releasedAt: '2026-08-08',
+        headline: 'Favoriten fuer Veranstaltungen, Veranstalter, Tanzraeume und DJs',
+        summary:
+            'Du kannst jetzt Lieblings-Milongas, Veranstalter, Tanzraeume und DJs speichern und kommende Termine dazu auf einen Blick sehen – auch nach einem Neuladen der App.',
+        highlights: [
+            'Stern-Symbol auf Event-Karten, Veranstalter-, Tanzraum- und DJ-Profilen: ein Tipp zum Speichern oder Entfernen.',
+            'Bei wiederkehrenden Veranstaltungen waehlst du „Nur diesen Termin“ oder „Alle Termine dieser Reihe“.',
+            'Neuer Bereich Favoriten in der Navigation mit kommenden Terminen zu deiner Auswahl.',
+            'Filter-Chip Favoriten auf Startseite und Kalender zeigt nur passende Events in der Liste.',
+            'Deine Favoriten bleiben auf dem Geraet gespeichert und ueberstehen App-Updates.'
+        ]
+    },
+    {
         version: '0.3.2',
         releasedAt: '2026-08-08',
         headline: 'Kartenmarker und PWA-Kartenkacheln repariert',

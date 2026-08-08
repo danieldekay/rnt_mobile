@@ -1,3 +1,4 @@
+
 export interface TribeEvent {
   id: number;
   title: string;
@@ -185,6 +186,7 @@ export interface Filters {
   types: EventType[];
   music: MusicType | null;
   date: DateFilter;
+  favoritesOnly: boolean;
 }
 
 export type DateFilterCounts = Record<EntityDateFilter, number>;

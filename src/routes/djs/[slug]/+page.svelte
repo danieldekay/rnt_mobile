@@ -1,3 +1,4 @@
+
 <script lang="ts">
     import { resolve } from "$app/paths";
     import EventCard from "$lib/components/EventCard.svelte";
@@ -9,6 +10,7 @@
         DjMetaBox,
     } from "$lib/types";
     import type { PageProps } from "./$types";
+    import EntityFavoriteControl from "$lib/components/EntityFavoriteControl.svelte";
 
     function stripHtmlToPlainText(value: string | null | undefined): string {
         if (!value) return "";
@@ -135,17 +137,22 @@
                 </div>
             {/if}
 
-            <div class="min-w-0 space-y-2">
-                <p
-                    class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted"
-                >
-                    DJ Profil
-                </p>
-                <h1
-                    class="font-display text-[2rem] font-semibold leading-tight text-text-default"
-                >
-                    {dj.name}
-                </h1>
+            <div class="min-w-0 flex-1 space-y-2">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 space-y-2">
+                        <p
+                            class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted"
+                        >
+                            DJ Profil
+                        </p>
+                        <h1
+                            class="font-display text-[2rem] font-semibold leading-tight text-text-default"
+                        >
+                            {dj.name}
+                        </h1>
+                    </div>
+                    <EntityFavoriteControl kind="dj" id={dj.slug} />
+                </div>
                 {#if city}
                     <p class="text-[0.875rem] text-text-muted">{city}</p>
                 {/if}
