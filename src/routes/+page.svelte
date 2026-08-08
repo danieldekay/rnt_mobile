@@ -122,7 +122,11 @@
                 continue;
             }
 
-            const key = `${event.venue.geo_lat}:${event.venue.geo_lng}`;
+            // One marker per venue: merge events at the same place, never by proximity.
+            const key =
+                event.venue.id != null
+                    ? `venue:${event.venue.id}`
+                    : `coord:${event.venue.geo_lat.toFixed(5)}:${event.venue.geo_lng.toFixed(5)}`;
             const existing = groups[key];
 
             if (existing) {
@@ -196,23 +200,18 @@
         renderMarkers(L);
     }
 
-    function createSingleMarkerIcon(leafletObj: typeof L) {
+    function createVenueMarkerIcon(leafletObj: typeof L, eventCount: number) {
+        const countBadge =
+            eventCount > 1
+                ? `<span class="map-venue-marker__count" aria-hidden="true">${eventCount}</span>`
+                : "";
+
         return leafletObj.divIcon({
             className: "custom-marker",
-            html: `<div style="background: #0ea5e9; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"><svg style="transform: rotate(45deg); width: 14px; height: 14px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>`,
+            html: `<div class="map-venue-marker"><div class="map-venue-marker__pin"><svg class="map-venue-marker__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>${countBadge}</div>`,
             iconSize: [28, 28],
             iconAnchor: [14, 28],
             popupAnchor: [0, -24],
-        });
-    }
-
-    function createGroupMarkerIcon(leafletObj: typeof L, count: number) {
-        return leafletObj.divIcon({
-            className: "custom-marker custom-marker--group",
-            html: `<div class="map-cluster-marker"><span>${count}</span></div>`,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-            popupAnchor: [0, -18],
         });
     }
 
@@ -224,10 +223,10 @@
         markerLayer?.remove();
 
         const markers = groupedEventsWithGeo.map((group) => {
-            const icon =
-                group.events.length > 1
-                    ? createGroupMarkerIcon(leafletObj, group.events.length)
-                    : createSingleMarkerIcon(leafletObj);
+            const icon = createVenueMarkerIcon(
+                leafletObj,
+                group.events.length,
+            );
 
             return leafletObj.marker([group.lat, group.lng], { icon }).bindPopup(
                 buildPopupContent(group),
@@ -237,7 +236,8 @@
         markerLayer = leafletObj.featureGroup(markers).addTo(map);
 
         if (markers.length > 0) {
-            map.fitBounds(markerLayer.getBounds().pad(0.1), { maxZoom: 13 });
+            // Zoom in far enough that nearby venues stay visually separate.
+            map.fitBounds(markerLayer.getBounds().pad(0.08), { maxZoom: 15 });
         }
     }
 
@@ -648,19 +648,54 @@
 </div>
 
 <style>
-    :global(.map-cluster-marker) {
+    :global(.custom-marker) {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    :global(.map-venue-marker) {
+        position: relative;
+        width: 28px;
+        height: 28px;
+    }
+
+    :global(.map-venue-marker__pin) {
         display: flex;
-        height: 36px;
-        width: 36px;
+        width: 28px;
+        height: 28px;
         align-items: center;
         justify-content: center;
-        border: 2px solid rgba(255, 255, 255, 0.95);
+        border-radius: 50% 50% 50% 0;
+        background: #0ea5e9;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        color: #fff;
+        transform: rotate(-45deg);
+    }
+
+    :global(.map-venue-marker__icon) {
+        width: 14px;
+        height: 14px;
+        transform: rotate(45deg);
+    }
+
+    :global(.map-venue-marker__count) {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        z-index: 1;
+        display: flex;
+        min-width: 18px;
+        height: 18px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        border: 2px solid #fff;
         border-radius: 999px;
         background: #0f766e;
-        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
         color: #fff;
-        font-size: 0.875rem;
+        font-size: 0.6875rem;
         font-weight: 700;
+        line-height: 1;
     }
 
     :global(.map-popup) {
