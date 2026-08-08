@@ -8,6 +8,19 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.3.1',
+        releasedAt: '2026-08-08',
+        headline: 'Kartenkacheln wieder sichtbar und Abhaengigkeiten aktualisiert',
+        summary:
+            'Dieses Patch-Release stellt die OpenStreetMap-Kacheln wieder her und bringt aktuelle Bibliotheken sowie GitHub-Actions-Versionen mit.',
+        highlights: [
+            'Die Kartenansicht zeigt OpenStreetMap-Kacheln wieder korrekt an (Fix fuer die globale Bild-CSS-Regel).',
+            'Abhaengigkeiten wie Svelte, SvelteKit, Vite, Vitest, date-fns und DOMPurify wurden aktualisiert.',
+            'CI und Deploy nutzen jetzt actions/checkout und setup-node in Version 7.',
+            'Kleine Anpassungen an Button und Badge halten den Vite-8-Build stabil.'
+        ]
+    },
+    {
         version: '0.3.0',
         releasedAt: '2026-07-23',
         headline: 'Einheitlichere Navigation und Bedienung',
