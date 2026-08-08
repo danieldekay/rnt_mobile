@@ -61,7 +61,7 @@
     }
   };
 
-  const dispatch = (name: string, detail?: any) => {
+  const dispatch = (name: string, detail: unknown = undefined) => {
     const event = new CustomEvent(name, {
       bubbles: true,
       composed: true,
