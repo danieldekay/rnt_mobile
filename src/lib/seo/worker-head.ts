@@ -26,8 +26,11 @@ type FetchLike = typeof fetch;
 
 export function isHtmlDocumentRequest(request: Request): boolean {
 	if (request.method !== "GET") return false;
-	const accept = request.headers.get("accept") ?? "";
-	return accept.includes("text/html");
+	const accept = request.headers.get("accept") ?? "*/*";
+	if (accept.includes("application/json") && !accept.includes("text/html")) {
+		return false;
+	}
+	return true;
 }
 
 export function shouldInjectHead(pathname: string): boolean {
@@ -40,10 +43,16 @@ export function shouldInjectHead(pathname: string): boolean {
 	return true;
 }
 
+export type WorkerSeoSources = {
+	tribeEventsBaseUrl: string;
+	tribeVenuesBaseUrl: string;
+	tribeOrganizersBaseUrl: string;
+};
+
 export async function resolveSeoForPath(
 	pathname: string,
 	fetcher: FetchLike,
-	origin: string,
+	sources: WorkerSeoSources,
 ): Promise<{ seo: SeoMetadata | null; status?: number }> {
 	const hubKey = HUB_PATHS[pathname];
 	if (hubKey) {
@@ -53,7 +62,9 @@ export async function resolveSeoForPath(
 	const eventMatch = pathname.match(/^\/event\/(\d+)$/);
 	if (eventMatch) {
 		const eventId = Number.parseInt(eventMatch[1], 10);
-		const response = await fetcher(`${origin}/api/events/${eventId}`);
+		const response = await fetcher(`${sources.tribeEventsBaseUrl}/${eventId}`, {
+			headers: { accept: "application/json" },
+		});
 		if (response.status === 404) {
 			return { seo: mapHubPageSeo("error"), status: 404 };
 		}
@@ -65,7 +76,9 @@ export async function resolveSeoForPath(
 	const organizerMatch = pathname.match(/^\/veranstalter\/([^/]+)$/);
 	if (organizerMatch) {
 		const slug = decodeURIComponent(organizerMatch[1]);
-		const response = await fetcher(`${origin}/api/organizers`);
+		const response = await fetcher(sources.tribeOrganizersBaseUrl, {
+			headers: { accept: "application/json" },
+		});
 		if (!response.ok) return { seo: null };
 		const data = (await response.json()) as { organizers?: TribeOrganizer[] };
 		const organizer = data.organizers?.find((entry) => entry.slug === slug);
@@ -76,7 +89,9 @@ export async function resolveSeoForPath(
 	const venueMatch = pathname.match(/^\/tanzraeume\/([^/]+)$/);
 	if (venueMatch) {
 		const slug = decodeURIComponent(venueMatch[1]);
-		const response = await fetcher(`${origin}/api/venues`);
+		const response = await fetcher(sources.tribeVenuesBaseUrl, {
+			headers: { accept: "application/json" },
+		});
 		if (!response.ok) return { seo: null };
 		const data = (await response.json()) as { venues?: TribeVenue[] };
 		const venue = data.venues?.find((entry) => entry.slug === slug);

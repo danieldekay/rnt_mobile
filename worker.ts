@@ -1106,11 +1106,19 @@ async function handleDocumentWithSeo(
     env: Env,
 ): Promise<Response> {
     const url = new URL(request.url);
-    const { seo, status } = await resolveSeoForPath(
-        url.pathname,
-        fetch,
-        MOBILE_ORIGIN,
-    );
+    let seoResult: Awaited<ReturnType<typeof resolveSeoForPath>>;
+
+    try {
+        seoResult = await resolveSeoForPath(url.pathname, fetch, {
+            tribeEventsBaseUrl: TRIBE_EVENTS_BASE_URL,
+            tribeVenuesBaseUrl: TRIBE_VENUES_BASE_URL,
+            tribeOrganizersBaseUrl: TRIBE_ORGANIZERS_BASE_URL,
+        });
+    } catch {
+        return env.ASSETS.fetch(request);
+    }
+
+    const { seo, status } = seoResult;
 
     if (!seo) {
         return new Response("Nicht gefunden", {
