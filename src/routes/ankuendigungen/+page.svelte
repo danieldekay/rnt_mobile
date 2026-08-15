@@ -8,6 +8,10 @@
     import { fetchAnnouncements } from "$lib/api/posts";
     import type { BlogPost } from "$lib/types";
     import type { PageProps } from "./$types";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { mapHubPageSeo } from "$lib/seo/pages";
+
+    const seo = mapHubPageSeo("ankuendigungen");
 
     type AnnouncementPost = BlogPost & {
         meta?: {
@@ -232,9 +236,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>Ankündigungen - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="page-stack">
     <div class="page-stack">

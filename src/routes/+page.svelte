@@ -21,6 +21,10 @@
     import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
     import "leaflet/dist/leaflet.css";
     import type * as L from "leaflet";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { mapHubPageSeo } from "$lib/seo/pages";
+
+    const seo = mapHubPageSeo("home");
 
     const eventTypes: EventType[] = ["milonga", "practica", "workshop", "kurs"];
     const musicTypes: MusicType[] = ["traditional", "mixed", "neo"];
@@ -316,9 +320,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>RNT Kalender - Tango Events</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="page-stack">
     <section class="space-y-2">

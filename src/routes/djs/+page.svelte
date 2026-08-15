@@ -13,6 +13,10 @@
         EntityDateFilter,
     } from "$lib/types";
     import type { PageProps } from "./$types";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { mapHubPageSeo } from "$lib/seo/pages";
+
+    const seo = mapHubPageSeo("djs");
 
     type StyleOption = {
         id: DjStyleKey;
@@ -109,9 +113,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>DJs - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="page-stack">
     <div class="page-stack">

@@ -9,6 +9,10 @@
 		type EntityDateFilter
 	} from '$lib/utils/date-filters';
 	import type { PageProps } from './$types';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapHubPageSeo } from '$lib/seo/pages';
+
+	const seo = mapHubPageSeo('tanzraeume');
 	import type { EnhancedVenue } from '$lib/types';
 	import {
 		normalizeCity,
@@ -148,9 +152,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Tanzräume - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 {#snippet filterToolbar()}
 	<section class="card space-y-4 p-4">

@@ -4,6 +4,7 @@
     let {
         event,
         formattedDate,
+        isoStartDate,
         startTime,
         endTime,
         eventTypeLabel,
@@ -13,12 +14,14 @@
         primaryOrganizer,
         dj,
         venueLink,
+        venueProfileLink = "",
         organizerProfileLink,
         organizerWebsiteLink,
         djProfileLink,
     }: {
         event: TribeEvent;
         formattedDate: string;
+        isoStartDate: string;
         startTime: string;
         endTime: string;
         eventTypeLabel: string | null;
@@ -28,6 +31,7 @@
         primaryOrganizer: Organizer | null;
         dj: string | null;
         venueLink: string;
+        venueProfileLink?: string;
         organizerProfileLink: string;
         organizerWebsiteLink: string;
         djProfileLink: string;
@@ -60,7 +64,7 @@
             <div>
                 <p class="meta-text">Datum und Zeit</p>
                 <p class="mt-1 text-[1rem] font-semibold text-text-default">
-                    {formattedDate}
+                    <time datetime={isoStartDate}>{formattedDate}</time>
                 </p>
                 <p class="meta-text mt-1">
                     {#if event.all_day}
@@ -74,7 +78,15 @@
             {#if event.venue}
                 <div>
                     <p class="meta-text">Ort</p>
-                    {#if venueLink}
+                    {#if venueProfileLink}
+                        <a
+                            href={venueProfileLink}
+                            data-sveltekit-preload-data="hover"
+                            class="mt-1 inline-flex items-center gap-2 text-[1rem] font-semibold text-text-link underline underline-offset-4"
+                        >
+                            {event.venue.venue}
+                        </a>
+                    {:else if venueLink}
                         <a
                             href={venueLink}
                             target="_blank"

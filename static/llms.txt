@@ -17,8 +17,8 @@
 - /event/{id} — single event details
 - /veranstalter — event organizers
 - /veranstalter/{slug} — organizer profiles
-- /tanzraeume — dance venues
-- /djs — DJ profiles
+- /tanzraeume/{slug} — venue profiles
+- /djs/{slug} — DJ profiles
 - /links — curated links
 - /newsletter — newsletter signup
 
@@ -31,9 +31,10 @@
 ## Crawl rules
 
 - Prefer semantic HTML: article, main, header, section
-- Blog and announcement articles include JSON-LD schema from WordPress Yoast SEO
-- Event data is sourced from WordPress (The Events Calendar / Tribe Events API)
-- Canonical URLs for articles point to the primary WordPress site (www.rhein-neckar-tango.de)
+- Event pages include Event JSON-LD (from Tribe API) with mobile canonical URLs
+- SPA routes receive title, canonical, Open Graph, and JSON-LD in the first HTML via Cloudflare Worker injection
+- Canonical URLs for blog/announcement articles point to the primary WordPress site (www.rhein-neckar-tango.de)
+- Event canonical URLs use mobile.rhein-neckar-tango.de/event/{id}
 
 ## Sitemap
 

@@ -10,6 +10,10 @@
 	import type { EventType, MusicType, TribeEvent } from '$lib/types';
 	import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from '$lib/constants';
 	import { trackFeatureEvent } from '$lib/matomo';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapHubPageSeo } from '$lib/seo/pages';
+
+	const seo = mapHubPageSeo('kalender');
 
 	const eventTypes: EventType[] = ['milonga', 'practica', 'workshop', 'kurs'];
 	const musicTypes: MusicType[] = ['traditional', 'mixed', 'neo'];
@@ -94,9 +98,7 @@
 	const eventsForSelectedDate = $derived(selectedDate ? getEventsForDate(selectedDate) : []);
 </script>
 
-<svelte:head>
-	<title>RNT Kalender - Monatsansicht</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="page-stack">
 	<section class="space-y-3">

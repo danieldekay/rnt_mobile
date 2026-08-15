@@ -26,6 +26,7 @@ type RawTribeOrganizer = {
 	phone?: string | null;
 	description?: string | null;
 	image?: EventImage;
+	json_ld?: Record<string, unknown>;
 };
 
 type OrganizersResponse = {
@@ -53,6 +54,7 @@ export function normalizeOrganizer(
 		phone: normalizeText(organizer.phone),
 		description: normalizeHtml(organizer.description),
 		image: normalizeEventImage(organizer.image ?? false),
+		json_ld: organizer.json_ld,
 	};
 }
 

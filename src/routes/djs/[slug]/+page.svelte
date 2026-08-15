@@ -11,6 +11,8 @@
     } from "$lib/types";
     import type { PageProps } from "./$types";
     import EntityFavoriteControl from "$lib/components/EntityFavoriteControl.svelte";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { mapDjDetailSeo } from "$lib/seo/from-entity";
 
     function stripHtmlToPlainText(value: string | null | undefined): string {
         if (!value) return "";
@@ -105,11 +107,10 @@
             ? combined.slice(0, 297) + "..."
             : combined;
     });
+    const seo = $derived(mapDjDetailSeo(dj.name, dj.slug, dj.upcomingCount));
 </script>
 
-<svelte:head>
-    <title>{pageTitle} - DJs - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="space-y-6">
     <a

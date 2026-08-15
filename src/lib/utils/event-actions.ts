@@ -2,6 +2,7 @@ import { parseISO } from "date-fns";
 import he from "he";
 
 import type { TribeEvent } from "$lib/types";
+import { MOBILE_ORIGIN } from "$lib/seo/sitemap";
 
 type ShareData = {
 	title: string;
@@ -97,7 +98,7 @@ export function getEventShareData(event: TribeEvent): ShareData {
 	return {
 		title: event.title,
 		text: `${event.title} · ${parts.join(" · ")}`,
-		url: event.url,
+		url: `${MOBILE_ORIGIN}/event/${event.id}`,
 	};
 }
 

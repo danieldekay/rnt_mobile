@@ -2,6 +2,10 @@
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { trackError } from '$lib/matomo';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapHubPageSeo } from '$lib/seo/pages';
+
+	const seo = mapHubPageSeo('error');
 
 	let { error, status } = $props<{ error: Error & { message?: string }; status: number }>();
 
@@ -13,9 +17,7 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{status} - Fehler - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <section class="card space-y-4 p-5" role="alert">
 	<p class="font-display text-[1.5rem] font-semibold text-text-default">Ein Fehler ist aufgetreten</p>

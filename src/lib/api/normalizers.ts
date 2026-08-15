@@ -126,17 +126,23 @@ export function normalizeEvent(event: TribeEvent): TribeEvent {
 		description,
 		image: normalizeEventImage(event.image),
 		cost: normalizeText(event.cost),
+		json_ld: event.json_ld,
 		venue: event.venue
 			? {
 					...event.venue,
 					venue: normalizeText(event.venue.venue),
+					slug: event.venue.slug
+						? normalizeText(event.venue.slug)
+						: undefined,
 					address: normalizeText(event.venue.address),
 					city: normalizeText(event.venue.city),
+					json_ld: event.venue.json_ld,
 				}
 			: event.venue,
 		organizer: event.organizer?.map((organizer) => ({
 			...organizer,
 			organizer: normalizeText(organizer.organizer),
+			json_ld: organizer.json_ld,
 		})),
 		categories: event.categories?.map((category) => ({
 			...category,

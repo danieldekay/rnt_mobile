@@ -1,13 +1,7 @@
 import he from "he";
 import type { BlogPost, YoastHeadJson } from "$lib/types";
 
-export type WordPressSeoMeta = {
-	title: string;
-	description: string | null;
-	canonical: string | null;
-	robots: string | null;
-	jsonLdScript: string | null;
-};
+import { DEFAULT_ROBOTS, type SeoMetadata } from "./metadata";
 
 function stripHtml(value: string): string {
 	return value
@@ -20,27 +14,26 @@ function toPlainText(value: string): string {
 	return stripHtml(he.decode(value));
 }
 
-function formatRobotsDirective(robots: YoastHeadJson["robots"]): string | null {
-	if (!robots) return null;
+function formatRobotsDirective(robots: YoastHeadJson["robots"]): string {
+	if (!robots) return DEFAULT_ROBOTS;
 
 	const parts = Object.values(robots).filter(
 		(part): part is string => typeof part === "string" && part.length > 0,
 	);
 
-	return parts.length > 0 ? parts.join(", ") : null;
+	return parts.length > 0 ? parts.join(", ") : DEFAULT_ROBOTS;
 }
 
-function buildJsonLdScript(schema: YoastHeadJson["schema"]): string | null {
-	if (!schema || typeof schema !== "object") return null;
+function getDescriptionFromPost(post: BlogPost, yoast?: YoastHeadJson): string {
+	const yoastDescription = yoast?.description?.trim();
+	if (yoastDescription) {
+		return toPlainText(yoastDescription).slice(0, 160);
+	}
 
-	return `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
-}
-
-function getDescriptionFromPost(post: BlogPost): string | null {
 	const excerpt = post.excerpt?.rendered?.trim();
 	if (excerpt) {
 		const plain = toPlainText(excerpt);
-		if (plain) return plain;
+		if (plain) return plain.slice(0, 160);
 	}
 
 	const content = post.content?.rendered?.trim();
@@ -49,13 +42,21 @@ function getDescriptionFromPost(post: BlogPost): string | null {
 		if (plain) return plain.slice(0, 160);
 	}
 
-	return null;
+	return "";
+}
+
+function getOgImage(yoast?: YoastHeadJson, post?: BlogPost): string | undefined {
+	const ogImage = yoast?.og_image?.[0]?.url;
+	if (ogImage) return ogImage;
+
+	const featured = post?._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+	return featured;
 }
 
 export function mapWordPressSeo(
 	post: BlogPost,
 	fallbackTitle: string,
-): WordPressSeoMeta {
+): SeoMetadata {
 	const yoast = post.yoast_head_json;
 	const title = yoast?.title
 		? toPlainText(yoast.title)
@@ -63,11 +64,16 @@ export function mapWordPressSeo(
 			? toPlainText(post.title.rendered)
 			: fallbackTitle;
 
+	const description =
+		getDescriptionFromPost(post, yoast) ||
+		`${title} – Rhein-Neckar-Tango Community.`;
+
 	return {
 		title,
-		description: getDescriptionFromPost(post),
-		canonical: yoast?.canonical?.trim() || post.link?.trim() || null,
+		description,
+		canonical: yoast?.canonical?.trim() || post.link?.trim() || "",
 		robots: formatRobotsDirective(yoast?.robots),
-		jsonLdScript: buildJsonLdScript(yoast?.schema),
+		image: getOgImage(yoast, post),
+		jsonLd: yoast?.schema,
 	};
 }

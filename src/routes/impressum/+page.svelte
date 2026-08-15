@@ -1,9 +1,11 @@
 <script lang="ts">
 	import LegalPage from '$lib/components/LegalPage.svelte';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapHubPageSeo } from '$lib/seo/pages';
+
+	const seo = mapHubPageSeo('impressum');
 </script>
 
-<svelte:head>
-	<title>Impressum - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <LegalPage pageKey="impressum" />

@@ -4,6 +4,10 @@
     import { getPreferences } from "$lib/newsletter/preferences";
     import { subscribe, unsubscribe } from "$lib/newsletter/signup";
     import { trackFeatureEvent } from "$lib/matomo";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { mapHubPageSeo } from "$lib/seo/pages";
+
+    const seo = mapHubPageSeo("newsletter");
 
     type PageState =
         | "idle"
@@ -181,9 +185,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>Newsletter – RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="space-y-4">
     {#if verifyBanner}

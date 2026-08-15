@@ -393,6 +393,7 @@ export class FallbackDataGenerator {
         return {
             id: basicVenue?.id || 0,
             venue: basicVenue?.venue || "Unknown Venue",
+            slug: basicVenue?.slug || "",
             address: basicVenue?.address || "",
             city: basicVenue?.city || "",
             geo_lat: basicVenue?.geo_lat || null,

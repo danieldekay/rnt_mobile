@@ -1,6 +1,10 @@
 <script lang="ts">
     import type { CuratedLink } from "$lib/api/links";
     import type { PageData } from "./$types";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { mapHubPageSeo } from "$lib/seo/pages";
+
+    const seo = mapHubPageSeo("links");
 
     let { data }: { data: PageData } = $props();
 
@@ -66,9 +70,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>Links & Ressourcen - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="page-stack">
     <section class="space-y-3">

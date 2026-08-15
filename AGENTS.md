@@ -14,7 +14,8 @@ npm run check   # svelte-kit sync + svelte-check
 
 ## Architecture
 
-- **Routes**: `/` (event list + filtering), `/calendar` (calendar view)
+- **Routes**: `/` (event list + filtering), `/kalender` (calendar view), `/event/{id}`, `/tanzraeume/{slug}`, entity hubs
+- **SEO**: `src/lib/seo/*` + `SeoHead.svelte`; Worker injects metadata for SPA routes (see `wiki/concepts/seo.md`)
 - **Components**: `src/lib/components/*.svelte`
 - **API**: `src/lib/api/tribe.ts` → fetches from `https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1`
 - **Store**: `src/lib/stores/events.svelte.ts`

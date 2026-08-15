@@ -30,16 +30,19 @@
     import EventSidebar from "$lib/components/EventSidebar.svelte";
     import EventQuickInfo from "$lib/components/EventQuickInfo.svelte";
     import EventMap from "$lib/components/EventMap.svelte";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { isEventExpired, mapEventSeo } from "$lib/seo/from-event";
     import "leaflet/dist/leaflet.css";
 
     let { data }: PageProps = $props();
     let mapContainer = $state<HTMLDivElement | null>(null);
     let map: any = null;
 
-    const event = $derived(data.event as TribeEvent | null);
-    const loadError = $derived(data.loadError as string | null);
-    const eventId = $derived(event?.id ?? data.requestedEventId ?? null);
+    const event = $derived(data.event as TribeEvent);
+    const eventId = $derived(event.id);
     const cptDjs = $derived((data.cptDjs as DjCptEntry[]) ?? []);
+    const seo = $derived(mapEventSeo(event));
+    const expired = $derived(isEventExpired(event));
 
     onMount(() => {
         return () => {
@@ -51,32 +54,12 @@
     });
 
     $effect(() => {
-        if (!event || event.id === lastTrackedEventId) {
+        if (event.id === lastTrackedEventId) {
             return;
         }
 
         lastTrackedEventId = event.id;
         trackFeatureEvent("events", "detail_view", String(event.id));
-    });
-
-    $effect(() => {
-        if (!loadError || loadError === lastTrackedError) {
-            return;
-        }
-
-        lastTrackedError = loadError;
-
-        if (loadError === "Veranstaltung nicht gefunden") {
-            trackFeatureEvent("event_detail", "fetch_error", "not_found");
-            return;
-        }
-
-        if (loadError === "Ungültige Veranstaltungs-ID") {
-            trackFeatureEvent("event_detail", "fetch_error", "invalid_id");
-            return;
-        }
-
-        trackFeatureEvent("event_detail", "fetch_error", "server_error");
     });
 
     $effect(() => {
@@ -109,7 +92,6 @@
     });
 
     let lastTrackedEventId = $state<number | null>(null);
-    let lastTrackedError = $state<string | null>(null);
     let currentMapEventId = $state<number | null>(null);
 
     async function initMap(lat: number, lng: number, venueName: string) {
@@ -146,42 +128,31 @@
             .openPopup();
     }
 
-    const startDate = $derived(event ? parseISO(event.start_date) : null);
-    const endDate = $derived(event ? parseISO(event.end_date) : null);
-    const dj = $derived(event ? extractDjFromDescription(event) : null);
-    const workshop = $derived(
-        event ? extractWorkshopFromDescription(event) : null,
-    );
+    const startDate = $derived(parseISO(event.start_date));
+    const endDate = $derived(parseISO(event.end_date));
+    const dj = $derived(extractDjFromDescription(event));
+    const workshop = $derived(extractWorkshopFromDescription(event));
     const detailImage = $derived(
-        event?.image && typeof event.image === "string" ? event.image : null,
+        event.image && typeof event.image === "string" ? event.image : null,
     );
 
     const formattedDate = $derived(
-        startDate
-            ? format(startDate, "EEEE, d. MMMM yyyy", { locale: de })
-            : "",
+        format(startDate, "EEEE, d. MMMM yyyy", { locale: de }),
     );
-    const startTime = $derived(startDate ? format(startDate, "HH:mm") : "");
-    const endTime = $derived(endDate ? format(endDate, "HH:mm") : "");
+    const isoStartDate = $derived(format(startDate, "yyyy-MM-dd"));
+    const startTime = $derived(format(startDate, "HH:mm"));
+    const endTime = $derived(format(endDate, "HH:mm"));
 
-    const eventTypeLabel = $derived(event ? getEventTypeLabel(event) : null);
-    const eventTypeBadgeClass = $derived(
-        event ? getEventTypeBadgeClass(event) : "event-badge-default",
-    );
-    const musicLabel = $derived(event ? getEventMusicLabel(event) : null);
-    const musicBadgeClass = $derived(
-        event ? getEventMusicBadgeClass(event) : "music-badge-default",
-    );
-    const hasGeo = $derived(event?.venue?.geo_lat && event?.venue?.geo_lng);
+    const eventTypeLabel = $derived(getEventTypeLabel(event));
+    const eventTypeBadgeClass = $derived(getEventTypeBadgeClass(event));
+    const musicLabel = $derived(getEventMusicLabel(event));
+    const musicBadgeClass = $derived(getEventMusicBadgeClass(event));
+    const hasGeo = $derived(event.venue?.geo_lat && event.venue?.geo_lng);
     const mapConsentGranted = $derived(consentStore.hasConsent("maps"));
-    const sanitizedDescription = $derived(
-        event ? sanitizeHtml(event.description) : "",
-    );
-    const shareData = $derived(event ? getEventShareData(event) : null);
-    const calendarFileName = $derived(
-        event ? getEventCalendarFileName(event) : "rnt-event.ics",
-    );
-    const primaryOrganizer = $derived(event?.organizer?.[0] ?? null);
+    const sanitizedDescription = $derived(sanitizeHtml(event.description));
+    const shareData = $derived(getEventShareData(event));
+    const calendarFileName = $derived(getEventCalendarFileName(event));
+    const primaryOrganizer = $derived(event.organizer?.[0] ?? null);
     const organizerProfileLink = $derived(
         primaryOrganizer?.slug
             ? resolve(`/veranstalter/${primaryOrganizer.slug}`)
@@ -192,15 +163,18 @@
             ? resolve(`/djs/${getDjCptSlugByName(dj, cptDjs) ?? getDjSlug(dj)}`)
             : "",
     );
+    const venueProfileLink = $derived(
+        event.venue?.slug ? resolve(`/tanzraeume/${event.venue.slug}`) : "",
+    );
     const venueMapUrl = $derived.by(() => {
-        if (!event?.venue?.geo_lat || !event?.venue?.geo_lng) {
+        if (!event.venue?.geo_lat || !event.venue?.geo_lng) {
             return "";
         }
 
         return `https://www.google.com/maps/search/?api=1&query=${event.venue.geo_lat},${event.venue.geo_lng}`;
     });
     const venueLink = $derived(
-        event?.venue ? event.venue.website || venueMapUrl : "",
+        venueProfileLink || (event.venue ? event.venue.website || venueMapUrl : ""),
     );
     const organizerWebsiteLink = $derived(primaryOrganizer?.website || "");
 
@@ -209,20 +183,15 @@
     }
 </script>
 
-<svelte:head>
-    <title>{event ? event.title : "Veranstaltung"} - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
-{#if loadError}
-    <div class="status-error-panel" role="alert">
-        <p class="status-error-title">{loadError}</p>
-        <a href={resolve("/")} class="mt-4 inline-block btn-primary">
-            Zurück zur Übersicht
-        </a>
-    </div>
-{:else if event}
-    <article class="space-y-5">
-        <div>
+<article class="space-y-5">
+    {#if expired}
+        <p class="card p-4 text-sm text-text-muted" role="status">
+            Diese Veranstaltung hat bereits stattgefunden.
+        </p>
+    {/if}
+    <div>
             <a
                 href={resolve("/")}
                 onclick={handleBackClick}
@@ -307,16 +276,18 @@
 
                 <!-- Mobile Quick Info -->
                 <div class="space-y-3 lg:hidden">
-                    <EventQuickInfo
-                        {event}
-                        {formattedDate}
-                        {startTime}
-                        {endTime}
-                        {primaryOrganizer}
-                        {dj}
-                        {workshop}
-                        cost={event.cost ? formatEventCost(event.cost) : ""}
-                    />
+                <EventQuickInfo
+                    {event}
+                    {formattedDate}
+                    {isoStartDate}
+                    {startTime}
+                    {endTime}
+                    {primaryOrganizer}
+                    {dj}
+                    {workshop}
+                    {venueProfileLink}
+                    cost={event.cost ? formatEventCost(event.cost) : ""}
+                />
                 </div>
 
                 <!-- Map (inline — bind:this requires local ref) -->
@@ -382,6 +353,7 @@
                 <EventSidebar
                     {event}
                     {formattedDate}
+                    {isoStartDate}
                     {startTime}
                     {endTime}
                     {eventTypeLabel}
@@ -391,6 +363,7 @@
                     {primaryOrganizer}
                     {dj}
                     {venueLink}
+                    {venueProfileLink}
                     {organizerProfileLink}
                     {organizerWebsiteLink}
                     {djProfileLink}
@@ -398,7 +371,6 @@
             </aside>
         </div>
     </article>
-{/if}
 
 <style>
     :global(.custom-marker) {

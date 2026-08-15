@@ -8,6 +8,10 @@
 	import { formatDate } from '$lib/utils/date-formatting';
 	import type { BlogPost, CategoryStat, FeaturedMedia } from '$lib/types';
 	import type { PageProps } from './$types';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapHubPageSeo } from '$lib/seo/pages';
+
+	const seo = mapHubPageSeo('blog');
 
 	type TaxonomyTerm = {
 		id?: number;
@@ -134,9 +138,7 @@
 	const hasActiveCategoryFilter = $derived(activeCategory !== null);
 </script>
 
-<svelte:head>
-	<title>Blog - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 {#snippet categoryFilterPanel()}
 	<section class="card space-y-4 p-5">

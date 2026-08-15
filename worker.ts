@@ -1,8 +1,15 @@
 import {
     generateSitemapXml,
+    MOBILE_ORIGIN,
     SITEMAP_CACHE_CONTROL,
     SITEMAP_PATH,
 } from "./src/lib/seo/sitemap";
+import {
+    injectHeadIntoHtml,
+    isHtmlDocumentRequest,
+    resolveSeoForPath,
+    shouldInjectHead,
+} from "./src/lib/seo/worker-head";
 
 // Cloudflare Worker Secret type (if not provided by @cloudflare/workers-types)
 interface Secret {
@@ -67,6 +74,7 @@ const WORDPRESS_ADMIN_URL = `${WORDPRESS_ORIGIN}/wp-admin/`;
 const WORDPRESS_PROFILE_URL = `${WORDPRESS_ADMIN_URL}profile.php`;
 const REQUEST_TIMEOUT_MS = 8000;
 const EVENTS_CACHE_TTL_SECONDS = 300;
+const EVENT_DETAIL_CACHE_TTL_SECONDS = 300;
 const DJ_CPT_CACHE_TTL_SECONDS = 1800;
 const LINKS_FEED_CACHE_TTL_SECONDS = 3600;
 const VENUES_CACHE_TTL_SECONDS = 1800;
@@ -228,6 +236,14 @@ export default {
             return handleSitemap(request);
         }
 
+        if (url.pathname === "/calendar") {
+            return Response.redirect(new URL("/kalender", request.url), 301);
+        }
+
+        if (isHtmlDocumentRequest(request) && shouldInjectHead(url.pathname)) {
+            return handleDocumentWithSeo(request, env);
+        }
+
         return env.ASSETS.fetch(request);
     },
 } satisfies ExportedHandler<Env>;
@@ -304,7 +320,11 @@ async function handleEventDetail(
     }
 
     try {
-        return proxyTribeRequest(request, `${TRIBE_EVENTS_BASE_URL}/${eventId}`);
+        return proxyTribeRequest(
+            request,
+            `${TRIBE_EVENTS_BASE_URL}/${eventId}`,
+            EVENT_DETAIL_CACHE_TTL_SECONDS,
+        );
     } catch (error) {
         const status = isAbortError(error) ? 504 : 502;
         const message = isAbortError(error)
@@ -1081,6 +1101,46 @@ async function proxyRssFeed(request: Request): Promise<Response> {
         );
     }
 }
+async function handleDocumentWithSeo(
+    request: Request,
+    env: Env,
+): Promise<Response> {
+    const url = new URL(request.url);
+    const { seo, status } = await resolveSeoForPath(
+        url.pathname,
+        fetch,
+        MOBILE_ORIGIN,
+    );
+
+    if (!seo) {
+        return new Response("Nicht gefunden", {
+            status: 404,
+            headers: { "content-type": "text/html; charset=utf-8" },
+        });
+    }
+
+    const assetResponse = await env.ASSETS.fetch(request);
+    if (!assetResponse.ok) {
+        return assetResponse;
+    }
+
+    const contentType = assetResponse.headers.get("content-type") ?? "";
+    if (!contentType.includes("text/html")) {
+        return assetResponse;
+    }
+
+    const html = await assetResponse.text();
+    const enriched = injectHeadIntoHtml(html, seo);
+
+    return new Response(enriched, {
+        status: status === 404 ? 404 : assetResponse.status,
+        headers: {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": assetResponse.headers.get("cache-control") ?? "public, max-age=0, must-revalidate",
+        },
+    });
+}
+
 async function handleSitemap(request: Request): Promise<Response> {
     if (request.method !== "GET") {
         return json({ ok: false, message: "Methode nicht erlaubt." }, 405);

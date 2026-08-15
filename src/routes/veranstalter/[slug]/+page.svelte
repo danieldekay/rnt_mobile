@@ -5,6 +5,8 @@
     import { sanitizeHtml } from "$lib/utils/html";
     import type { TribeEvent, EnhancedOrganizer } from "$lib/types";
     import type { PageProps } from "./$types";
+    import SeoHead from "$lib/components/SeoHead.svelte";
+    import { mapOrganizerDetailSeo } from "$lib/seo/from-entity";
 
     type EnhancedOrganizerDetail = EnhancedOrganizer & {
         cityLabel: string;
@@ -20,15 +22,11 @@
     const safeDescription = $derived(
         organizer?.description ? sanitizeHtml(organizer.description) : "",
     );
-    const pageTitle = $derived(
-        organizer ? organizer.organizer : "Veranstalter",
-    );
     const listHref = resolve("/veranstalter");
+    const seo = $derived(mapOrganizerDetailSeo(organizer));
 </script>
 
-<svelte:head>
-    <title>{pageTitle} - Veranstalter - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="space-y-6">
     <a

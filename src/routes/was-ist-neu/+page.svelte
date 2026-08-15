@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { releaseNotes } from '$lib/content/release-notes';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapHubPageSeo } from '$lib/seo/pages';
+
+	const seo = mapHubPageSeo('was-ist-neu');
 
 	const formattedReleaseNotes = releaseNotes.map((entry) => ({
 		...entry,
@@ -12,13 +16,7 @@
 	}));
 </script>
 
-<svelte:head>
-	<title>Was ist neu? - RNT Kalender</title>
-	<meta
-		name="description"
-		content="Versionshinweise und neue Funktionen des RNT Kalenders in deutscher Sprache."
-	/>
-</svelte:head>
+<SeoHead {seo} />
 
 <article class="space-y-4">
 	<div>

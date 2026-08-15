@@ -4,21 +4,25 @@
     let {
         event,
         formattedDate,
+        isoStartDate,
         startTime,
         endTime,
         primaryOrganizer,
         dj,
         workshop,
         cost,
+        venueProfileLink = "",
     }: {
         event: TribeEvent;
         formattedDate: string;
+        isoStartDate: string;
         startTime: string;
         endTime: string;
         primaryOrganizer: Organizer | null;
         dj: string | null;
         workshop: string | null;
         cost: string | null;
+        venueProfileLink?: string;
     } = $props();
 </script>
 
@@ -46,7 +50,7 @@
             </div>
             <div>
                 <p class="text-[1rem] font-semibold text-text-default">
-                    {formattedDate}
+                    <time datetime={isoStartDate}>{formattedDate}</time>
                 </p>
                 <p class="meta-text">
                     {#if event.all_day}
@@ -88,9 +92,19 @@
                     </svg>
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-[1rem] font-semibold text-text-default">
-                        {event.venue.venue}
-                    </p>
+                    {#if venueProfileLink}
+                        <a
+                            href={venueProfileLink}
+                            data-sveltekit-preload-data="hover"
+                            class="text-[1rem] font-semibold text-text-link underline underline-offset-4"
+                        >
+                            {event.venue.venue}
+                        </a>
+                    {:else}
+                        <p class="text-[1rem] font-semibold text-text-default">
+                            {event.venue.venue}
+                        </p>
+                    {/if}
                     {#if event.venue.address || event.venue.city}
                         <p class="meta-text">
                             {[

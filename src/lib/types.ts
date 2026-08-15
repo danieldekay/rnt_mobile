@@ -21,6 +21,8 @@ export interface TribeEvent {
   organizer: Organizer[];
   featured: boolean;
   sticky: boolean;
+  modified?: string;
+  json_ld?: Record<string, unknown>;
 }
 
 export type EventImage =
@@ -62,6 +64,7 @@ export interface Category {
 export interface Venue {
   id: number;
   venue: string;
+  slug?: string;
   address: string;
   city: string;
   province: string;
@@ -71,6 +74,7 @@ export interface Venue {
   geo_lng: number;
   website: string;
   phone: string;
+  json_ld?: Record<string, unknown>;
 }
 
 export interface Organizer {
@@ -81,6 +85,7 @@ export interface Organizer {
   website: string;
   email: string;
   description?: string;
+  json_ld?: Record<string, unknown>;
 }
 
 export interface TribeOrganizer {
@@ -93,16 +98,19 @@ export interface TribeOrganizer {
   phone: string;
   description: string;
   image: string | false;
+  json_ld?: Record<string, unknown>;
 }
 
 export interface TribeVenue {
   id: number;
   venue: string;
+  slug: string;
   address: string;
   city: string;
   geo_lat: number | null;
   geo_lng: number | null;
   website: string;
+  json_ld?: Record<string, unknown>;
 }
 
 export interface EventsResponse {
@@ -115,9 +123,14 @@ export interface EventsResponse {
 
 export interface YoastHeadJson {
   title?: string;
+  description?: string;
   robots?: Record<string, string>;
   canonical?: string;
   schema?: Record<string, unknown>;
+  og_title?: string;
+  og_description?: string;
+  og_image?: Array<{ url?: string }>;
+  og_locale?: string;
   twitter_misc?: Record<string, string>;
 }
 

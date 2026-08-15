@@ -13,11 +13,13 @@ const VENUES_API_BASE = "/api/venues";
 type RawTribeVenue = {
 	id?: number | string;
 	venue?: string | null;
+	slug?: string | null;
 	address?: string | null;
 	city?: string | null;
 	geo_lat?: number | string | null;
 	geo_lng?: number | string | null;
 	website?: string | null;
+	json_ld?: Record<string, unknown>;
 };
 
 type VenuesResponse = {
@@ -34,11 +36,13 @@ export function normalizeVenue(venue: RawTribeVenue): TribeVenue {
 	return {
 		id: Number.isFinite(parsedId) ? Number(parsedId) : 0,
 		venue: normalizeText(venue.venue),
+		slug: normalizeText(venue.slug) || `venue-${parsedId}`,
 		address: normalizeText(venue.address),
 		city: normalizeText(venue.city),
 		geo_lat: normalizeCoordinate(venue.geo_lat),
 		geo_lng: normalizeCoordinate(venue.geo_lng),
 		website: normalizeText(venue.website),
+		json_ld: venue.json_ld,
 	};
 }
 

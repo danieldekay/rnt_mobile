@@ -54,8 +54,11 @@ describe("mapWordPressSeo", () => {
 		);
 		expect(seo.robots).toContain("index");
 		expect(seo.robots).toContain("follow");
-		expect(seo.jsonLdScript).toContain('type="application/ld+json"');
-		expect(seo.jsonLdScript).toContain('"@type":"Article"');
+		expect(seo.jsonLd).toMatchObject({
+			"@graph": expect.arrayContaining([
+				expect.objectContaining({ "@type": "Article" }),
+			]),
+		});
 	});
 
 	it("uses excerpt as description when Yoast has no description", () => {

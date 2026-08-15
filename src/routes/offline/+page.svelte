@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import SeoHead from "$lib/components/SeoHead.svelte";
+	import { mapHubPageSeo } from "$lib/seo/pages";
+
+	const seo = mapHubPageSeo("offline");
 
 	let retrying = $state(false);
 
@@ -29,6 +33,8 @@
 		return () => window.removeEventListener("online", handleOnline);
 	});
 </script>
+
+<SeoHead {seo} />
 
 <div class="flex min-h-[60vh] flex-col items-center justify-center px-6 text-center">
 	<section class="card max-w-md space-y-4 p-8">

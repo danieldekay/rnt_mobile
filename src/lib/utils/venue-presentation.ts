@@ -127,6 +127,7 @@ export function toEnhancedVenue(venue: any, nextEvents?: any[]): EnhancedVenue {
 	return {
 		id: venue.id,
 		venue: venue.venue,
+		slug: venue.slug ?? "",
 		address: venue.address,
 		city: venue.city,
 		geo_lat: venue.geo_lat,

@@ -41,6 +41,7 @@ const mockOrganizerData = {
 const mockVenueData = {
     id: 1,
     venue: "Test Venue",
+    slug: "test-venue",
     address: "Test Street 1",
     city: "Test City",
     geo_lat: 49.0123,

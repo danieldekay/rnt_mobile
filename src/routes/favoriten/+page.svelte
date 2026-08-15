@@ -5,6 +5,10 @@
 	import { favoritesStore } from '$lib/stores/favorites.svelte';
 	import { hasAnyFavorites, matchesFavoriteEvent } from '$lib/utils/favorites';
 	import type { PageProps } from './$types';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { mapHubPageSeo } from '$lib/seo/pages';
+
+	const seo = mapHubPageSeo('favoriten');
 
 	let { data }: PageProps = $props();
 
@@ -38,9 +42,7 @@
 	const hasFavorites = $derived(hasAnyFavorites(favoritesStore.snapshot));
 </script>
 
-<svelte:head>
-	<title>Favoriten - RNT Kalender</title>
-</svelte:head>
+<SeoHead {seo} />
 
 <div class="page-stack">
 	<section class="space-y-2">

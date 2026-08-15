@@ -1,3 +1,4 @@
+import { error } from "@sveltejs/kit";
 import {
   EventFetchError,
   fetchEventById,
@@ -12,12 +13,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
   const requestedEventId = Number.parseInt(params.id, 10);
 
   if (!Number.isInteger(requestedEventId) || requestedEventId <= 0) {
-    return {
-      event: null,
-      requestedEventId: null,
-      loadError: "Ungültige Veranstaltungs-ID",
-      cptDjs: [] as DjCptEntry[],
-    };
+    throw error(404, "Veranstaltung nicht gefunden");
   }
 
   try {
@@ -29,30 +25,15 @@ export const load: PageLoad = async ({ fetch, params }) => {
     return {
       event,
       requestedEventId,
-      loadError: null,
       cptDjs,
     };
-  } catch (error) {
-    if (error instanceof EventFetchError) {
-      return {
-        event: null,
-        requestedEventId,
-        loadError:
-          error.status === 404
-            ? "Veranstaltung nicht gefunden"
-            : "Laden fehlgeschlagen",
-        cptDjs: [] as DjCptEntry[],
-      };
+  } catch (loadError) {
+    if (loadError instanceof EventFetchError && loadError.status === 404) {
+      throw error(404, "Veranstaltung nicht gefunden");
     }
 
-    console.error("Failed to load event detail:", error);
-
-    return {
-      event: null,
-      requestedEventId,
-      loadError: "Laden fehlgeschlagen",
-      cptDjs: [] as DjCptEntry[],
-    };
+    console.error("Failed to load event detail:", loadError);
+    throw error(500, "Laden fehlgeschlagen");
   }
 };
 
