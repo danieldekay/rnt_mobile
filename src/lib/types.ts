@@ -10,6 +10,8 @@ export interface TribeEvent {
   all_day: boolean;
   start_date: string;
   end_date: string;
+  utc_start_date?: string;
+  utc_end_date?: string;
   start_date_details: DateDetails;
   end_date_details: DateDetails;
   timezone: string;

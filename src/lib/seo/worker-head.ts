@@ -127,6 +127,9 @@ export function injectHeadIntoHtml(html: string, seo: SeoMetadata): string {
 		html = html.replace(descriptionPattern, "");
 	}
 
+	const robotsPattern = /<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/gi;
+	html = html.replace(robotsPattern, "");
+
 	if (html.includes("%sveltekit.head%")) {
 		return html.replace("%sveltekit.head%", `${headMarkup}\n%sveltekit.head%`);
 	}

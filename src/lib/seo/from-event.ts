@@ -32,7 +32,15 @@ function formatTimeRange(event: TribeEvent, startDate: Date, endDate: Date): str
 }
 
 export function isEventExpired(event: TribeEvent, now = new Date()): boolean {
-	const end = parseISO(event.end_date);
+	const endValue = event.utc_end_date ?? event.end_date;
+	if (!endValue) return false;
+
+	const normalized = endValue.includes("T")
+		? endValue
+		: endValue.replace(" ", "T");
+	const end = parseISO(event.utc_end_date ? `${normalized}Z` : normalized);
+
+	if (Number.isNaN(end.getTime())) return false;
 	return end.getTime() < now.getTime();
 }
 

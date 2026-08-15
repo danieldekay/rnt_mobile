@@ -53,10 +53,31 @@ describe("mapEventSeo", () => {
 	});
 
 	it("marks expired events as noindex", () => {
-		const seo = mapEventSeo(baseEvent, new Date("2026-09-01T12:00:00Z"));
+		const expiredEvent = {
+			...baseEvent,
+			utc_end_date: "2026-08-21 20:30:00",
+		} as unknown as TribeEvent;
+		const seo = mapEventSeo(expiredEvent, new Date("2026-09-01T12:00:00Z"));
 
 		expect(seo.robots).toBe("noindex, follow");
-		expect(isEventExpired(baseEvent, new Date("2026-09-01T12:00:00Z"))).toBe(true);
+		expect(
+			isEventExpired(expiredEvent, new Date("2026-09-01T12:00:00Z")),
+		).toBe(true);
+	});
+
+	it("uses utc_end_date for expiry so worker and browser agree", () => {
+		const event = {
+			...baseEvent,
+			end_date: "2026-08-15 22:00:00",
+			utc_end_date: "2026-08-15 20:00:00",
+		} as unknown as TribeEvent;
+
+		expect(
+			isEventExpired(event, new Date("2026-08-15T19:27:00Z")),
+		).toBe(false);
+		expect(
+			isEventExpired(event, new Date("2026-08-15T20:01:00Z")),
+		).toBe(true);
 	});
 });
 

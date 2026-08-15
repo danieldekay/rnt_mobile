@@ -17,10 +17,18 @@ export const load: PageLoad = async ({ fetch, params }) => {
   }
 
   try {
-    const [event, cptDjs] = await Promise.all([
-      fetchEventById(requestedEventId, fetch, EVENT_DETAIL_API_BASE),
-      fetchDjCptList(fetch),
-    ]);
+    const event = await fetchEventById(
+      requestedEventId,
+      fetch,
+      EVENT_DETAIL_API_BASE,
+    );
+
+    let cptDjs: DjCptEntry[] = [];
+    try {
+      cptDjs = await fetchDjCptList(fetch);
+    } catch (djListError) {
+      console.warn("DJ CPT list unavailable for event detail:", djListError);
+    }
 
     return {
       event,
