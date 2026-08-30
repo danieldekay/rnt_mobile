@@ -20,7 +20,7 @@
         "@types/he": "^1.2.3",
         "@types/node": "^25.9.1",
         "@vitest/coverage-v8": "^4.1.7",
-        "jsdom": "^29.1.1",
+        "jsdom": "^30.0.1",
         "postcss": "^8.5.26",
         "svelte": "^5.55.9",
         "svelte-check": "^4.4.8",
