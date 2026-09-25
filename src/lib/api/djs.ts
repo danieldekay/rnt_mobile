@@ -6,6 +6,10 @@ import type { TribeEvent } from "$lib/types";
 import { normalizeText, stripHtmlToPlainText } from "./normalizers";
 
 const DJ_API_BASE = "https://www.rhein-neckar-tango.de/wp-json/wp/v2/dj";
+const DJ_MENTION = /\bdj(?:ane|s)?\b\s*[:-]?\s*([^\n]+)/gi;
+const NEXT_EVENT_MENTION =
+	/\b(?:nächste[rsn]?|kommende[rsn]?)\s+(?:milonga|veranstaltung|termin|event|tanzabend)\b/i;
+const CURRENT_EVENT_DETAILS = /^kurz\s*(?:&|und)\s*knapp\b/i;
 
 // --- DJ name extraction ---
 
@@ -16,6 +20,7 @@ export function cleanDjCandidate(candidate: string): string {
 		.replace(/[|•].*$/, "")
 		.replace(/[.?!]+$/g, "")
 		.replace(/\s+(?:aus|von)\s+[A-ZÄÖÜ][^,.;?]*$/u, "")
+		.replace(/\s+\([A-ZÄÖÜ][^()]{1,35}\)$/u, "")
 		.replace(
 			/\s+(?:für|für|spielt|legt|sorgt|an\s+den\s+(?:decks|turntables)|heute|heut[e]?|live)\b.*$/i,
 			"",
@@ -56,18 +61,38 @@ function isPlausibleDjName(value: string): boolean {
 
 export function extractDjFromDescription(event: TribeEvent): string | null {
 	const description = stripHtmlToPlainText(event.description);
-	const djPatterns = [/\bdj(?:s)?\b\s*[:-]?\s*([^\n]+)/gi];
+	const candidates: string[] = [];
+	const musicCredits: string[] = [];
+	let inNextEventSection = false;
 
-	for (const pattern of djPatterns) {
-		for (const djMatch of description.matchAll(pattern)) {
-			const candidate = cleanDjCandidate(djMatch[1] ?? "");
+	for (const rawLine of description.split("\n")) {
+		let line = rawLine.trim();
+		if (CURRENT_EVENT_DETAILS.test(line)) inNextEventSection = false;
+
+		const nextEventIndex = line.search(NEXT_EVENT_MENTION);
+		if (nextEventIndex >= 0) {
+			line = inNextEventSection ? "" : line.slice(0, nextEventIndex).trim();
+			inNextEventSection = true;
+		} else if (inNextEventSection) {
+			continue;
+		}
+
+		if (/^musik\s*:/i.test(line)) musicCredits.push(line.toLocaleLowerCase("de"));
+
+		for (const djMatch of line.matchAll(DJ_MENTION)) {
+			const firstDj = (djMatch[1] ?? "").split(/\s+(?:&|und)\s+|,\s*(?=[A-ZÄÖÜ])/i)[0];
+			const candidate = cleanDjCandidate(firstDj ?? "");
 			if (isPlausibleDjName(candidate)) {
-				return candidate;
+				candidates.push(candidate);
 			}
 		}
 	}
 
-	return null;
+	return (
+		candidates.find((candidate) =>
+			musicCredits.some((credit) => credit.includes(candidate.toLocaleLowerCase("de"))),
+		) ?? candidates[0] ?? null
+	);
 }
 
 export function extractWorkshopFromDescription(

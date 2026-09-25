@@ -110,6 +110,18 @@ The system SHALL extract DJ names from event titles, excerpts, and descriptions,
 - **WHEN** `extractDjFromDescription()` is called
 - **THEN** it SHALL return `null`
 
+### Scenario: Current DJ and next-event DJ appear in one description
+- **GIVEN** the current event description names "DJane Alma Mia aus Halle" and later announces "Nächste Milonga ... DJ Andy Ungureanu (Wiesbaden)"
+- **AND** its current-event summary says "Musik: Alma Mia (Halle)"
+- **WHEN** `extractDjFromDescription()` is called
+- **THEN** it SHALL return "Alma Mia"
+- **AND** the next-event DJ SHALL not be associated with the current event
+
+### Scenario: Only the next event has a DJ mention
+- **GIVEN** a description that mentions a DJ only within a "Nächste Milonga" announcement
+- **WHEN** `extractDjFromDescription()` is called
+- **THEN** it SHALL return `null`
+
 ---
 
 ## Requirement: DJ list page shows city and zero-event state

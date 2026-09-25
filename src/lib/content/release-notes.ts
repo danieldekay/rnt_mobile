@@ -8,6 +8,19 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.5.0',
+        releasedAt: '2026-09-25',
+        headline: 'Der richtige DJ zum richtigen Termin',
+        summary:
+            'Wenn ein Veranstaltungstext auch die naechste Milonga ankuendigt, zeigt die App jetzt den DJ des aktuellen Termins.',
+        highlights: [
+            'DJane und DJ werden in Veranstaltungstexten gleichermassen erkannt.',
+            'Ein DJ aus der Vorschau auf die naechste Veranstaltung wird dem aktuellen Termin nicht mehr zugeordnet.',
+            'Event-Karten, DJ-Profile und Filter nutzen die korrigierte Zuordnung.',
+            'Ortsangaben in Klammern erscheinen nicht mehr als Teil des DJ-Namens.'
+        ]
+    },
+    {
         version: '0.4.0',
         releasedAt: '2026-08-08',
         headline: 'Favoriten fuer Veranstaltungen, Veranstalter, Tanzraeume und DJs',

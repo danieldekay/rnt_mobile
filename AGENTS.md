@@ -27,11 +27,15 @@ Extends `.svelte-kit/tsconfig.json`. Uses Svelte 5 runes (`$state`, `$derived`, 
 
 ## Deployment
 
-Deployed to Cloudflare Pages. Build output in `build/` directory. See `DEPLOY.md` for details.
+Deployed as Cloudflare Worker Assets. Build output is in `build/`; see `DEPLOY.md` for the GitHub Actions route.
 
 ## Testing
 
-No test framework configured. Run `npm run check` for type checking.
+Run `npm run test:run` for Vitest, `npm run check` for type checking, and `npm run build` before a release.
+
+## Releases
+
+Use `.github/skills/rnt-mobile-release-deploy/SKILL.md` for version bumps, release notes, tagging, deployment, and production verification. Run the tests and checks listed there before pushing a release.
 
 ## SpecFact
 
