@@ -9,6 +9,7 @@ const ASSETS = [
 	...prerendered,
 	// Core app-shell resources — cache-first strategy
 	"/",
+	"/offline",
 	"/manifest.json",
 	"/favicon.ico",
 	"/rnt-logo.png",
@@ -43,20 +44,38 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
 	);
 });
 
-// Fetch: cache-first for app-shell, network-first for API/data
+function isCacheableApiRequest(request: Request, url: URL): boolean {
+	if (request.method !== "GET") return false;
+
+	return (
+		url.pathname === "/api/events" ||
+		url.pathname.startsWith("/api/events/") ||
+		url.pathname === "/api/venues" ||
+		url.pathname === "/api/organizers" ||
+		url.pathname === "/api/dj-cpt" ||
+		url.pathname === "/api/posts" ||
+		url.pathname === "/api/announcements" ||
+		url.pathname === "/api/links" ||
+		url.pathname === "/api/offline-snapshot"
+	);
+}
+
+// Fetch: cache-first for app-shell, network-first for explicitly public GET data.
 self.addEventListener("fetch", (event: FetchEvent) => {
 	const { request } = event;
 	const url = new URL(request.url);
 
 	// Never intercept cross-origin requests (OSM tiles, Matomo, fonts, etc.).
-	// Handling them and returning Response.error() breaks map tiles in the PWA.
 	if (url.origin !== self.location.origin) {
 		return;
 	}
 
-	// API requests: network-first with stale-while-revalidate
+	// Mutating, auth, newsletter, and other sensitive API requests remain network-only.
+	// This also prevents Cache API writes for POST/PATCH/DELETE requests.
 	if (url.pathname.startsWith("/api/")) {
-		event.respondWith(networkFirst(request));
+		if (isCacheableApiRequest(request, url)) {
+			event.respondWith(networkFirst(request));
+		}
 		return;
 	}
 
@@ -74,12 +93,10 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 		return;
 	}
 
-	// Navigation requests: fall back to offline page
+	// Navigation requests use an explicit three-step fallback:
+	// network -> cached navigation -> dedicated offline page.
 	if (request.mode === "navigate") {
-		event.respondWith(
-			networkFirst(request).catch(() => caches.match("/offline")),
-		);
-		return;
+		event.respondWith(navigationNetworkFirst(request));
 	}
 });
 
@@ -90,14 +107,13 @@ async function cacheFirst(request: Request): Promise<Response> {
 	return fetch(request);
 }
 
-// Network-first strategy: try network, fall back to cache
+// Network-first strategy: try network, fall back to the exact cached request.
 async function networkFirst(request: Request): Promise<Response> {
 	try {
 		const networkResponse = await fetch(request);
-		// Cache successful responses for next time
-		if (networkResponse.ok) {
+		if (networkResponse.ok && request.method === "GET") {
 			const cache = await caches.open(CACHE_NAME);
-			cache.put(request, networkResponse.clone());
+			await cache.put(request, networkResponse.clone());
 		}
 		return networkResponse;
 	} catch {
@@ -106,14 +122,37 @@ async function networkFirst(request: Request): Promise<Response> {
 	}
 }
 
+async function navigationNetworkFirst(request: Request): Promise<Response> {
+	try {
+		const networkResponse = await fetch(request);
+		if (networkResponse.ok) {
+			const cache = await caches.open(CACHE_NAME);
+			await cache.put(request, networkResponse.clone());
+		}
+		return networkResponse;
+	} catch {
+		const cachedNavigation = await caches.match(request);
+		if (cachedNavigation) return cachedNavigation;
+
+		const offline = await caches.match("/offline");
+		return (
+			offline ??
+			new Response("Offline", {
+				status: 503,
+				headers: { "content-type": "text/plain; charset=utf-8" },
+			})
+		);
+	}
+}
+
 // Cache network response (fire-and-forget caching)
 async function cacheNetwork(request: Request): Promise<Response> {
 	const cached = await caches.match(request);
 	try {
 		const networkResponse = await fetch(request);
-		if (networkResponse.ok) {
+		if (networkResponse.ok && request.method === "GET") {
 			const cache = await caches.open(CACHE_NAME);
-			cache.put(request, networkResponse.clone());
+			await cache.put(request, networkResponse.clone());
 		}
 		return networkResponse;
 	} catch {
