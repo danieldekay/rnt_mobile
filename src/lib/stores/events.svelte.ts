@@ -1,6 +1,7 @@
 
 import {
     fetchAllEvents,
+    fetchOfflineSnapshot,
     getContinuationDateRange,
     fetchNextEventsRange,
     getDateRange,
@@ -212,8 +213,31 @@ class EventStore {
             this.events = this.applyFilters();
             this.loading = false;
             this.notify();
+
+            // Prime the stable 30-day snapshot used for offline recovery.
+            void fetchOfflineSnapshot().catch(() => undefined);
         } catch (e) {
             if (requestId !== activeRequestId) return;
+
+            try {
+                const offlineEvents = await fetchOfflineSnapshot();
+                if (requestId !== activeRequestId) return;
+
+                if (offlineEvents.length > 0) {
+                    this.lastFetchedDate = this.filters.date;
+                    this.lastFetchedMonthKey = null;
+                    this.allEvents = this.sortEvents(offlineEvents);
+                    this.buildSearchIndex(this.allEvents);
+                    this.events = this.applyFilters();
+                    this.loading = false;
+                    this.error = null;
+                    trackFeatureEvent("events", "offline_snapshot_fallback");
+                    this.notify();
+                    return;
+                }
+            } catch {
+                // No cached snapshot available; surface the original request error below.
+            }
 
             this.loading = false;
             this.error = e instanceof Error ? e.message : "Failed to load events";
