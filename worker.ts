@@ -15,6 +15,7 @@ import {
     type RateLimitBinding,
 } from "./src/worker/rate-limit";
 import { handleOfflineSnapshot } from "./src/worker/offline-snapshot";
+import { handleEntityOverview } from "./src/worker/entity-overview";
 import { proxyJsonGet } from "./src/worker/proxy";
 
 // Cloudflare Worker Secret type (if not provided by @cloudflare/workers-types)
@@ -62,6 +63,7 @@ const DJ_CPT_LIST_PATH = "/api/dj-cpt";
 const LINKS_FEED_PATH = "/api/links";
 const EVENTS_LIST_PATH = "/api/events";
 const OFFLINE_SNAPSHOT_PATH = "/api/offline-snapshot";
+const ENTITY_OVERVIEW_PATH = "/api/entity-overview";
 const EVENT_DETAIL_PATH = /^\/api\/events\/(\d+)$/;
 const VENUES_LIST_PATH = "/api/venues";
 const ORGANIZERS_LIST_PATH = "/api/organizers";
@@ -141,6 +143,15 @@ export default {
                 timeoutMs: REQUEST_TIMEOUT_MS,
                 days: 30,
                 maxPages: 10,
+            });
+        }
+
+        if (url.pathname === ENTITY_OVERVIEW_PATH) {
+            return handleEntityOverview(request, {
+                eventsBaseUrl: TRIBE_EVENTS_BASE_URL,
+                timeoutMs: REQUEST_TIMEOUT_MS,
+                maxPages: 10,
+                cacheTtlSeconds: 300,
             });
         }
 
