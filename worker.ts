@@ -998,6 +998,7 @@ async function proxyRssFeed(request: Request): Promise<Response> {
             },
         });
 
+        await cache.put(cacheKey, proxiedResponse.clone());
         return proxiedResponse;
     } catch (error) {
         // Production console.log removed — Cloudflare Workers do not surface
