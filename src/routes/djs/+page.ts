@@ -1,24 +1,20 @@
-import { fetchAllEvents, fetchDjCptList } from "$lib/api/tribe";
+import { fetchDjCptList } from "$lib/api/tribe";
+import { fetchEntityOverview } from "$lib/api/entity-overview";
 import { getDjsFromCptAndEvents } from "$lib/utils/djs";
 import type { DjProfileSummary } from "$lib/types";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ fetch }) => {
   try {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 30);
-    end.setHours(23, 59, 59, 999);
-
-    const [cptDjs, events] = await Promise.all([
+    const [cptDjs, overview] = await Promise.all([
       fetchDjCptList(fetch),
-      fetchAllEvents([], null, "all", fetch, undefined, { start, end }),
+      fetchEntityOverview(fetch),
     ]);
-    const djs = getDjsFromCptAndEvents(cptDjs, events);
+    const djs = getDjsFromCptAndEvents(cptDjs, overview.events);
 
     return {
       djs,
+      overviewCoverage: overview.coverage,
       loadError: false,
     };
   } catch (error) {
@@ -26,6 +22,7 @@ export const load: PageLoad = async ({ fetch }) => {
 
     return {
       djs: [] as DjProfileSummary[],
+      overviewCoverage: null,
       loadError: true,
     };
   }
