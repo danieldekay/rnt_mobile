@@ -45,7 +45,7 @@ describe("offline snapshot worker", () => {
     });
 
     it("caps pagination and reports truncation", async () => {
-        vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
             Response.json({
                 events: [{ id: 1 }],
                 total_pages: 99,
