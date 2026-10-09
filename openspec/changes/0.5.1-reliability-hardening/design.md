@@ -6,7 +6,7 @@
 - Store nonce cache entries with an explicit 300-second edge TTL; return nonce responses with `no-store`.
 - Replace the Cache-API counter with Workers Rate Limiting bindings scoped to newsletter routes.
 - Keep rate-limit bindings optional at type level so unit tests/local harnesses can run without Cloudflare bindings.
-- Add `src/worker/rate-limit.ts` and `src/worker/offline-snapshot.ts` as focused Worker modules.
+- Extract `src/worker/rate-limit.ts`, `src/worker/proxy.ts`, and `src/worker/offline-snapshot.ts` as focused Worker modules so the entrypoint is primarily routing/special handlers.
 - Add `/api/offline-snapshot`, returning a bounded 30-day event snapshot with a maximum of 10 Tribe pages.
 
 ## Service Worker
@@ -28,6 +28,7 @@
 - Run Vitest in CI.
 - Require check + tests + build in production deploy workflow.
 - Pin the Wrangler version used for production deployment to a version supporting Rate Limiting bindings.
+- Run a Wrangler deploy dry-run in PR CI so `worker.ts`, module imports, and `wrangler.toml` bindings are validated before merge.
 
 ## Out of scope
 
