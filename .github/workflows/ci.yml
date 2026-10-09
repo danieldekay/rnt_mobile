@@ -65,6 +65,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Validate Worker bundle
+        run: npx wrangler@4.69.0 deploy --dry-run --outdir .wrangler-dry-run
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
