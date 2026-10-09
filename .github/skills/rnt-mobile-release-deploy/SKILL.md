@@ -39,6 +39,7 @@ __APP_VERSION__ is injected from vite.config.ts, so do not hardcode the version 
 npm run test:run
 npm run check
 npm run build
+npx wrangler@4.69.0 deploy --dry-run --outdir .wrangler-dry-run
 git diff --check
 ```
 
@@ -90,7 +91,7 @@ Use only when GitHub Actions is unavailable:
 
 ```bash
 npm run build
-npx wrangler deploy --message "Manual deploy"
+npx wrangler@4.69.0 deploy --message "Manual deploy"
 ```
 
 ## Smoke Test After Deploy

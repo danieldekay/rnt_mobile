@@ -2,9 +2,9 @@
 
 ## Overview
 
-SvelteKit 5 + Svelte 5 static PWA for displaying Rhein-Neckar-Tango events. Fetches from WordPress Events API (The Events Calendar). Deployed to Cloudflare Pages.
+SvelteKit 5 + Svelte 5 static PWA for displaying Rhein-Neckar-Tango events. Fetches from WordPress Events API (The Events Calendar). Built with adapter-static and served by the Cloudflare Worker Assets service `rnt`.
 
-Current version: **0.2.0**
+Current version: **0.5.1**
 
 ---
 
@@ -139,12 +139,13 @@ Current version: **0.2.0**
 
 ## Key Architectural Notes
 
-- **No SSR on routes** — `prerender: true`, `ssr: false` on layout; all routes are client-rendered
-- **Events fetched client-side** via `eventStore.loadEvents()` triggered on `onMount` in both `/` and `/calendar`
-- **Client-side filtering** — all type/music/date filtering happens in the store (no server params for filter, only date range & categories)
-- **Paginated fetch with caching** — `fetchAllEvents()` loops pages; `eventStore` caches by date filter; `activeRequestId` prevents race conditions
-- **GDPR-first** — consent store gates Matomo tracking and OpenStreetMap tiles; essential always on
-- **PWA** — `manifest.json`, Apple touch icon, `beforeinstallprompt` handler, `appinstalled` listener, `workbox` update checking via `$app/state.updated`
-- **Leaflet maps** — lazy-imported (`import('leaflet')`) in map views, event detail, and legal pages; geo-based clustering on home map
-- **Legal pages** — fetched from WP REST (`/wp-json/wp/v2/pages`), rendered with DOMPurify-sanitized HTML
-- **Newsletter** — form POSTs to `/api/newsletter/subscribe` (external Sendy worker, not in-app)
+- **Static PWA + Worker edge** — SvelteKit uses `adapter-static`; `worker.ts` provides API proxying, SEO head injection, sitemap handling, newsletter integration, rate limiting, and Worker Assets delivery.
+- **Route-specific rendering** — interactive routes may disable prerendering while public content receives SEO metadata from shared `SeoHead` logic plus Worker first-response injection.
+- **Bounded event fetching** — `fetchAllEvents()` is capped at 10 pages and expensive entity routes use bounded date windows.
+- **Offline recovery** — the Service Worker caches only public GET data, navigation falls back to `/offline`, and a stable 30-day event snapshot can recover the home event list when offline.
+- **GDPR-first** — consent gates Matomo analytics and OpenStreetMap tiles; essential storage remains active.
+- **Cloudflare caching** — public Tribe API responses use route-specific edge TTLs; sensitive newsletter/auth endpoints are never cached.
+- **Rate limiting** — newsletter nonce and mutation endpoints use Cloudflare Workers Rate Limiting bindings rather than mutable Cache API counters.
+- **Deployment gate** — GitHub Actions runs tests, type checking, and build before production Wrangler deployment.
+- **Leaflet maps** — dynamically imported and never intercepted cross-origin by the Service Worker.
+- **Newsletter** — same-origin Worker endpoints proxy Sendy; nonce validation is short-lived and single-use.

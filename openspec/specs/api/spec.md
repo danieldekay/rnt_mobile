@@ -25,6 +25,13 @@ The system SHALL provide functions to fetch event data from the Tribe Events API
 - **AND** a 2-minute timeout prevents infinite requests
 - **AND** partial results are returned gracefully if limits are reached
 
+#### Scenario: Fetch bounded offline snapshot
+- **GIVEN** the application prepares data for offline use
+- **WHEN** `/api/offline-snapshot` is requested
+- **THEN** the Worker returns events for the next 30 days
+- **AND** at most 10 Tribe API pages are fetched
+- **AND** the snapshot response is cacheable for five minutes at the edge
+
 #### Scenario: Fetch event by ID
 - **GIVEN** a valid event ID
 - **WHEN** `fetchEventById` is called

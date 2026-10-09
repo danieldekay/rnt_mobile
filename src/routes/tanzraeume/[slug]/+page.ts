@@ -97,7 +97,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
-    end.setFullYear(end.getFullYear() + 1);
+    end.setDate(end.getDate() + 30);
     end.setHours(23, 59, 59, 999);
 
     const [venues, events] = await Promise.all([

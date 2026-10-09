@@ -2,7 +2,7 @@
 
 name = "rnt"
 main = "./worker.ts"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-10-09"
 keep_vars = true
 
 [assets]
@@ -24,3 +24,22 @@ SENDY_BASE_URL = "https://newsletter.rheinneckartango.de"
 # Set them as Worker secrets via: wrangler secret put SENDY_LIST_ID
 # The API key is required for newsletter status checks (/api/newsletter/status).
 # Without it, subscribe and unsubscribe still work; status checks return "unavailable".
+
+
+# Route-scoped Workers Rate Limiting bindings.
+# Namespace IDs are local project identifiers; keep them unique within the Cloudflare account.
+[[ratelimits]]
+name = "NEWSLETTER_NONCE_RATE_LIMITER"
+namespace_id = "41001"
+
+  [ratelimits.simple]
+  limit = 60
+  period = 60
+
+[[ratelimits]]
+name = "NEWSLETTER_MUTATION_RATE_LIMITER"
+namespace_id = "41002"
+
+  [ratelimits.simple]
+  limit = 15
+  period = 60

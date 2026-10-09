@@ -22,6 +22,7 @@ export {
 export {
     fetchEvents,
     fetchAllEvents,
+    fetchOfflineSnapshot,
     fetchNextEventsRange,
     fetchEventById,
     fetchOrganizerEvents,

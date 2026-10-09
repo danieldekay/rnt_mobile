@@ -33,6 +33,9 @@ npm install
 # Dev server
 npm run dev
 
+# Tests
+npm run test:run
+
 # Typecheck
 npm run check
 
@@ -53,7 +56,7 @@ Live URLs:
 
 ```bash
 npm run build
-npx wrangler deploy --message "Manual deploy"
+npx wrangler@4.69.0 deploy --message "Manual deploy"
 ```
 
 ## API

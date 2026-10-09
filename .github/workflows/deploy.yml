@@ -28,6 +28,12 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Check
+        run: npm run check
+
+      - name: Test
+        run: npm run test:run
+
       - name: Build
         run: npm run build
 
@@ -36,5 +42,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
-          npx wrangler deploy \
+          npx wrangler@4.69.0 deploy \
             --message "GitHub Actions deploy ${GITHUB_SHA}"

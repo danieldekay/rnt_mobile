@@ -1,3 +1,5 @@
+> Archived 2026-10-09. The implementation is present in the 0.5.1 reliability-hardening line; see `openspec/changes/0.5.1-reliability-hardening/` for final validation and related changes.
+
 # Proposal: CDN Caching for Cloudflare Worker Tribe API Proxy
 
 ## Why

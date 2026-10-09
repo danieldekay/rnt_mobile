@@ -174,7 +174,7 @@ export async function fetchAllEvents(
     const controller = new AbortController();
     const { signal } = controller;
 
-    const MAX_PAGES = 60;
+    const MAX_PAGES = 10;
     const allEvents: TribeEvent[] = [];
     let page = 1;
     let hasMore = true;
@@ -228,6 +228,25 @@ export async function fetchNextEventsRange(
         baseUrl,
         getContinuationDateRange(currentRange, days),
     );
+}
+
+export async function fetchOfflineSnapshot(
+    fetcher: typeof fetch = fetch,
+): Promise<TribeEvent[]> {
+    const response = await fetcher("/api/offline-snapshot", {
+        method: "GET",
+        headers: { accept: "application/json" },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch offline snapshot: ${response.status}`);
+    }
+
+    const data = (await response.json()) as {
+        events?: TribeEvent[];
+    };
+
+    return (data.events ?? []).map(normalizeEvent);
 }
 
 // --- Single event by ID ---
