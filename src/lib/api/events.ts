@@ -230,6 +230,25 @@ export async function fetchNextEventsRange(
     );
 }
 
+export async function fetchOfflineSnapshot(
+    fetcher: typeof fetch = fetch,
+): Promise<TribeEvent[]> {
+    const response = await fetcher("/api/offline-snapshot", {
+        method: "GET",
+        headers: { accept: "application/json" },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch offline snapshot: ${response.status}`);
+    }
+
+    const data = (await response.json()) as {
+        events?: TribeEvent[];
+    };
+
+    return (data.events ?? []).map(normalizeEvent);
+}
+
 // --- Single event by ID ---
 
 export async function fetchEventById(
