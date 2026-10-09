@@ -90,7 +90,7 @@ Use only when GitHub Actions is unavailable:
 
 ```bash
 npm run build
-npx wrangler deploy --message "Manual deploy"
+npx wrangler@4.69.0 deploy --message "Manual deploy"
 ```
 
 ## Smoke Test After Deploy
