@@ -174,7 +174,7 @@ export async function fetchAllEvents(
     const controller = new AbortController();
     const { signal } = controller;
 
-    const MAX_PAGES = 60;
+    const MAX_PAGES = 10;
     const allEvents: TribeEvent[] = [];
     let page = 1;
     let hasMore = true;
