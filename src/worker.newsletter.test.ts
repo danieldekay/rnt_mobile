@@ -129,10 +129,13 @@ describe("Worker newsletter hardening", () => {
             limit: vi.fn(async () => ({ success: false })),
         };
 
+        const request = post("/api/newsletter/status", {
+            email: "daniel@example.test",
+        });
+        request.headers.set("cf-connecting-ip", "203.0.113.10");
+
         const response = await worker.fetch(
-            post("/api/newsletter/status", {
-                email: "daniel@example.test",
-            }),
+            request,
             createEnv({ NEWSLETTER_MUTATION_RATE_LIMITER: limiter }),
         );
 
