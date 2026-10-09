@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.5.1',
+        releasedAt: '2026-10-09',
+        headline: 'Zuverlaessiger laden – auch bei schlechtem Netz',
+        summary:
+            'Dieses Patch-Release macht Newsletter, Offline-Nutzung und das Laden groesserer Verzeichnisse robuster und verhindert Deployments mit fehlgeschlagenen Tests.',
+        highlights: [
+            'Newsletter-An- und Abmeldung verarbeitet Sicherheits-Token jetzt zuverlaessig und nur einmal.',
+            'Bei fehlendem Netz landet die App sicher auf der Offline-Seite und kann vorbereitete Eventdaten wiederverwenden.',
+            'Die App cached nur noch oeffentliche Lesedaten – Anmeldungen und andere schreibende Anfragen bleiben immer online.',
+            'Verzeichnisse begrenzen grosse Event-Abfragen staerker, damit Seiten schneller und stabiler laden.',
+            'Produktions-Deployments laufen erst nach erfolgreichen Tests, Typpruefung und Build.'
+        ]
+    },
+    {
         version: '0.5.0',
         releasedAt: '2026-09-25',
         headline: 'Der richtige DJ zum richtigen Termin',
