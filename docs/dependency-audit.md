@@ -1,6 +1,6 @@
 # Dependency Audit — rnt_mobile
 
-Generated: 2026-05-15
+Originally generated: 2026-05-15; runtime/test-status notes refreshed for 0.5.1 on 2026-10-09
 
 ## Production Dependencies
 
@@ -20,8 +20,8 @@ Generated: 2026-05-15
 | `vite` | ^8.0.10 | Core bundler. SvelteKit 2 requires v8+. |
 | `svelte` | ^5.55.5 | Framework. Latest stable. |
 | `@sveltejs/kit` | ^2.59.0 | Router/adapters. Required. |
-| `@sveltejs/adapter-static` | ^3.0.10 | Static adapter for Cloudflare Pages. Required. |
-| `vitest` | ^4.1.6 | Test runner (not yet used — tasks 6.5–6.7 require test framework setup). |
+| `@sveltejs/adapter-static` | ^3.0.10 | Static adapter used to build assets served by the Cloudflare Worker Assets service. Required. |
+| `vitest` | ^4.1.6 | Active test runner; unit/component/Worker tests run in CI and production deployment validation. |
 | `@vitest/coverage-v8` | ^4.1.6 | Coverage (paired with vitest). |
 | `jsdom` | ^29.1.1 | DOM environment for tests (paired with vitest). |
 | `tailwindcss` | ^4.2.4 | Utility CSS. Used via Vite plugin. |
