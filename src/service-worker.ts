@@ -1,5 +1,6 @@
 /// <reference types="@sveltejs/kit" />
 import { build, files, prerendered, version } from "$service-worker";
+import { isCacheablePublicApiRequest } from "$lib/pwa/service-worker-policy";
 
 // Create a unique cache name for this deployment
 const CACHE_NAME = `rnt-cache-${version}`;
@@ -44,22 +45,6 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
 	);
 });
 
-function isCacheableApiRequest(request: Request, url: URL): boolean {
-	if (request.method !== "GET") return false;
-
-	return (
-		url.pathname === "/api/events" ||
-		url.pathname.startsWith("/api/events/") ||
-		url.pathname === "/api/venues" ||
-		url.pathname === "/api/organizers" ||
-		url.pathname === "/api/dj-cpt" ||
-		url.pathname === "/api/posts" ||
-		url.pathname === "/api/announcements" ||
-		url.pathname === "/api/links" ||
-		url.pathname === "/api/offline-snapshot"
-	);
-}
-
 // Fetch: cache-first for app-shell, network-first for explicitly public GET data.
 self.addEventListener("fetch", (event: FetchEvent) => {
 	const { request } = event;
@@ -73,7 +58,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 	// Mutating, auth, newsletter, and other sensitive API requests remain network-only.
 	// This also prevents Cache API writes for POST/PATCH/DELETE requests.
 	if (url.pathname.startsWith("/api/")) {
-		if (isCacheableApiRequest(request, url)) {
+		if (isCacheablePublicApiRequest(request.method, url.pathname)) {
 			event.respondWith(networkFirst(request));
 		}
 		return;
