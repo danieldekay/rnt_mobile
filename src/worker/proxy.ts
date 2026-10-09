@@ -63,7 +63,7 @@ export async function proxyJsonGet(
 
     try {
         const response = await fetchWithTimeout(
-            targetUrl,
+            targetUrl.toString(),
             {
                 method: "GET",
                 headers: { accept: "application/json" },
