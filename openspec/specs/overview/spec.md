@@ -109,7 +109,18 @@ The system SHALL function as a Progressive Web App with offline capabilities.
 - **GIVEN** the application is served over HTTPS
 - **WHEN** the PWA loads in a supported browser
 - **THEN** a service worker is registered for offline caching
-- **AND** updates are handled via Cloudflare Pages deployment
+- **AND** updates are deployed as Cloudflare Worker Assets through GitHub Actions
+
+#### Scenario: Recover events while offline
+- **GIVEN** the normal event request cannot reach the network
+- **WHEN** a previously prepared offline snapshot exists
+- **THEN** the event store loads the bounded 30-day snapshot
+- **AND** the normal API error is not shown
+
+#### Scenario: Keep sensitive API requests network-only
+- **GIVEN** a newsletter, authentication, or mutating API request
+- **WHEN** the request passes through the Service Worker scope
+- **THEN** the Service Worker does not cache or replay the request
 
 ## Technical Notes
 
