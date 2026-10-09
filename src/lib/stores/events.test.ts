@@ -3,11 +3,13 @@ import type { TribeEvent } from "$lib/types";
 import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
 
 const fetchAllEventsMock = vi.fn();
+const fetchOfflineSnapshotMock = vi.fn();
 const fetchNextEventsRangeMock = vi.fn();
 const trackFeatureEventMock = vi.fn();
 
 vi.mock("$lib/api/tribe", () => ({
     fetchAllEvents: fetchAllEventsMock,
+    fetchOfflineSnapshot: fetchOfflineSnapshotMock,
     fetchNextEventsRange: fetchNextEventsRangeMock,
     getDateRange: vi.fn((filter: string) => {
         if (filter === "week") {
@@ -113,12 +115,38 @@ describe("eventStore progressive browsing", () => {
     beforeEach(() => {
         vi.resetModules();
         fetchAllEventsMock.mockReset();
+        fetchOfflineSnapshotMock.mockReset();
+        fetchOfflineSnapshotMock.mockResolvedValue([]);
         fetchNextEventsRangeMock.mockReset();
         trackFeatureEventMock.mockReset();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    it("falls back to the offline snapshot when primary loading fails", async () => {
+        fetchAllEventsMock.mockRejectedValueOnce(new Error("network offline"));
+        fetchOfflineSnapshotMock.mockResolvedValueOnce([
+            createEvent(9, "2026-05-02 20:00:00"),
+        ]);
+
+        const eventStore = await loadStore();
+        let latest: EventStoreSnapshot | undefined;
+        const unsubscribe = eventStore.subscribe((value: unknown) => {
+            latest = value as EventStoreSnapshot;
+        });
+
+        await eventStore.loadEvents(true);
+
+        expect(latest?.error).toBeNull();
+        expect(latest?.events.map((event) => event.id)).toEqual([9]);
+        expect(trackFeatureEventMock).toHaveBeenCalledWith(
+            "events",
+            "offline_snapshot_fallback",
+        );
+
+        unsubscribe();
     });
 
     it("appends the next range and deduplicates overlapping events", async () => {
