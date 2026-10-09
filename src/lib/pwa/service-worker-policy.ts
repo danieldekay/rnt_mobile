@@ -7,6 +7,7 @@ const CACHEABLE_PUBLIC_API_PATHS = new Set([
     "/api/announcements",
     "/api/links",
     "/api/offline-snapshot",
+    "/api/entity-overview",
 ]);
 
 export function isCacheablePublicApiRequest(
