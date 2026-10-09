@@ -23,12 +23,19 @@
 - [x] Bound venue detail event loading to 30 days.
 - [x] Add/verify pagination regression coverage.
 
+## Worker architecture
+
+- [x] Extract route-scoped rate-limit logic from the Worker entrypoint.
+- [x] Extract generic public JSON proxy/cache logic from the Worker entrypoint.
+- [x] Isolate the offline snapshot implementation as a Worker module.
+
 ## Delivery
 
 - [x] Add Vitest job to CI.
 - [x] Gate production deployment on check, tests, and build.
 - [x] Pin production Wrangler version.
-- [ ] Run CI, type checks, tests, and build on the pull request.
+- [x] Add a Wrangler dry-run to PR CI so Worker bundling/config is validated.
+- [ ] Run CI, type checks, tests, app build, and Worker dry-run on the pull request.
 
 ## Repository consistency
 
