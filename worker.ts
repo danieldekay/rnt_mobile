@@ -15,6 +15,7 @@ import {
     type RateLimitBinding,
 } from "./src/worker/rate-limit";
 import { handleOfflineSnapshot } from "./src/worker/offline-snapshot";
+import { proxyJsonGet } from "./src/worker/proxy";
 
 // Cloudflare Worker Secret type (if not provided by @cloudflare/workers-types)
 interface Secret {
@@ -101,19 +102,24 @@ export default {
         const eventDetailMatch = url.pathname.match(EVENT_DETAIL_PATH);
 
         if (url.pathname === BLOG_POSTS_PATH) {
-            return proxyTribeRequest(request, WP_POSTS_BASE_URL);
+            return proxyJsonGet(request, WP_POSTS_BASE_URL, {
+                timeoutMs: REQUEST_TIMEOUT_MS,
+            });
         }
 
         if (url.pathname === ANNOUNCEMENTS_PATH) {
-            return proxyTribeRequest(request, WP_ANNOUNCEMENTS_BASE_URL);
+            return proxyJsonGet(request, WP_ANNOUNCEMENTS_BASE_URL, {
+                timeoutMs: REQUEST_TIMEOUT_MS,
+            });
         }
 
         if (url.pathname === DJ_CPT_LIST_PATH) {
-            return proxyTribeRequest(
-                request,
-                WP_DJ_CPT_BASE_URL,
-                DJ_CPT_CACHE_TTL_SECONDS,
-            );
+            return proxyJsonGet(request, WP_DJ_CPT_BASE_URL, {
+                cacheTtlSeconds: DJ_CPT_CACHE_TTL_SECONDS,
+                timeoutMs: REQUEST_TIMEOUT_MS,
+                timeoutMessage: "Die Veranstaltungsdaten konnten nicht rechtzeitig geladen werden.",
+                errorMessage: "Die Veranstaltungsdaten sind derzeit nicht verfuegbar.",
+            });
         }
 
         if (url.pathname === LINKS_FEED_PATH) {
@@ -121,11 +127,12 @@ export default {
         }
 
         if (url.pathname === EVENTS_LIST_PATH) {
-            return proxyTribeRequest(
-                request,
-                TRIBE_EVENTS_BASE_URL,
-                EVENTS_CACHE_TTL_SECONDS,
-            );
+            return proxyJsonGet(request, TRIBE_EVENTS_BASE_URL, {
+                cacheTtlSeconds: EVENTS_CACHE_TTL_SECONDS,
+                timeoutMs: REQUEST_TIMEOUT_MS,
+                timeoutMessage: "Die Veranstaltungsdaten konnten nicht rechtzeitig geladen werden.",
+                errorMessage: "Die Veranstaltungsdaten sind derzeit nicht verfuegbar.",
+            });
         }
 
         if (url.pathname === OFFLINE_SNAPSHOT_PATH) {
@@ -145,19 +152,21 @@ export default {
         }
 
         if (url.pathname === VENUES_LIST_PATH) {
-            return proxyTribeRequest(
-                request,
-                TRIBE_VENUES_BASE_URL,
-                VENUES_CACHE_TTL_SECONDS,
-            );
+            return proxyJsonGet(request, TRIBE_VENUES_BASE_URL, {
+                cacheTtlSeconds: VENUES_CACHE_TTL_SECONDS,
+                timeoutMs: REQUEST_TIMEOUT_MS,
+                timeoutMessage: "Die Veranstaltungsdaten konnten nicht rechtzeitig geladen werden.",
+                errorMessage: "Die Veranstaltungsdaten sind derzeit nicht verfuegbar.",
+            });
         }
 
         if (url.pathname === ORGANIZERS_LIST_PATH) {
-            return proxyTribeRequest(
-                request,
-                TRIBE_ORGANIZERS_BASE_URL,
-                ORGANIZERS_CACHE_TTL_SECONDS,
-            );
+            return proxyJsonGet(request, TRIBE_ORGANIZERS_BASE_URL, {
+                cacheTtlSeconds: ORGANIZERS_CACHE_TTL_SECONDS,
+                timeoutMs: REQUEST_TIMEOUT_MS,
+                timeoutMessage: "Die Veranstaltungsdaten konnten nicht rechtzeitig geladen werden.",
+                errorMessage: "Die Veranstaltungsdaten sind derzeit nicht verfuegbar.",
+            });
         }
 
         if (url.pathname === NEWSLETTER_SUBSCRIBE_PATH) {
@@ -295,74 +304,12 @@ async function handleEventDetail(
     }
 
     try {
-        return proxyTribeRequest(
-            request,
-            `${TRIBE_EVENTS_BASE_URL}/${eventId}`,
-            EVENT_DETAIL_CACHE_TTL_SECONDS,
-        );
-    } catch (error) {
-        const status = isAbortError(error) ? 504 : 502;
-        const message = isAbortError(error)
-            ? "Die Veranstaltungsdaten konnten nicht rechtzeitig geladen werden."
-            : "Die Veranstaltungsdaten sind derzeit nicht verfuegbar.";
-
-        return json({ ok: false, message }, status);
-    }
-}
-
-async function proxyTribeRequest(
-    request: Request,
-    targetBaseUrl: string,
-    cacheTtlSeconds: number = 0,
-): Promise<Response> {
-    if (request.method !== "GET") {
-        return json({ ok: false, message: "Methode nicht erlaubt." }, 405);
-    }
-
-    const targetUrl = new URL(targetBaseUrl);
-    const incomingUrl = new URL(request.url);
-    targetUrl.search = incomingUrl.search;
-
-    const cacheKey = new Request(targetUrl.toString());
-
-    if (cacheTtlSeconds > 0) {
-        const cache = getDefaultCache();
-        const cached = await cache.match(cacheKey);
-        if (cached) {
-            return cached;
-        }
-    }
-
-    try {
-        const response = await fetchWithTimeout(targetUrl.toString(), {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-            },
+        return proxyJsonGet(request, `${TRIBE_EVENTS_BASE_URL}/${eventId}`, {
+            cacheTtlSeconds: EVENT_DETAIL_CACHE_TTL_SECONDS,
+            timeoutMs: REQUEST_TIMEOUT_MS,
+            timeoutMessage: "Die Veranstaltungsdaten konnten nicht rechtzeitig geladen werden.",
+            errorMessage: "Die Veranstaltungsdaten sind derzeit nicht verfuegbar.",
         });
-
-        const browserTtl = Math.min(cacheTtlSeconds, 60);
-        const cacheControl =
-            cacheTtlSeconds > 0
-                ? `public, s-maxage=${cacheTtlSeconds}, max-age=${browserTtl}`
-                : "no-store";
-
-        const proxiedResponse = new Response(response.body, {
-            status: response.status,
-            headers: {
-                "cache-control": cacheControl,
-                "content-type":
-                    response.headers.get("content-type") ??
-                    "application/json; charset=utf-8",
-            },
-        });
-
-        if (cacheTtlSeconds > 0 && response.ok) {
-            const cache = getDefaultCache();
-            await cache.put(cacheKey, proxiedResponse.clone());
-        }
-
-        return proxiedResponse;
     } catch (error) {
         const status = isAbortError(error) ? 504 : 502;
         const message = isAbortError(error)
