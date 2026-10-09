@@ -70,7 +70,7 @@ The system SHALL maintain a clear, unidirectional data flow from external APIs t
 - **AND** retry flows are initiated through store actions
 
 ### Requirement: PWA-First Static Architecture
-The system SHALL be designed as a static Progressive Web App optimized for Cloudflare Pages deployment.
+The system SHALL be designed as a static Progressive Web App optimized for Cloudflare Worker Assets deployment.
 
 #### Scenario: Static site generation
 - **GIVEN** the application is built for production
@@ -84,8 +84,9 @@ The system SHALL be designed as a static Progressive Web App optimized for Cloud
 - **GIVEN** the application is served over HTTPS
 - **WHEN** the PWA loads in a supported browser
 - **THEN** a service worker is registered for offline caching and asset management
-- **AND** the service worker is configured through the adapter-static configuration
-- **AND** updates are handled through Cloudflare Pages' automatic deployment system
+- **AND** the Service Worker caches only public GET data and never mutating/auth/newsletter API requests
+- **AND** failed uncached navigation falls back to the dedicated `/offline` page
+- **AND** updates are handled through the GitHub Actions Cloudflare Worker deployment
 
 #### Scenario: Mobile-first responsive design
 - **GIVEN** the application is accessed on various devices
@@ -136,7 +137,7 @@ The system SHALL maintain consistency in its technology stack and follow establi
 - **State Management**: Svelte stores with reactivity via runes ($state, $derived, $effect)
 - **Data Flow**: Unidirectional from API → normalization → store → UI components
 - **Build Stack**: SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS, Vite
-- **Adapter**: `@sveltejs/adapter-static` for Cloudflare Pages deployment
+- **Adapter**: `@sveltejs/adapter-static` for Cloudflare Worker Assets deployment
 - **API Source**: WordPress Tribe Events API at `https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1`
 - **Routing**: File-based routing in `src/routes/` using SvelteKit conventions
 - **Styling**: Tailwind CSS utility-first with responsive design prefixes
@@ -145,4 +146,4 @@ The system SHALL maintain consistency in its technology stack and follow establi
 - **Performance**: Code splitting, lazy loading, and static optimization
 - **PWA Features**: Service worker registration, offline capabilities, installability
 - **Error Handling**: Centralized error state in stores with UI feedback
-- **Caching Strategy**: In-memory caching in stores with date-based cache invalidation
+- **Caching Strategy**: Worker edge caching for public APIs, Service Worker cache for public GET data, and a bounded 30-day offline event snapshot
