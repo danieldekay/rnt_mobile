@@ -21,7 +21,7 @@
 
 - [x] Restore 10-page maximum in `fetchAllEvents`.
 - [x] Bound venue detail event loading to 30 days.
-- [ ] Add/verify pagination regression coverage.
+- [x] Add/verify pagination regression coverage.
 
 ## Delivery
 
@@ -32,8 +32,8 @@
 
 ## Repository consistency
 
-- [ ] Bump release to 0.5.1 and add release notes.
-- [ ] Update architecture/config/inventory documentation.
-- [ ] Remove temporary/backup artifacts from mainline.
-- [ ] Reconcile and clean stale GitHub issues.
-- [ ] Archive/supersede completed active OpenSpec proposals.
+- [x] Bump release to 0.5.1 and add release notes.
+- [x] Update architecture/config/inventory documentation.
+- [x] Remove temporary/backup artifacts from mainline.
+- [x] Reconcile and clean stale GitHub issues.
+- [x] Archive/supersede completed active OpenSpec proposals.
