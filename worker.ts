@@ -14,6 +14,7 @@ import {
     enforceRateLimit,
     type RateLimitBinding,
 } from "./src/worker/rate-limit";
+import { handleOfflineSnapshot } from "./src/worker/offline-snapshot";
 
 // Cloudflare Worker Secret type (if not provided by @cloudflare/workers-types)
 interface Secret {
@@ -59,6 +60,7 @@ const ANNOUNCEMENTS_PATH = "/api/announcements";
 const DJ_CPT_LIST_PATH = "/api/dj-cpt";
 const LINKS_FEED_PATH = "/api/links";
 const EVENTS_LIST_PATH = "/api/events";
+const OFFLINE_SNAPSHOT_PATH = "/api/offline-snapshot";
 const EVENT_DETAIL_PATH = /^\/api\/events\/(\d+)$/;
 const VENUES_LIST_PATH = "/api/venues";
 const ORGANIZERS_LIST_PATH = "/api/organizers";
@@ -124,6 +126,15 @@ export default {
                 TRIBE_EVENTS_BASE_URL,
                 EVENTS_CACHE_TTL_SECONDS,
             );
+        }
+
+        if (url.pathname === OFFLINE_SNAPSHOT_PATH) {
+            return handleOfflineSnapshot(request, {
+                eventsBaseUrl: TRIBE_EVENTS_BASE_URL,
+                timeoutMs: REQUEST_TIMEOUT_MS,
+                days: 30,
+                maxPages: 10,
+            });
         }
 
         if (eventDetailMatch) {
