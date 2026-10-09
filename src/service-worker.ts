@@ -1,6 +1,7 @@
 /// <reference types="@sveltejs/kit" />
 import { build, files, prerendered, version } from "$service-worker";
 import { isCacheablePublicApiRequest } from "$lib/pwa/service-worker-policy";
+import { networkFirstNavigation } from "$lib/pwa/navigation-fallback";
 
 // Create a unique cache name for this deployment
 const CACHE_NAME = `rnt-cache-${version}`;
@@ -81,7 +82,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 	// Navigation requests use an explicit three-step fallback:
 	// network -> cached navigation -> dedicated offline page.
 	if (request.mode === "navigate") {
-		event.respondWith(navigationNetworkFirst(request));
+		event.respondWith(networkFirstNavigation(request, CACHE_NAME));
 	}
 });
 
@@ -104,29 +105,6 @@ async function networkFirst(request: Request): Promise<Response> {
 	} catch {
 		const cached = await caches.match(request);
 		return cached || Response.error();
-	}
-}
-
-async function navigationNetworkFirst(request: Request): Promise<Response> {
-	try {
-		const networkResponse = await fetch(request);
-		if (networkResponse.ok) {
-			const cache = await caches.open(CACHE_NAME);
-			await cache.put(request, networkResponse.clone());
-		}
-		return networkResponse;
-	} catch {
-		const cachedNavigation = await caches.match(request);
-		if (cachedNavigation) return cachedNavigation;
-
-		const offline = await caches.match("/offline");
-		return (
-			offline ??
-			new Response("Offline", {
-				status: 503,
-				headers: { "content-type": "text/plain; charset=utf-8" },
-			})
-		);
 	}
 }
 
