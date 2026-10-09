@@ -10,6 +10,10 @@ import {
     resolveSeoForPath,
     shouldInjectHead,
 } from "./src/lib/seo/worker-head";
+import {
+    enforceRateLimit,
+    type RateLimitBinding,
+} from "./src/worker/rate-limit";
 
 // Cloudflare Worker Secret type (if not provided by @cloudflare/workers-types)
 interface Secret {
@@ -21,6 +25,8 @@ interface Env {
     SENDY_BASE_URL?: string;
     SENDY_LIST_ID: Secret;
     SENDY_API_KEY?: Secret;
+    NEWSLETTER_NONCE_RATE_LIMITER?: RateLimitBinding;
+    NEWSLETTER_MUTATION_RATE_LIMITER?: RateLimitBinding;
 }
 
 type Fetcher = {
@@ -83,80 +89,14 @@ const GENERIC_ERROR_MESSAGE =
     "Die Anmeldung war gerade nicht moeglich. Bitte versuche es spaeter erneut.";
 const SUCCESS_MESSAGE =
     "Vielen Dank! Du erhaeltst gleich eine Bestaetigungs-E-Mail – bitte klicke dort auf den Bestaetigungs-Link, um deine Anmeldung abzuschliessen.";
-const RATE_LIMIT_MAX = 100;
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const RATE_LIMIT_CACHE_TTL = 65; // seconds (slightly more than window)
-
-function getClientIp(request: Request): string {
-    const forwarded = request.headers.get("x-forwarded-for");
-    if (forwarded) {
-        return forwarded.split(",")[0].trim();
-    }
-    return request.headers.get("cf-connecting-ip") ?? request.headers.get("x-real-ip") ?? "unknown";
-}
-
 function createWorkerCacheKey(request: Request, path: string): Request {
     return new Request(new URL(path, request.url).toString());
-}
-
-async function checkRateLimit(request: Request): Promise<Response | null> {
-    const ip = getClientIp(request);
-    if (ip === "unknown") return null;
-
-    const cache = getDefaultCache();
-    const cacheKey = createWorkerCacheKey(
-        request,
-        `/__worker-cache/rate-limit/${encodeURIComponent(ip)}`,
-    );
-    const cached = await cache.match(cacheKey);
-
-    if (cached) {
-        const data = (await cached.json()) as { count: number; windowStart: number };
-        const now = Date.now();
-        if (now - data.windowStart > RATE_LIMIT_WINDOW_MS) {
-            // Window expired, reset
-            await cache.put(
-                cacheKey,
-                Response.json({ count: 1, windowStart: now }, {
-                    headers: { "cache-control": `public, s-maxage=${RATE_LIMIT_CACHE_TTL}` },
-                }),
-            );
-            return null;
-        }
-        if (data.count >= RATE_LIMIT_MAX) {
-            return new Response(
-                JSON.stringify({ ok: false, message: "Zu viele Anfragen. Bitte warte einen Moment." }),
-                { status: 429, headers: { "content-type": "application/json" } },
-            );
-        }
-        // Increment count
-        await cache.put(
-            cacheKey,
-            Response.json({ count: data.count + 1, windowStart: data.windowStart }, {
-                headers: { "cache-control": `public, s-maxage=${RATE_LIMIT_CACHE_TTL}` },
-            }),
-        );
-        return null;
-    }
-
-    // First request in window
-    await cache.put(
-        cacheKey,
-        Response.json({ count: 1, windowStart: Date.now() }, {
-            headers: { "cache-control": `public, s-maxage=${RATE_LIMIT_CACHE_TTL}` },
-        }),
-    );
-    return null;
 }
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         const url = new URL(request.url);
         const eventDetailMatch = url.pathname.match(EVENT_DETAIL_PATH);
-        const rateLimitResponse = await checkRateLimit(request);
-        if (rateLimitResponse) {
-            return rateLimitResponse;
-        }
 
         if (url.pathname === BLOG_POSTS_PATH) {
             return proxyTribeRequest(request, WP_POSTS_BASE_URL);
@@ -210,6 +150,12 @@ export default {
         }
 
         if (url.pathname === NEWSLETTER_SUBSCRIBE_PATH) {
+            const limited = await enforceRateLimit(
+                request,
+                env.NEWSLETTER_MUTATION_RATE_LIMITER,
+                "newsletter-subscribe",
+            );
+            if (limited) return limited;
             return handleNewsletterSubscribe(request, env);
         }
 
@@ -217,10 +163,22 @@ export default {
             url.pathname === NEWSLETTER_UNSUBSCRIBE_PATH ||
             url.pathname === NEWSLETTER_UNSUBSCRIBE_ALIAS_PATH
         ) {
+            const limited = await enforceRateLimit(
+                request,
+                env.NEWSLETTER_MUTATION_RATE_LIMITER,
+                "newsletter-unsubscribe",
+            );
+            if (limited) return limited;
             return handleNewsletterUnsubscribe(request, env);
         }
 
         if (url.pathname === NEWSLETTER_STATUS_PATH) {
+            const limited = await enforceRateLimit(
+                request,
+                env.NEWSLETTER_MUTATION_RATE_LIMITER,
+                "newsletter-status",
+            );
+            if (limited) return limited;
             return handleNewsletterStatus(request, env);
         }
 
@@ -229,6 +187,12 @@ export default {
         }
 
         if (url.pathname === NEWSLETTER_NONCE_PATH) {
+            const limited = await enforceRateLimit(
+                request,
+                env.NEWSLETTER_NONCE_RATE_LIMITER,
+                "newsletter-nonce",
+            );
+            if (limited) return limited;
             return handleNewsletterNonce(request);
         }
 
@@ -411,15 +375,25 @@ async function handleNewsletterNonce(request: Request): Promise<Response> {
     );
     const cache = getDefaultCache();
     const nonceValue = JSON.stringify({ nonce });
-    await cache.put(cacheKey, new Response(nonceValue));
-    // Cloudflare cache TTL is controlled by the Cache-Control header.
-    const response = new Response(nonceValue, {
+    // Cache expiry belongs on the internally stored response. The browser-facing
+    // response is explicitly non-cacheable so a nonce is never reused by a client cache.
+    await cache.put(
+        cacheKey,
+        new Response(nonceValue, {
+            headers: {
+                "cache-control": `public, s-maxage=${NEWSLETTER_NONCE_TTL_SECONDS}, max-age=0`,
+                "content-type": "application/json; charset=utf-8",
+            },
+        }),
+    );
+
+    return new Response(nonceValue, {
         status: 200,
         headers: {
-            "cache-control": `public, s-maxage=${NEWSLETTER_NONCE_TTL_SECONDS}, max-age=0`,
+            "cache-control": "no-store",
+            "content-type": "application/json; charset=utf-8",
         },
     });
-    return response;
 }
 
 async function handleNewsletterSubscribe(
@@ -437,40 +411,17 @@ async function handleNewsletterSubscribe(
         return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
     }
 
-    // Task 1.4: Require explicit nonce (authenticity proof).
-    const contentType = request.headers.get("content-type") ?? "";
-    let nonce = "";
-    if (contentType.includes("application/json")) {
-        const body = (await request.json().catch(() => null)) as {
-            nonce?: unknown;
-        } | null;
-        nonce = typeof body?.nonce === "string" ? body.nonce.trim() : "";
-    } else {
-        const formData = await request.formData();
-        nonce = String(formData.get("nonce") ?? "").trim();
+    const payload = await parseRequestPayload(request);
+    if (!payload.ok) {
+        return json({ ok: false, message: payload.message }, 400);
     }
-    if (!nonce) {
+    if (!payload.nonce || !(await consumeNewsletterNonce(request, payload.nonce))) {
         return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
     }
-    const nonceCacheKey = createWorkerCacheKey(
-        request,
-        `${NEWSLETTER_NONCE_PATH}/${encodeURIComponent(nonce)}`,
-    );
-    const nonceCache = getDefaultCache();
-    const nonceResponse = await nonceCache.match(nonceCacheKey);
-    if (!nonceResponse) {
-        return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
-    }
-    await nonceCache.delete(nonceCacheKey); // one-time use
 
     const config = getSendyConfig(env);
     if (!config.ok) {
         return json({ ok: false, message: config.message }, 500);
-    }
-
-    const payload = await parseRequestPayload(request);
-    if (!payload.ok) {
-        return json({ ok: false, message: payload.message }, 400);
     }
 
     if (payload.hp.length > 0) {
@@ -529,40 +480,17 @@ async function handleNewsletterUnsubscribe(
         return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
     }
 
-    // Task 1.4: Require explicit nonce (authenticity proof).
-    const contentType = request.headers.get("content-type") ?? "";
-    let nonce = "";
-    if (contentType.includes("application/json")) {
-        const body = (await request.json().catch(() => null)) as {
-            nonce?: unknown;
-        } | null;
-        nonce = typeof body?.nonce === "string" ? body.nonce.trim() : "";
-    } else {
-        const formData = await request.formData();
-        nonce = String(formData.get("nonce") ?? "").trim();
+    const payload = await parseRequestPayload(request);
+    if (!payload.ok) {
+        return json({ ok: false, message: payload.message }, 400);
     }
-    if (!nonce) {
+    if (!payload.nonce || !(await consumeNewsletterNonce(request, payload.nonce))) {
         return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
     }
-    const nonceCacheKey = createWorkerCacheKey(
-        request,
-        `${NEWSLETTER_NONCE_PATH}/${encodeURIComponent(nonce)}`,
-    );
-    const nonceCache = getDefaultCache();
-    const nonceResponse = await nonceCache.match(nonceCacheKey);
-    if (!nonceResponse) {
-        return json({ ok: false, message: "Ungueltige Herkunft." }, 403);
-    }
-    await nonceCache.delete(nonceCacheKey); // one-time use
 
     const config = getSendyConfig(env);
     if (!config.ok) {
         return json({ ok: false, message: config.message }, 500);
-    }
-
-    const payload = await parseRequestPayload(request);
-    if (!payload.ok) {
-        return json({ ok: false, message: payload.message }, 400);
     }
 
     try {
@@ -693,26 +621,47 @@ function getSendyConfigInternal(
     return { ok: true, baseUrl, listId, apiKey };
 }
 
+async function consumeNewsletterNonce(
+    request: Request,
+    nonce: string,
+): Promise<boolean> {
+    const nonceCacheKey = createWorkerCacheKey(
+        request,
+        `${NEWSLETTER_NONCE_PATH}/${encodeURIComponent(nonce)}`,
+    );
+    const nonceCache = getDefaultCache();
+    const nonceResponse = await nonceCache.match(nonceCacheKey);
+    if (!nonceResponse) return false;
+
+    await nonceCache.delete(nonceCacheKey);
+    return true;
+}
+
 async function parseRequestPayload(
     request: Request,
 ): Promise<
-    { ok: true; email: string; hp: string } | { ok: false; message: string }
+    | { ok: true; email: string; hp: string; nonce: string }
+    | { ok: false; message: string }
 > {
     const contentType = request.headers.get("content-type") ?? "";
     let email = "";
     let hp = "";
+    let nonce = "";
 
     if (contentType.includes("application/json")) {
         const body = (await request.json().catch(() => null)) as {
             email?: unknown;
             hp?: unknown;
+            nonce?: unknown;
         } | null;
         email = typeof body?.email === "string" ? body.email.trim() : "";
         hp = typeof body?.hp === "string" ? body.hp.trim() : "";
+        nonce = typeof body?.nonce === "string" ? body.nonce.trim() : "";
     } else {
         const formData = await request.formData();
         email = String(formData.get("email") ?? "").trim();
         hp = String(formData.get("hp") ?? formData.get("website") ?? "").trim();
+        nonce = String(formData.get("nonce") ?? "").trim();
     }
 
     if (!email) {
@@ -723,7 +672,7 @@ async function parseRequestPayload(
         return { ok: false, message: "Bitte pruefe die E-Mail-Adresse." };
     }
 
-    return { ok: true, email, hp };
+    return { ok: true, email, hp, nonce };
 }
 
 function isValidEmailAddress(value: string): boolean {
