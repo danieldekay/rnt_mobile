@@ -20,13 +20,6 @@ export const navItems: NavItem[] = [
         iconPath: "M4 6h16M4 10h16M4 14h16M4 18h16",
     },
     {
-        label: "Kalender",
-        href: "/kalender",
-        match: "prefix",
-        iconPath:
-            "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-    },
-    {
         label: "Favoriten",
         href: "/favoriten",
         match: "prefix",
@@ -52,7 +45,7 @@ export const navItems: NavItem[] = [
         href: "/djs",
         match: "prefix",
         iconPath:
-            "M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3",
+            "M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-3 3-3 3 .895 3 2zM9 10l12-3",
     },
     {
         label: "Veranstalter",
@@ -89,7 +82,5 @@ export function isNavActive(pathname: string, item: NavItem): boolean {
         return pathname === item.href;
     }
 
-    return (
-        pathname === item.href || pathname.startsWith(`${item.href}/`)
-    );
+    return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
