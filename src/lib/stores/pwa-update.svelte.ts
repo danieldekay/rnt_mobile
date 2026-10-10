@@ -11,6 +11,7 @@ const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 const FORCE_RELOAD_DELAY_MS = 1500;
 const APP_CACHE_PREFIX = 'rnt-cache-';
 const ACTIVATED_MESSAGE_TYPE = 'RNT_SW_ACTIVATED';
+const IS_TEST_MODE = import.meta.env.MODE === 'test';
 
 function createPwaUpdateStore() {
 	let hasUpdate = $state(false);
@@ -304,7 +305,7 @@ function createPwaUpdateStore() {
 
 export const pwaUpdateStore = createPwaUpdateStore();
 
-if (browser) {
+if (browser && !IS_TEST_MODE) {
 	queueMicrotask(() => {
 		void pwaUpdateStore.start();
 	});
