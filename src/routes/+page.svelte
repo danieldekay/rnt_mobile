@@ -6,6 +6,8 @@
         formatTimeRange,
     } from "$lib/utils/date-formatting";
     import { formatEventCost } from "$lib/api/tribe";
+    import Calendar from "$lib/components/Calendar.svelte";
+    import DateSelector from "$lib/components/DateSelector.svelte";
     import ConsentPlaceholder from "$lib/components/ConsentPlaceholder.svelte";
     import { escapeHtml } from "$lib/utils/html";
     import { trackFeatureEvent } from "$lib/matomo";
@@ -17,7 +19,7 @@
     import MusicFilterChip from "$lib/components/MusicFilterChip.svelte";
     import DateFilter from "$lib/components/DateFilter.svelte";
     import FavoritesFilterChip from "$lib/components/FavoritesFilterChip.svelte";
-    import type { EventType, MusicType, TribeEvent } from "$lib/types";
+    import type { DateFilter as DateFilterValue, EventType, MusicType, TribeEvent } from "$lib/types";
     import { EVENT_TYPE_SLUGS, MUSIC_SLUGS } from "$lib/constants";
     import "leaflet/dist/leaflet.css";
     import type * as L from "leaflet";
@@ -26,11 +28,20 @@
 
     const seo = mapHubPageSeo("home");
 
+    type EventView = "list" | "calendar" | "map";
+
     const eventTypes: EventType[] = ["milonga", "practica", "workshop", "kurs"];
     const musicTypes: MusicType[] = ["traditional", "mixed", "neo"];
+    const eventViews: { id: EventView; label: string; description: string }[] = [
+        { id: "list", label: "Liste", description: "Chronologische Eventkarten" },
+        { id: "calendar", label: "Kalender", description: "Monat und Tage" },
+        { id: "map", label: "Karte", description: "Orte im Überblick" },
+    ];
 
+    let activeView = $state<EventView>("list");
     let showImages = $state(false);
-    let showMap = $state(false);
+    let selectedDate = $state<Date | null>(null);
+    let currentMonth = $state(new Date());
     let mapContainer = $state<HTMLDivElement | null>(null);
     let map: L.Map | null = null;
     let markerLayer: L.FeatureGroup | null = null;
@@ -43,6 +54,9 @@
         groupEventsByLocation(eventsWithGeo),
     );
     const mapConsentGranted = $derived(consentStore.hasConsent("maps"));
+    const calendarEventsForSelectedDate = $derived(
+        selectedDate ? getEventsForDate(selectedDate) : [],
+    );
 
     const searchCount = $derived($eventStore.events.length);
     const totalCount = $derived($eventStore.allEvents.length);
@@ -91,7 +105,15 @@
     });
 
     onMount(() => {
-        eventStore.loadEvents();
+        const requestedView = new URLSearchParams(window.location.search).get("view");
+
+        if (requestedView === "calendar") {
+            activeView = "calendar";
+            void eventStore.loadCalendarMonth(currentMonth, true);
+        } else {
+            activeView = requestedView === "map" ? "map" : "list";
+            void eventStore.loadEvents();
+        }
 
         return () => {
             destroyMap();
@@ -100,7 +122,7 @@
 
     $effect(() => {
         if (
-            showMap &&
+            activeView === "map" &&
             mapConsentGranted &&
             mapContainer &&
             groupedEventsWithGeo.length > 0
@@ -120,6 +142,10 @@
         venueName: string;
     };
 
+    function isEventView(value: string): value is EventView {
+        return value === "list" || value === "calendar" || value === "map";
+    }
+
     function groupEventsByLocation(events: TribeEvent[]): GroupedMapEvents[] {
         const groups: Record<string, GroupedMapEvents> = {};
 
@@ -128,7 +154,6 @@
                 continue;
             }
 
-            // One marker per venue: merge events at the same place, never by proximity.
             const key =
                 event.venue.id != null
                     ? `venue:${event.venue.id}`
@@ -150,6 +175,17 @@
         }
 
         return Object.values(groups);
+    }
+
+    function getEventsForDate(date: Date): TribeEvent[] {
+        return $eventStore.events.filter((event) => {
+            const eventDate = new Date(event.start_date);
+            return (
+                eventDate.getFullYear() === date.getFullYear() &&
+                eventDate.getMonth() === date.getMonth() &&
+                eventDate.getDate() === date.getDate()
+            );
+        });
     }
 
     function getPopupDate(event: TribeEvent): string {
@@ -242,7 +278,6 @@
         markerLayer = leafletObj.featureGroup(markers).addTo(map);
 
         if (markers.length > 0) {
-            // Zoom in far enough that nearby venues stay visually separate.
             map.fitBounds(markerLayer.getBounds().pad(0.08), { maxZoom: 15 });
         }
     }
@@ -257,7 +292,40 @@
         }
     }
 
+    function updateViewUrl(view: EventView) {
+        if (typeof window === "undefined") return;
+
+        const url = new URL(window.location.href);
+        if (view === "list") {
+            url.searchParams.delete("view");
+        } else {
+            url.searchParams.set("view", view);
+        }
+        window.history.replaceState({}, "", url.toString());
+    }
+
+    function handleViewChange(view: EventView | string) {
+        if (!isEventView(view)) return;
+        if (activeView === view) return;
+
+        activeView = view;
+        updateViewUrl(view);
+        trackFeatureEvent("home", "view_toggle", view);
+
+        if (view === "calendar") {
+            void eventStore.loadCalendarMonth(currentMonth, true);
+            return;
+        }
+
+        void eventStore.loadEvents();
+    }
+
     async function handleRefresh() {
+        if (activeView === "calendar") {
+            await eventStore.loadCalendarMonth(currentMonth, true);
+            return;
+        }
+
         await eventStore.loadEvents(true);
     }
 
@@ -271,9 +339,32 @@
         trackFeatureEvent("home", "jump_to_top", $eventStore.filters.date);
     }
 
-    function handleDateFilterChange(date: "today" | "week" | "month" | "all") {
+    function handleDateFilterChange(date: DateFilterValue) {
+        if (activeView === "calendar") {
+            activeView = "list";
+            updateViewUrl("list");
+        }
         eventStore.setDateFilter(date);
         trackFeatureEvent("home", "date_filter_toggle", date);
+    }
+
+    function handleCalendarDateSelect(date: Date) {
+        selectedDate = date;
+        trackFeatureEvent("home", "calendar_date_select", date.toLocaleDateString("de-DE"));
+    }
+
+    function handleCalendarMonthChange(date: Date) {
+        currentMonth = date;
+        trackFeatureEvent("home", "calendar_month_change", date.toLocaleDateString("de-DE"));
+        void eventStore.loadCalendarMonth(date, true);
+
+        if (
+            selectedDate &&
+            (selectedDate.getFullYear() !== date.getFullYear() ||
+                selectedDate.getMonth() !== date.getMonth())
+        ) {
+            selectedDate = null;
+        }
     }
 
     function handleMusicToggle(music: MusicType) {
@@ -293,11 +384,6 @@
     function handleImageToggle() {
         showImages = !showImages;
         trackFeatureEvent("home", "image_toggle", showImages ? "show" : "hide");
-    }
-
-    function handleMapToggle() {
-        showMap = !showMap;
-        trackFeatureEvent("home", "map_toggle", showMap ? "show" : "hide");
     }
 
     function enableMaps() {
@@ -332,9 +418,9 @@
         <h1 class="font-display text-[2rem] font-semibold text-text-default">
             Nächste Veranstaltungen
         </h1>
-        <p class="meta-text max-w-[36ch]">
-            Datum, Ort und Format zuerst. Alles Wichtige bleibt auf dem Handy
-            schnell lesbar.
+        <p class="meta-text max-w-[40ch]">
+            Liste, Kalender und Karte liegen jetzt auf einer Seite. Wechsle die
+            Ansicht, ohne Suche und Filter zu verlieren.
         </p>
     </section>
 
@@ -345,7 +431,7 @@
                 Datum und Ansicht
             </p>
             <div
-                class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between"
+                class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"
             >
                 <div class="min-w-0 flex-1">
                     <DateFilter
@@ -354,6 +440,26 @@
                     />
                 </div>
                 <div class="flex flex-wrap gap-2 lg:justify-end">
+                    <div
+                        class="inline-flex rounded-control border border-border-default bg-surface-subtle p-1"
+                        role="tablist"
+                        aria-label="Veranstaltungsansicht"
+                    >
+                        {#each eventViews as view (view.id)}
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={activeView === view.id}
+                                title={view.description}
+                                onclick={() => handleViewChange(view.id)}
+                                class="inline-flex min-h-10 items-center rounded-control px-3 py-2 text-sm font-medium transition-colors {activeView === view.id
+                                    ? 'bg-action-primary text-text-inverse shadow-sm'
+                                    : 'text-text-muted hover:bg-action-secondary hover:text-text-default'}"
+                            >
+                                {view.label}
+                            </button>
+                        {/each}
+                    </div>
                     <button
                         onclick={handleImageToggle}
                         class="inline-flex min-h-12 items-center gap-2 rounded-control border px-4 py-2 text-sm font-medium transition-colors {showImages
@@ -379,54 +485,6 @@
                             ></path>
                         </svg>
                         <span>Bilder</span>
-                    </button>
-                    <button
-                        onclick={handleMapToggle}
-                        class="inline-flex min-h-12 items-center gap-2 rounded-control border px-4 py-2 text-sm font-medium transition-colors {showMap
-                            ? 'border-border-accent bg-action-secondary text-text-default'
-                            : 'border-border-default bg-surface-card text-text-muted hover:bg-action-secondary hover:text-text-default'}"
-                        title={showMap ? "Zur Liste" : "Zur Karte"}
-                        aria-pressed={showMap}
-                        type="button"
-                    >
-                        {#if showMap}
-                            <svg
-                                class="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16"
-                                ></path>
-                            </svg>
-                        {:else}
-                            <svg
-                                class="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"
-                                ></path>
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                ></path>
-                            </svg>
-                        {/if}
-                        <span>{showMap ? "Liste" : "Karte"}</span>
                     </button>
                 </div>
             </div>
@@ -543,27 +601,6 @@
         </div>
     {/if}
 
-    {#if showMap && $eventStore.events.length > 0}
-        <div class="card overflow-hidden">
-            {#if !mapConsentGranted}
-                <ConsentPlaceholder
-                    title="Karte erst nach Zustimmung"
-                    description="Die Kartenansicht lädt externe OpenStreetMap-Kacheln. Aktiviere Karten nur, wenn du diese externen Anfragen zulassen willst."
-                    actionLabel="Karten aktivieren"
-                    onEnable={enableMaps}
-                />
-            {:else if eventsWithGeo.length > 0}
-                <div bind:this={mapContainer} class="h-[60vh] w-full"></div>
-            {:else}
-                <div
-                    class="flex h-[60vh] items-center justify-center bg-surface-subtle px-6 text-center text-text-muted"
-                >
-                    Keine Events mit Standortdaten
-                </div>
-            {/if}
-        </div>
-    {/if}
-
     <!-- Loading state -->
     {#if $eventStore.loading && $eventStore.events.length === 0}
         <div
@@ -579,7 +616,6 @@
             </p>
         </div>
     {:else if $eventStore.error}
-        <!-- Error state -->
         <div class="card space-y-3 p-5 text-center" role="alert">
             <p
                 class="font-display text-[1.25rem] font-semibold text-text-default"
@@ -592,7 +628,6 @@
             </button>
         </div>
     {:else if $eventStore.events.length === 0}
-        <!-- Empty state -->
         <div class="card p-8 text-center">
             <svg
                 class="mx-auto mb-4 h-16 w-16 text-text-muted"
@@ -612,8 +647,77 @@
             </p>
             <p class="meta-text mt-1">Versuche andere Filtereinstellungen</p>
         </div>
-    {:else if !showMap}
-        <!-- Event list -->
+    {:else if activeView === "map"}
+        <div class="card overflow-hidden">
+            {#if !mapConsentGranted}
+                <ConsentPlaceholder
+                    title="Karte erst nach Zustimmung"
+                    description="Die Kartenansicht lädt externe OpenStreetMap-Kacheln. Aktiviere Karten nur, wenn du diese externen Anfragen zulassen willst."
+                    actionLabel="Karten aktivieren"
+                    onEnable={enableMaps}
+                />
+            {:else if eventsWithGeo.length > 0}
+                <div bind:this={mapContainer} class="h-[60vh] w-full"></div>
+            {:else}
+                <div
+                    class="flex h-[60vh] items-center justify-center bg-surface-subtle px-6 text-center text-text-muted"
+                >
+                    Keine Events mit Standortdaten
+                </div>
+            {/if}
+        </div>
+    {:else if activeView === "calendar"}
+        <section class="page-stack">
+            <Calendar
+                events={$eventStore.events}
+                {currentMonth}
+                {selectedDate}
+                onselectDate={handleCalendarDateSelect}
+                onmonthchange={handleCalendarMonthChange}
+            />
+
+            <DateSelector
+                selectedDate={selectedDate}
+                eventsForDate={calendarEventsForSelectedDate}
+                ondatechange={(date) => {
+                    selectedDate = date;
+                }}
+            />
+
+            {#if selectedDate && calendarEventsForSelectedDate.length > 0}
+                <div class="space-y-3">
+                    <h2 class="section-title">
+                        Events am {selectedDate.toLocaleDateString("de-DE", {
+                            day: "numeric",
+                            month: "long",
+                        })}
+                    </h2>
+                    {#each calendarEventsForSelectedDate as event (event.id)}
+                        <EventCard {event} showImage={showImages} />
+                    {/each}
+                </div>
+            {:else if selectedDate}
+                <div class="card p-6 text-center">
+                    <p class="text-[1rem] font-medium text-text-default">
+                        Keine Events an diesem Tag
+                    </p>
+                    <p class="meta-text mt-2">
+                        Wähle einen anderen Tag oder springe mit „Heute“ zurück.
+                    </p>
+                </div>
+            {:else}
+                <div class="card p-6 text-center">
+                    <p class="text-[1rem] font-medium text-text-default">
+                        Tippe auf einen Tag, um Events zu sehen
+                    </p>
+                    <p class="meta-text mt-2">
+                        Die Monatsansicht bleibt die Orientierung, die Liste
+                        darunter zeigt die Details.
+                    </p>
+                </div>
+            {/if}
+        </section>
+    {:else}
         <div class="relative">
             <div class="space-y-3">
                 {#each $eventStore.events as event (event.id)}
@@ -621,7 +725,6 @@
                 {/each}
             </div>
 
-            <!-- Refresh button -->
             <div class="mt-6 flex justify-center">
                 <button
                     onclick={handleRefresh}
