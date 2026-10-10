@@ -197,6 +197,10 @@ function createPwaUpdateStore() {
 		}
 	}
 
+	function handleWindowFocus() {
+		void probeUpdate();
+	}
+
 	async function start(check?: () => Promise<boolean>) {
 		if (!browser || started || !('serviceWorker' in navigator)) return;
 
@@ -207,7 +211,7 @@ function createPwaUpdateStore() {
 		navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 		navigator.serviceWorker.addEventListener('message', handleMessage);
 		document.addEventListener('visibilitychange', handleVisibilityChange);
-		window.addEventListener('focus', () => void probeUpdate());
+		window.addEventListener('focus', handleWindowFocus);
 
 		const nextRegistration = await navigator.serviceWorker.getRegistration();
 		if (nextRegistration) {
@@ -232,6 +236,7 @@ function createPwaUpdateStore() {
 		navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
 		navigator.serviceWorker.removeEventListener('message', handleMessage);
 		document.removeEventListener('visibilitychange', handleVisibilityChange);
+		window.removeEventListener('focus', handleWindowFocus);
 	}
 
 	function toggleRecovery() {
@@ -298,3 +303,9 @@ function createPwaUpdateStore() {
 }
 
 export const pwaUpdateStore = createPwaUpdateStore();
+
+if (browser) {
+	queueMicrotask(() => {
+		void pwaUpdateStore.start();
+	});
+}
