@@ -5,6 +5,7 @@ import { networkFirstNavigation } from "$lib/pwa/navigation-fallback";
 
 // Create a unique cache name for this deployment
 const CACHE_NAME = `rnt-cache-${version}`;
+const UPDATE_MESSAGE_TYPE = "RNT_SW_ACTIVATED";
 
 const ASSETS = [
 	...build,
@@ -42,8 +43,19 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
 					.map((name) => caches.delete(name)),
 			);
 			await self.clients.claim();
+			const clients = await self.clients.matchAll({ type: "window" });
+			for (const client of clients) {
+				client.postMessage({ type: UPDATE_MESSAGE_TYPE, version });
+			}
 		})(),
 	);
+});
+
+self.addEventListener("message", (event: ExtendableMessageEvent) => {
+	const type = event.data?.type;
+	if (type === "SKIP_WAITING") {
+		self.skipWaiting();
+	}
 });
 
 // Fetch: cache-first for app-shell, network-first for explicitly public GET data.
