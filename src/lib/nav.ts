@@ -20,13 +20,6 @@ export const navItems: NavItem[] = [
         iconPath: "M4 6h16M4 10h16M4 14h16M4 18h16",
     },
     {
-        label: "Kalender",
-        href: "/kalender",
-        match: "prefix",
-        iconPath:
-            "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-    },
-    {
         label: "Favoriten",
         href: "/favoriten",
         match: "prefix",
@@ -89,7 +82,5 @@ export function isNavActive(pathname: string, item: NavItem): boolean {
         return pathname === item.href;
     }
 
-    return (
-        pathname === item.href || pathname.startsWith(`${item.href}/`)
-    );
+    return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }

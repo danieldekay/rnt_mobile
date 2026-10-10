@@ -1,5 +1,7 @@
-/**
- * Calendar page load function — SSR enabled (not prerendered).
- * Data fetching happens at request time, not build time.
- */
+import { redirect } from '@sveltejs/kit';
+
 export const prerender = false;
+
+export function load() {
+	redirect(308, '/?view=calendar');
+}
