@@ -19,7 +19,7 @@
         "@testing-library/svelte": "^5.2.8",
         "@types/he": "^1.2.3",
         "@types/node": "^25.9.1",
-        "@vitest/coverage-v8": "^4.1.7",
+        "@vitest/coverage-v8": "^4.1.10",
         "jsdom": "^29.1.1",
         "postcss": "^8.5.26",
         "svelte": "^5.55.9",
