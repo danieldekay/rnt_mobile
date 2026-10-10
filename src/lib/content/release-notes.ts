@@ -8,6 +8,20 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.6.0',
+        releasedAt: '2026-10-09',
+        headline: 'Schnellere Verzeichnisse mit gemeinsamem Datenfeed',
+        summary:
+            'DJs, Veranstalter und Tanzräume teilen nun einen kompakten, gecachten Event-Überblick statt jeweils vollständige Eventdaten separat zu laden.',
+        highlights: [
+            'Ein gemeinsamer Verzeichnis-Feed deckt den aktuellen und die beiden folgenden Kalendermonate ab.',
+            'Weitere Event-Seiten werden begrenzt parallel geladen und bleiben auf maximal zehn Seiten beschränkt.',
+            'DJ-, Veranstalter- und Tanzraumlisten verwenden denselben fünf Minuten gecachten Überblick.',
+            'Der Feed überträgt nur die Felder, die für Zuordnungen, Zählungen und nächste Termine benötigt werden.',
+            'Falls der Seitenrahmen erreicht wird, zeigt die Oberfläche ausdrücklich an, dass spätere Termine fehlen können.'
+        ]
+    },
+    {
         version: '0.5.1',
         releasedAt: '2026-10-09',
         headline: 'Zuverlaessiger laden – auch bei schlechtem Netz',

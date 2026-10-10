@@ -1,4 +1,5 @@
-import { fetchAllEvents, fetchOrganizers } from "$lib/api/tribe";
+import { fetchOrganizers } from "$lib/api/tribe";
+import { fetchEntityOverview } from "$lib/api/entity-overview";
 import type { OrganizerWithStats } from "$lib/types";
 import {
 	emptyDateFilterCounts,
@@ -39,7 +40,7 @@ function deriveCityLabel(cityCounts: Map<string, number>): string {
 }
 
 function countStatsByOrganizerId(
-	events: Awaited<ReturnType<typeof fetchAllEvents>>,
+	events: import("$lib/types").TribeEvent[],
 ): Map<number, OrganizerStats> {
 	const statsByOrganizer = new Map<number, OrganizerStats>();
 
@@ -92,16 +93,11 @@ function sortOrganizers(
 
 export const load: PageLoad = async ({ fetch }) => {
 	try {
-		const start = new Date();
-		start.setHours(0, 0, 0, 0);
-		const end = new Date(start);
-		end.setDate(end.getDate() + 30);
-		end.setHours(23, 59, 59, 999);
-
-		const [organizers, events] = await Promise.all([
+		const [organizers, overview] = await Promise.all([
 			fetchOrganizers(fetch),
-			fetchAllEvents([], null, "all", fetch, undefined, { start, end }),
+			fetchEntityOverview(fetch),
 		]);
+		const events = overview.events;
 		const statsByOrganizer = countStatsByOrganizerId(events);
 
 		const organizersWithStats: OrganizerWithStats[] = organizers
@@ -124,6 +120,7 @@ export const load: PageLoad = async ({ fetch }) => {
 
 		return {
 			organizers: organizersWithStats,
+			overviewCoverage: overview.coverage,
 			loadError: false,
 		};
 	} catch (error) {
@@ -131,6 +128,7 @@ export const load: PageLoad = async ({ fetch }) => {
 
 		return {
 			organizers: [] as OrganizerWithStats[],
+			overviewCoverage: null,
 			loadError: true,
 		};
 	}

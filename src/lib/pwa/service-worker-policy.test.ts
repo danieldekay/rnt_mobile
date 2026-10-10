@@ -6,6 +6,7 @@ describe("Service Worker API cache policy", () => {
         expect(isCacheablePublicApiRequest("GET", "/api/events")).toBe(true);
         expect(isCacheablePublicApiRequest("GET", "/api/events/123")).toBe(true);
         expect(isCacheablePublicApiRequest("GET", "/api/offline-snapshot")).toBe(true);
+        expect(isCacheablePublicApiRequest("GET", "/api/entity-overview")).toBe(true);
     });
 
     it("never caches mutating or sensitive endpoints", () => {

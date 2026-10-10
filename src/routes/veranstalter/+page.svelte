@@ -182,6 +182,23 @@
             </p>
         </section>
 
+        {#if data.overviewCoverage?.truncated}
+            <section
+                class="card border border-border-accent p-4"
+                role="status"
+                aria-live="polite"
+            >
+                <p class="text-[0.9375rem] font-semibold text-text-default">
+                    Verzeichnisdaten sind begrenzt
+                </p>
+                <p class="meta-text mt-1">
+                    Es wurden {data.overviewCoverage.pagesFetched} von
+                    {data.overviewCoverage.totalPages} Event-Seiten ausgewertet.
+                    Spätere Termine können in den Zählungen fehlen.
+                </p>
+            </section>
+        {/if}
+
         {@render filterToolbar()}
 
         {#if showLoading}

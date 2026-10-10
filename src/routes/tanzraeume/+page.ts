@@ -1,4 +1,5 @@
-import { fetchAllEvents, fetchVenues } from "$lib/api/tribe";
+import { fetchVenues } from "$lib/api/tribe";
+import { fetchEntityOverview } from "$lib/api/entity-overview";
 import type { TribeVenue } from "$lib/types";
 import {
   emptyDateFilterCounts,
@@ -43,7 +44,7 @@ function createVenueNextEventSummary(event: {
 }
 
 function countEventsPerVenueId(
-  events: Awaited<ReturnType<typeof fetchAllEvents>>,
+  events: import("$lib/types").TribeEvent[],
 ): Map<
   number,
   { upcomingCount: number; countsByDateFilter: DateFilterCounts; nextEvents: VenueNextEvent[] }
@@ -87,16 +88,11 @@ function countEventsPerVenueId(
 
 export const load: PageLoad = async ({ fetch }) => {
   try {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 30);
-    end.setHours(23, 59, 59, 999);
-
-    const [venues, events] = await Promise.all([
+    const [venues, overview] = await Promise.all([
       fetchVenues(fetch),
-      fetchAllEvents([], null, "all", fetch, undefined, { start, end }),
+      fetchEntityOverview(fetch),
     ]);
+    const events = overview.events;
     const countsByVenue = countEventsPerVenueId(events);
 
     const venuesWithCounts: VenueWithUpcomingCount[] = venues.map((venue) => {
@@ -116,12 +112,14 @@ export const load: PageLoad = async ({ fetch }) => {
 
     return {
       venues: venuesWithCounts,
+      overviewCoverage: overview.coverage,
       loadError: false,
     };
   } catch (error) {
     console.error("Failed to load venues:", error);
     return {
       venues: [] as VenueWithUpcomingCount[],
+      overviewCoverage: null,
       loadError: true,
     };
   }
