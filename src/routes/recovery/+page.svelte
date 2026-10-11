@@ -11,7 +11,7 @@
 
 	type RecoveryState = 'idle' | 'running' | 'done' | 'error';
 
-	let state = $state<RecoveryState>('idle');
+	let recoveryState = $state<RecoveryState>('idle');
 	let message = $state('');
 	let deletedCaches = $state<string[]>([]);
 	let unregisteredServiceWorkers = $state(0);
@@ -29,9 +29,9 @@
 	});
 
 	async function runRecovery() {
-		if (!browser || state === 'running') return;
+		if (!browser || recoveryState === 'running') return;
 
-		state = 'running';
+		recoveryState = 'running';
 		message = 'App-Speicher wird bereinigt…';
 		deletedCaches = [];
 		unregisteredServiceWorkers = 0;
@@ -45,7 +45,7 @@
 
 			deletedCaches = result.deletedCaches;
 			unregisteredServiceWorkers = result.unregisteredServiceWorkers;
-			state = 'done';
+			recoveryState = 'done';
 			message = 'Bereinigung abgeschlossen. Die App wird mit frischer Adresse neu geladen.';
 			trackFeatureEvent(
 				'pwa_recovery',
@@ -57,7 +57,7 @@
 				window.location.replace(buildRecoveryUrl(window.location.origin + '/', Date.now(), 'manual'));
 			}, 900);
 		} catch (error) {
-			state = 'error';
+			recoveryState = 'error';
 			message = error instanceof Error ? error.message : 'Die App-Reparatur ist fehlgeschlagen.';
 			trackFeatureEvent('pwa_recovery', 'manual_error', message);
 		}
@@ -105,8 +105,8 @@
 		</div>
 
 		<div class="mt-5 flex flex-wrap gap-3">
-			<button class="btn-primary" type="button" onclick={runRecovery} disabled={state === 'running'}>
-				{state === 'running' ? 'Reparatur läuft…' : 'App jetzt reparieren'}
+			<button class="btn-primary" type="button" onclick={runRecovery} disabled={recoveryState === 'running'}>
+				{recoveryState === 'running' ? 'Reparatur läuft…' : 'App jetzt reparieren'}
 			</button>
 			<a class="btn-secondary" href={resolve('/app-status')}>App-Status ansehen</a>
 			<a class="btn-secondary" href={resolve('/')}>Zur Startseite</a>
@@ -115,7 +115,7 @@
 		{#if message}
 			<div class="mt-5 rounded-control border border-border-default bg-surface-subtle p-4" role="status" aria-live="polite">
 				<p class="text-[0.9375rem] font-medium text-text-default">{message}</p>
-				{#if state === 'done'}
+				{#if recoveryState === 'done'}
 					<p class="meta-text mt-2">
 						Abgemeldete Service Worker: {unregisteredServiceWorkers}. Gelöschte App-Caches: {deletedCaches.length}.
 					</p>
