@@ -44,3 +44,8 @@ jobs:
           set -euo pipefail
           npx wrangler@4.69.0 deploy \
             --message "GitHub Actions deploy ${GITHUB_SHA}"
+
+      - name: Verify production headers
+        env:
+          RNT_VERIFY_ORIGIN: https://mobile.rhein-neckar-tango.de
+        run: npm run verify:headers
