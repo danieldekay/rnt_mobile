@@ -1,4 +1,5 @@
 
+import { browser } from "$app/environment";
 import {
     fetchAllEvents,
     fetchOfflineSnapshot,
@@ -13,6 +14,7 @@ import { writable } from "svelte/store";
 import { getEventType, getMusicType } from "$lib/utils/event-presentation";
 import { favoritesStore } from "$lib/stores/favorites.svelte";
 import { matchesFavoriteEvent } from "$lib/utils/favorites";
+import { parseEventUrlState, writeEventUrlState } from "$lib/events/url-state";
 import type {
     TribeEvent,
     EventType,
@@ -64,12 +66,38 @@ class EventStore {
     // Precomputed search index (event -> searchable text) for fast filtering
     private searchIndex: Map<number, string> = new Map();
 
+    constructor() {
+        this.restoreUrlStateFromLocation();
+        this.notify();
+    }
+
     // Svelte store contract
     subscribe(run: (value: EventStoreData) => void) {
         return store.subscribe(run);
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
+
+    private restoreUrlStateFromLocation() {
+        if (!browser) return;
+
+        const parsed = parseEventUrlState(new URLSearchParams(window.location.search));
+        this.filters = parsed.filters;
+        this.searchQuery = parsed.searchQuery;
+        this.resetProgressiveState(parsed.filters.date);
+    }
+
+    private syncUrlStateToLocation() {
+        if (!browser) return;
+
+        const url = new URL(window.location.href);
+        url.search = writeEventUrlState(url.searchParams, {
+            filters: this.filters,
+            searchQuery: this.searchQuery,
+        }).toString();
+
+        window.history.replaceState({}, "", url.toString());
+    }
 
     private getMonthKey(date: Date): string {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -306,6 +334,7 @@ class EventStore {
     toggleFavoritesOnly() {
         this.filters.favoritesOnly = !this.filters.favoritesOnly;
         this.events = this.applyFilters();
+        this.syncUrlStateToLocation();
         this.notify();
     }
 
@@ -317,6 +346,7 @@ class EventStore {
     setFilters(newFilters: Partial<Filters>) {
         Object.assign(this.filters, newFilters);
         this.events = this.applyFilters();
+        this.syncUrlStateToLocation();
         this.notify();
     }
 
@@ -326,12 +356,14 @@ class EventStore {
             ? this.filters.types.filter((t) => t !== type)
             : [...this.filters.types, type];
         this.events = this.applyFilters();
+        this.syncUrlStateToLocation();
         this.notify();
     }
 
     setMusic(music: MusicType | null) {
         this.filters.music = music;
         this.events = this.applyFilters();
+        this.syncUrlStateToLocation();
         this.notify();
     }
 
@@ -378,6 +410,7 @@ class EventStore {
         if (this.filters.date === date) return;
         this.filters.date = date;
         this.resetProgressiveState(date);
+        this.syncUrlStateToLocation();
         void this.loadEvents();
     }
 
@@ -388,14 +421,21 @@ class EventStore {
         searchDebounceTimer = setTimeout(() => {
             this.searchQuery = query;
             this.events = this.applyFilters();
+            this.syncUrlStateToLocation();
             this.notify();
             searchDebounceTimer = null;
         }, SEARCH_DEBOUNCE_MS);
     }
 
     clearSearch() {
+        if (searchDebounceTimer) {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = null;
+        }
+
         this.searchQuery = "";
         this.events = this.applyFilters();
+        this.syncUrlStateToLocation();
         this.notify();
     }
 
