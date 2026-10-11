@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { buildRecoveryUrl, recoverAppShell } from '$lib/pwa/recovery';
+import { isBenignUpdateCheckMiss } from '$lib/pwa/update-check-errors';
 
 type UpdateCheckState = 'idle' | 'checking' | 'current' | 'available' | 'error';
 
@@ -39,6 +40,20 @@ function createPwaUpdateStore() {
 	function syncFromKit(current: boolean) {
 		if (current) {
 			markAvailable();
+		}
+	}
+
+	async function probeKitUpdate() {
+		if (!checkForKitUpdate) return false;
+
+		try {
+			return await checkForKitUpdate();
+		} catch (error) {
+			if (isBenignUpdateCheckMiss(error)) {
+				return false;
+			}
+
+			throw error;
 		}
 	}
 
@@ -91,9 +106,8 @@ function createPwaUpdateStore() {
 		lastCheckedAt = new Date().toISOString();
 
 		try {
-			const kitAvailable = checkForKitUpdate ? await checkForKitUpdate() : false;
-			const nextRegistration =
-				registration ?? (await navigator.serviceWorker.getRegistration());
+			const kitAvailable = await probeKitUpdate();
+			const nextRegistration = registration ?? (await navigator.serviceWorker.getRegistration());
 			if (nextRegistration) {
 				watchRegistration(nextRegistration);
 				await nextRegistration.update();
