@@ -16,6 +16,8 @@ type HubPageKey =
 	| "was-ist-neu"
 	| "favoriten"
 	| "offline"
+	| "app-status"
+	| "recovery"
 	| "error";
 
 const HUB_PAGES: Record<
@@ -99,6 +101,18 @@ const HUB_PAGES: Record<
 		path: "/offline",
 		title: "Offline – RNT Kalender",
 		description: "Die App ist offline.",
+		robots: "noindex, follow",
+	},
+	"app-status": {
+		path: "/app-status",
+		title: "App-Status – RNT Kalender",
+		description: "Diagnoseinformationen für die RNT Kalender App.",
+		robots: "noindex, follow",
+	},
+	recovery: {
+		path: "/recovery",
+		title: "App reparieren – RNT Kalender",
+		description: "Service Worker und App-Caches der RNT Kalender App bereinigen.",
 		robots: "noindex, follow",
 	},
 	error: {

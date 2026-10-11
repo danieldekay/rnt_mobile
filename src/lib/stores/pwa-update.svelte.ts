@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { buildRecoveryUrl, recoverAppShell } from '$lib/pwa/recovery';
 
 type UpdateCheckState = 'idle' | 'checking' | 'current' | 'available' | 'error';
 
@@ -9,7 +10,6 @@ type UpdateMessage = {
 
 const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 const FORCE_RELOAD_DELAY_MS = 1500;
-const APP_CACHE_PREFIX = 'rnt-cache-';
 const ACTIVATED_MESSAGE_TYPE = 'RNT_SW_ACTIVATED';
 const IS_TEST_MODE = import.meta.env.MODE === 'test';
 
@@ -65,32 +65,20 @@ function createPwaUpdateStore() {
 		});
 	}
 
-	function reloadWithBust() {
+	function reloadWithBust(reason = 'pwa-update') {
 		if (reloadStarted) return;
 		reloadStarted = true;
-		const url = new URL(window.location.href);
-		url.searchParams.set('appUpdate', String(Date.now()));
-		window.location.replace(url.toString());
-	}
-
-	async function deleteAppCaches() {
-		if (!('caches' in window)) return;
-
-		const names = await caches.keys();
-		await Promise.all(
-			names
-				.filter((name) => name.startsWith(APP_CACHE_PREFIX))
-				.map((name) => caches.delete(name))
-		);
+		window.location.replace(buildRecoveryUrl(window.location.href, Date.now(), reason));
 	}
 
 	async function forceFreshInstall() {
 		try {
-			const registrations = await navigator.serviceWorker.getRegistrations();
-			await Promise.all(registrations.map((entry) => entry.unregister()));
-			await deleteAppCaches();
+			await recoverAppShell({
+				serviceWorker: navigator.serviceWorker,
+				cacheStorage: 'caches' in window ? caches : null,
+			});
 		} finally {
-			reloadWithBust();
+			reloadWithBust('pwa-update-recovery');
 		}
 	}
 
@@ -166,7 +154,7 @@ function createPwaUpdateStore() {
 
 			await forceFreshInstall();
 		} catch {
-			reloadWithBust();
+			reloadWithBust('pwa-update-error');
 		}
 	}
 
@@ -174,7 +162,7 @@ function createPwaUpdateStore() {
 		if (!browser || reloadStarted) return;
 
 		if (applyInProgress || hadControllerAtStart) {
-			reloadWithBust();
+			reloadWithBust('controller-change');
 			return;
 		}
 
@@ -185,7 +173,7 @@ function createPwaUpdateStore() {
 		if (event.data?.type !== ACTIVATED_MESSAGE_TYPE) return;
 
 		if (applyInProgress) {
-			reloadWithBust();
+			reloadWithBust('service-worker-activated');
 			return;
 		}
 
@@ -253,7 +241,7 @@ function createPwaUpdateStore() {
 
 		return new Date(lastCheckedAt).toLocaleTimeString('de-DE', {
 			hour: '2-digit',
-			minute: '2-digit'
+			minute: '2-digit',
 		});
 	}
 
@@ -269,6 +257,9 @@ function createPwaUpdateStore() {
 		},
 		get checkError() {
 			return checkError;
+		},
+		get lastCheckedAt() {
+			return lastCheckedAt;
 		},
 		get recoveryOpen() {
 			return recoveryOpen;
@@ -299,7 +290,7 @@ function createPwaUpdateStore() {
 		checkForUpdate,
 		applyUpdate,
 		toggleRecovery,
-		closeRecovery
+		closeRecovery,
 	};
 }
 

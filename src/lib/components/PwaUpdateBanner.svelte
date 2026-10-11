@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+
 	let {
 		hasUpdate,
 		checking,
@@ -47,6 +49,7 @@
 				<button class="btn-secondary" type="button" onclick={onToggleRecovery}>
 					{recoveryOpen ? 'Hinweise ausblenden' : 'Wenn die alte Ansicht bleibt'}
 				</button>
+				<a class="btn-secondary" href={resolve('/app-status')}>App-Status</a>
 			</div>
 
 			{#if recoveryOpen}
@@ -56,6 +59,11 @@
 						<li>App komplett schließen.</li>
 						<li>Vom Home-Bildschirm erneut öffnen.</li>
 						<li>Falls nötig die Seite einmal direkt im Browser neu laden.</li>
+						<li>
+							<a class="underline decoration-border-default underline-offset-4" href={resolve('/recovery')}>
+								App-Reparatur öffnen
+							</a>, wenn die alte Ansicht weiterhin bleibt.
+						</li>
 					</ol>
 				</div>
 			{/if}
