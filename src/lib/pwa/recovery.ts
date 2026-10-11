@@ -12,7 +12,7 @@ type ServiceWorkerRegistrationLike = {
 };
 
 type ServiceWorkerContainerLike = {
-	getRegistrations(): Promise<ServiceWorkerRegistrationLike[]>;
+	getRegistrations(): Promise<readonly ServiceWorkerRegistrationLike[]>;
 };
 
 export type AppRecoveryResult = {
