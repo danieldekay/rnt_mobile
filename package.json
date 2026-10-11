@@ -8,7 +8,8 @@
         "preview": "vite preview",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
         "test": "vitest",
-        "test:run": "vitest run"
+        "test:run": "vitest run",
+        "verify:headers": "node scripts/verify-deploy-headers.mjs"
     },
     "devDependencies": {
         "@sveltejs/adapter-static": "^3.0.10",
