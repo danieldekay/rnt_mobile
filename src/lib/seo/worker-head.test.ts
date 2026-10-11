@@ -61,4 +61,15 @@ describe("resolveSeoForPath", () => {
 			"https://mobile.rhein-neckar-tango.de/event/10030955",
 		);
 	});
+
+	it("maps operational pages to noindex SEO metadata", async () => {
+		const result = await resolveSeoForPath("/app-status", fetch, {
+			tribeEventsBaseUrl: "https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1/events",
+			tribeVenuesBaseUrl: "https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1/venues",
+			tribeOrganizersBaseUrl: "https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1/organizers",
+		});
+
+		expect(result.seo?.title).toBe("App-Status – RNT Kalender");
+		expect(result.seo?.robots).toBe("noindex, follow");
+	});
 });
