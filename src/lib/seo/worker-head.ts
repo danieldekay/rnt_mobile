@@ -20,6 +20,8 @@ const HUB_PATHS: Record<string, Parameters<typeof mapHubPageSeo>[0]> = {
 	"/was-ist-neu": "was-ist-neu",
 	"/favoriten": "favoriten",
 	"/offline": "offline",
+	"/app-status": "app-status",
+	"/recovery": "recovery",
 };
 
 type FetchLike = typeof fetch;
