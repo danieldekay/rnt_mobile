@@ -10,8 +10,7 @@ const UPDATE_MESSAGE_TYPE = "RNT_SW_ACTIVATED";
 const ASSETS = [
 	...build,
 	...prerendered,
-	// Core app-shell resources — cache-first strategy
-	"/",
+	// Core app-shell resources — cache-first strategy for non-navigation assets only.
 	"/offline",
 	"/manifest.json",
 	"/favicon.ico",
@@ -21,7 +20,11 @@ const ASSETS = [
 	"/icon-512.png",
 	"/icon-192-maskable.png",
 	"/icon-512-maskable.png",
-].map((path) => new URL(path, location.origin).href);
+]
+	// Never treat the root document as a cache-first asset. Safari/bookmark launches
+	// otherwise keep receiving an old cached app shell before update code can run.
+	.filter((path) => path !== "/")
+	.map((path) => new URL(path, location.origin).href);
 
 // Install: precache app-shell assets
 self.addEventListener("install", (event: ExtendableEvent) => {
@@ -58,13 +61,27 @@ self.addEventListener("message", (event: ExtendableMessageEvent) => {
 	}
 });
 
-// Fetch: cache-first for app-shell, network-first for explicitly public GET data.
+// Fetch: navigation is always network-first. Non-navigation app-shell assets can be
+// cache-first; explicitly public GET data is network-first with cache fallback.
 self.addEventListener("fetch", (event: FetchEvent) => {
 	const { request } = event;
 	const url = new URL(request.url);
 
 	// Never intercept cross-origin requests (OSM tiles, Matomo, fonts, etc.).
 	if (url.origin !== self.location.origin) {
+		return;
+	}
+
+	// Never let the Service Worker serve stale update metadata.
+	if (url.pathname === "/service-worker.js" || url.pathname === "/_app/version.json") {
+		event.respondWith(fetch(request));
+		return;
+	}
+
+	// Navigation must run before the app-shell cache check. Otherwise a bookmarked
+	// root URL like `/` can be served cache-first forever in Safari/PWA contexts.
+	if (request.mode === "navigate") {
+		event.respondWith(networkFirstNavigation(request, CACHE_NAME));
 		return;
 	}
 
@@ -77,7 +94,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 		return;
 	}
 
-	// App-shell assets: cache-first
+	// App-shell assets: cache-first. Documents are already handled as navigations.
 	if (ASSETS.includes(request.url)) {
 		event.respondWith(cacheFirst(request));
 		return;
@@ -89,12 +106,6 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 	) {
 		event.respondWith(cacheNetwork(request));
 		return;
-	}
-
-	// Navigation requests use an explicit three-step fallback:
-	// network -> cached navigation -> dedicated offline page.
-	if (request.mode === "navigate") {
-		event.respondWith(networkFirstNavigation(request, CACHE_NAME));
 	}
 });
 
