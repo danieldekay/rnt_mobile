@@ -114,6 +114,7 @@ async function loadStore() {
 describe("eventStore progressive browsing", () => {
     beforeEach(() => {
         vi.resetModules();
+        window.history.replaceState({}, "", "/");
         fetchAllEventsMock.mockReset();
         fetchOfflineSnapshotMock.mockReset();
         fetchOfflineSnapshotMock.mockResolvedValue([]);
@@ -122,6 +123,7 @@ describe("eventStore progressive browsing", () => {
     });
 
     afterEach(() => {
+        window.history.replaceState({}, "", "/");
         vi.restoreAllMocks();
     });
 
