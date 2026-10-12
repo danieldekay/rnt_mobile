@@ -89,6 +89,20 @@ function createEvent(overrides: Partial<TribeEvent> = {}): TribeEvent {
 }
 
 describe('EventCard', () => {
+	it('renders scan-critical event metadata on the card', () => {
+		renderComponent(EventCard, {
+			event: createEvent()
+		});
+
+		expect(screen.getByText('Heidelberg Live Weekend')).toBeInTheDocument();
+		expect(screen.getByText('Milonga')).toBeInTheDocument();
+		expect(screen.getByText('Traditionell')).toBeInTheDocument();
+		expect(screen.getByText('20:00 – 23:30')).toBeInTheDocument();
+		expect(screen.getByText('Heidelberg')).toBeInTheDocument();
+		expect(screen.getByText('Tangoloft')).toBeInTheDocument();
+		expect(screen.getByText('RNT')).toBeInTheDocument();
+	});
+
 	it('renders recognized supplemental markers when matching categories are present', () => {
 		renderComponent(EventCard, {
 			event: createEvent({
