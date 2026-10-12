@@ -6,7 +6,7 @@
     import {
         footerLinks,
         isNavActive,
-        navItems,
+        navGroups,
         type NavItem,
     } from "$lib/nav";
 
@@ -178,20 +178,46 @@
 
     <!-- Nav items -->
     <div class="flex flex-1 flex-col px-4 pb-4">
-        <nav class="flex flex-col gap-1" aria-label="Desktop Navigation">
-            {#each navItems as item (item.href)}
-                {@const active = isActive(item)}
-                <a
-                    href={toHref(item.href)}
-                    aria-current={active ? "page" : undefined}
-                    class={`inline-flex min-h-12 items-center rounded-control border-l-4 px-3 py-2 text-[0.95rem] transition-colors ${
-                        active
-                            ? "border-action-primary bg-surface-subtle text-text-default"
-                            : "border-transparent text-text-muted hover:bg-action-secondary hover:text-text-default"
-                    }`}
-                >
-                    {item.label}
-                </a>
+        <nav class="flex flex-col gap-4" aria-label="Desktop Navigation">
+            {#each navGroups as group (group.label)}
+                <section class="space-y-1" aria-labelledby={`desktop-nav-${group.label}`}>
+                    <h2
+                        id={`desktop-nav-${group.label}`}
+                        class="px-2 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-text-muted"
+                    >
+                        {group.label}
+                    </h2>
+                    <div class="flex flex-col gap-1">
+                        {#each group.items as item (item.href)}
+                            {@const active = isActive(item)}
+                            <a
+                                href={toHref(item.href)}
+                                aria-current={active ? "page" : undefined}
+                                class={`inline-flex min-h-10 items-center gap-2 rounded-control border px-3 py-1.5 text-[0.9rem] font-medium transition-colors ${
+                                    active
+                                        ? "border-action-primary bg-action-secondary text-text-default"
+                                        : "border-border-default/0 text-text-muted hover:border-border-default hover:bg-action-secondary hover:text-text-default"
+                                }`}
+                            >
+                                <svg
+                                    class="h-4 w-4 shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d={item.iconPath}
+                                    />
+                                </svg>
+                                <span class="truncate">{item.label}</span>
+                            </a>
+                        {/each}
+                    </div>
+                </section>
             {/each}
         </nav>
     </div>
