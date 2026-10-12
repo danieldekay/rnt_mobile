@@ -5,7 +5,7 @@
 
     let {
         searchQuery,
-        activeDateFilter,
+        activeDateFilter = $bindable<EntityDateFilter>("current-month"),
         activeStyle,
         dateFilterCounts,
         styleOptions,
@@ -124,7 +124,7 @@
                             clip-rule="evenodd"
                         />
                     </svg>
-                    Alle DJs aus der WordPress-API werden angezeigt
+                    Alle DJs aus der WordPress-API werden angezeigt; der Zeitraum sortiert passende DJs nach vorne.
                 </span>
             </p>
         </div>
