@@ -4,9 +4,8 @@
     import SkeletonCard from "$lib/components/SkeletonCard.svelte";
     import DjCard from "$lib/components/DjCard.svelte";
     import DjFilterBar from "$lib/components/DjFilterBar.svelte";
-    import {
-        countEntitiesForDateFilters,
-    } from "$lib/utils/date-filters";
+    import { countEntitiesForDateFilters } from "$lib/utils/date-filters";
+    import { getUpcomingCount } from "$lib/utils/dj-presentation";
     import type {
         DjProfileSummary,
         DjStyleKey,
@@ -37,8 +36,12 @@
     const djs = $derived((data.djs as DjProfileSummary[]) ?? []);
     const dateFilteredDjs = $derived(
         djs.toSorted((left, right) => {
-            const countDelta =
-                right.upcomingCount - left.upcomingCount;
+            const selectedPeriodDelta =
+                getUpcomingCount(right, activeDateFilter) -
+                getUpcomingCount(left, activeDateFilter);
+            if (selectedPeriodDelta !== 0) return selectedPeriodDelta;
+
+            const countDelta = right.upcomingCount - left.upcomingCount;
             if (countDelta !== 0) return countDelta;
             return left.name.localeCompare(right.name, "de");
         }),
@@ -131,7 +134,7 @@
             <p class="meta-text">
                 RNT hat eine DJ Datenbank, sammelt aber auch automatisch aus
                 aktuellen Eventbeschreibungen. Suche nach DJs und springe direkt
-                ins Profil oder zum Nächsten Termin.
+                ins Profil oder zum nächsten Termin.
             </p>
         </section>
 
@@ -154,7 +157,7 @@
 
         <DjFilterBar
             {searchQuery}
-            {activeDateFilter}
+            bind:activeDateFilter
             {activeStyle}
             {dateFilterCounts}
             {styleOptions}

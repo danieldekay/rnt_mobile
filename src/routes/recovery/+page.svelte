@@ -76,7 +76,7 @@
 				App reparieren
 			</h1>
 			<p class="meta-text max-w-[55ch]">
-				Diese Seite entfernt lokal gespeicherte RNT-App-Caches und registrierte Service Worker. Sie hilft, wenn Safari, ein Lesezeichen oder die installierte App noch eine alte Ansicht zeigt.
+				Diese Seite entfernt lokal gespeicherte RNT-App-Caches und registrierte Service Worker. Sie hilft, wenn Safari, Firefox, ein Lesezeichen oder die installierte App noch eine alte Ansicht zeigt.
 			</p>
 		</div>
 
@@ -87,6 +87,19 @@
 				<li>Nur Caches mit dem Präfix <code>{APP_CACHE_PREFIX}</code> werden gelöscht.</li>
 				<li>Die Startseite wird mit einem Cache-Buster neu geöffnet.</li>
 			</ol>
+		</div>
+
+		<div class="mt-5 rounded-control border border-amber-300 bg-amber-50 p-4 text-amber-950">
+			<p class="text-[0.9375rem] font-semibold">Wenn diese Seite selbst nicht aktuell lädt</p>
+			<p class="mt-1 text-sm">
+				Sehr alte Versionen, besonders um 0.5.0, konnten im Browser-Cache festhängen. Dann erreicht der Browser diese Reparaturseite eventuell gar nicht mit aktuellem Code. In diesem Fall lösche die Website-Daten manuell.
+			</p>
+			<ul class="mt-3 list-disc space-y-2 pl-5 text-sm">
+				<li><strong>Firefox Desktop:</strong> <code>about:serviceworkers</code> öffnen, <code>mobile.rhein-neckar-tango.de</code> suchen und den Service Worker abmelden. Danach die Seite neu laden.</li>
+				<li><strong>Firefox alternativ:</strong> Einstellungen → Datenschutz &amp; Sicherheit → Cookies und Website-Daten → Daten verwalten → <code>mobile.rhein-neckar-tango.de</code> entfernen.</li>
+				<li><strong>Chrome oder Edge:</strong> Entwicklertools → Application → Service Workers → Unregister, danach Storage → Clear site data.</li>
+				<li><strong>Safari/iOS:</strong> Einstellungen → Safari → Erweitert → Website-Daten → <code>rhein-neckar-tango.de</code> suchen und löschen. Bei einer installierten App zusätzlich das Home-Screen-Icon entfernen und neu öffnen.</li>
+			</ul>
 		</div>
 
 		<div class="mt-5 grid gap-3 sm:grid-cols-2">

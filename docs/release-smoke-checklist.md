@@ -17,7 +17,7 @@ At minimum, verify these modes:
 - iPhone Safari bookmarked launch.
 - iPhone Home Screen / installed PWA launch, when installed.
 - iPhone Safari private tab as a control case.
-- Desktop Safari or Chrome as a non-iOS comparison, when available.
+- Desktop Safari, Chrome, or Firefox as a non-iOS comparison, when available.
 
 ## Core smoke path
 
@@ -46,6 +46,19 @@ Use this path when testing update reliability:
 7. Close and reopen via Safari bookmark or Home Screen icon.
 8. Confirm the new release remains visible.
 
+## Legacy trapped-client cleanup path
+
+Use this path when a browser is still on a very old release, especially `0.5.0`, and the current `/recovery` route itself cannot be loaded with fresh code.
+
+1. Confirm the symptom: the browser shows an old App-Version, while private browsing or another browser shows the current production version.
+2. Try `/recovery` once. If it still serves the old shell, do not keep retrying the app UI.
+3. Firefox Desktop: open `about:serviceworkers`, find `mobile.rhein-neckar-tango.de`, unregister the service worker, then reload the site.
+4. Firefox alternate path: Settings → Privacy & Security → Cookies and Site Data → Manage Data → remove `mobile.rhein-neckar-tango.de`.
+5. Chrome/Edge: DevTools → Application → Service Workers → Unregister, then Storage → Clear site data.
+6. Safari/iOS: Settings → Safari → Advanced → Website Data → remove `rhein-neckar-tango.de`; for an installed app, remove and recreate the Home Screen icon if needed.
+7. Reopen `/app-status` and confirm the current version appears.
+8. Record that manual browser data cleanup was required; this is a release incident, not a normal update path.
+
 ## Header smoke path
 
 Manually spot-check these response headers when diagnosing deploy or cache behavior:
@@ -62,9 +75,10 @@ The automated post-deploy header verifier should cover the same critical paths, 
 A release passes only when:
 
 - Normal Safari, bookmarked launch, and installed PWA launch all show the current release.
+- Desktop Firefox can either update normally or recover through documented browser-data cleanup.
 - Private browsing is not the only mode that works.
 - `/app-status` is reachable.
-- `/recovery` is reachable.
+- `/recovery` is reachable for clients that are already on the modern recovery-capable app shell.
 - The event list and calendar view load.
 - No launch mode is stuck on an old app shell after close/reopen.
 
@@ -72,8 +86,8 @@ Fail the smoke test when:
 
 - Normal Safari or a bookmark shows old content while private browsing shows new content.
 - The installed PWA never updates after close/reopen.
-- `/app-status` or `/recovery` is unreachable.
-- The app requires manual cache deletion before the recovery route can load.
+- `/app-status` or `/recovery` is unreachable on a modern client.
+- A legacy client requires manual cache deletion and the incident is not documented.
 - Header verification fails for `/`, `/service-worker.js`, or `/_app/version.json`.
 
 ## Incident notes to capture
@@ -85,6 +99,7 @@ When a failure occurs, record:
 - Exact URL used.
 - `/app-status` output.
 - Whether `/recovery` fixed the issue.
+- Whether manual service-worker unregister or website-data deletion was required.
 - Screenshots of stale/current differences.
 - Whether private browsing behaves differently.
 - Related deploy run, PR, and commit SHA.
