@@ -42,6 +42,16 @@ describe("ListFooterNavigation", () => {
         expect(onLoadMore).toHaveBeenCalledTimes(1);
     });
 
+    it("links discovery users to app status and recovery", () => {
+        renderComponent(ListFooterNavigation, {
+            onJumpToTop: vi.fn(),
+            canLoadMore: false,
+        });
+
+        expect(screen.getByRole("link", { name: "App-Status" })).toHaveAttribute("href", "/app-status");
+        expect(screen.getByRole("link", { name: "Reparatur" })).toHaveAttribute("href", "/recovery");
+    });
+
     it("renders retry feedback near the next-period action", () => {
         renderComponent(ListFooterNavigation, {
             onJumpToTop: vi.fn(),
@@ -52,5 +62,6 @@ describe("ListFooterNavigation", () => {
 
         expect(screen.getByText("Mehr Events konnten nicht geladen werden.")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /erneut laden/i })).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Reparaturhinweise" })).toHaveAttribute("href", "/recovery");
     });
 });
