@@ -3,7 +3,8 @@
 	import EventCard from '$lib/components/EventCard.svelte';
 	import EntityFavoriteControl from '$lib/components/EntityFavoriteControl.svelte';
 	import { favoritesStore } from '$lib/stores/favorites.svelte';
-	import { hasAnyFavorites, matchesFavoriteEvent } from '$lib/utils/favorites';
+	import { hasAnyFavorites } from '$lib/utils/favorites';
+	import { getFavoritePlanningSections } from '$lib/favorites/planning';
 	import type { PageProps } from './$types';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { mapHubPageSeo } from '$lib/seo/pages';
@@ -12,17 +13,10 @@
 
 	let { data }: PageProps = $props();
 
-	const favoriteEvents = $derived.by(() => {
-		const snapshot = favoritesStore.snapshot;
-		const now = new Date();
-
-		return data.events
-			.filter((event) => {
-				const start = new Date(event.start_date);
-				return start >= now && matchesFavoriteEvent(event, snapshot);
-			})
-			.sort((left, right) => left.start_date.localeCompare(right.start_date));
-	});
+	const planningSections = $derived.by(() =>
+		getFavoritePlanningSections(data.events, favoritesStore.snapshot)
+	);
+	const favoriteEvents = $derived(planningSections.flatMap((section) => section.events));
 
 	const favoriteOrganizers = $derived.by(() => {
 		const ids = new Set(favoritesStore.snapshot.organizerIds);
@@ -39,6 +33,9 @@
 		return data.djs.filter((dj) => slugs.has(dj.slug));
 	});
 
+	const favoriteEntityCount = $derived(
+		favoriteOrganizers.length + favoriteVenues.length + favoriteDjs.length
+	);
 	const hasFavorites = $derived(hasAnyFavorites(favoritesStore.snapshot));
 </script>
 
@@ -49,10 +46,10 @@
 		<p class="text-[0.875rem] font-medium uppercase tracking-[0.08em] text-text-muted">
 			Deine Auswahl
 		</p>
-		<h1 class="font-display text-[2rem] font-semibold text-text-default">Favoriten</h1>
-		<p class="meta-text max-w-[40ch]">
-			Alle kommenden Termine, die zu deinen gespeicherten Veranstaltungen, Veranstaltern,
-			Tanzräumen oder DJs passen.
+		<h1 class="font-display text-[2rem] font-semibold text-text-default">Favoriten & Planung</h1>
+		<p class="meta-text max-w-[46ch]">
+			Plane aus deinen gespeicherten Veranstaltungen, Veranstaltern, Tanzräumen und DJs.
+			Die nächsten passenden Termine stehen zuerst.
 		</p>
 	</section>
 
@@ -70,20 +67,81 @@
 			<a href={resolve('/')} class="btn-primary mt-4 inline-flex">Zu den Veranstaltungen</a>
 		</div>
 	{:else}
+		<section class="grid gap-3 md:grid-cols-3" aria-label="Planungsübersicht">
+			<div class="card p-4">
+				<p class="text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">
+					Kommende Treffer
+				</p>
+				<p class="mt-1 font-display text-[1.75rem] font-semibold text-text-default">
+					{favoriteEvents.length}
+				</p>
+				<p class="meta-text mt-1">Termine aus deinen Favoriten im 90-Tage-Fenster.</p>
+			</div>
+			<div class="card p-4">
+				<p class="text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">
+					Gespeicherte Einträge
+				</p>
+				<p class="mt-1 font-display text-[1.75rem] font-semibold text-text-default">
+					{favoriteEntityCount}
+				</p>
+				<p class="meta-text mt-1">Veranstalter, Tanzräume und DJs, denen du folgst.</p>
+			</div>
+			<a
+				href={resolve('/')}
+				class="card flex min-h-28 flex-col justify-between p-4 transition-colors hover:border-border-accent hover:bg-action-secondary"
+			>
+				<span class="text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">
+					Weitere Planung
+				</span>
+				<span class="font-medium text-text-default">Neue Events entdecken →</span>
+			</a>
+		</section>
+
 		<section class="space-y-3" aria-labelledby="favorite-events-heading">
-			<h2 id="favorite-events-heading" class="font-display text-[1.5rem] font-semibold text-text-default">
-				Kommende Termine
-			</h2>
+			<div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+				<div>
+					<h2 id="favorite-events-heading" class="font-display text-[1.5rem] font-semibold text-text-default">
+						Deine nächsten Optionen
+					</h2>
+					<p class="meta-text">Nach Entscheidungsnähe gruppiert.</p>
+				</div>
+				<a href={resolve('/?favorites=1')} class="text-sm font-medium text-action-primary hover:underline">
+					Als Eventfilter öffnen
+				</a>
+			</div>
+
 			{#if favoriteEvents.length === 0}
 				<div class="card p-6 text-center">
 					<p class="text-[1rem] font-medium text-text-default">
 						Keine kommenden Termine für deine Favoriten
 					</p>
+					<p class="meta-text mt-2">
+						Speichere weitere Events oder folge DJs, Veranstaltern und Tanzräumen.
+					</p>
 				</div>
 			{:else}
-				<div class="space-y-3">
-					{#each favoriteEvents as event (event.id)}
-						<EventCard {event} />
+				<div class="space-y-5">
+					{#each planningSections as section (section.id)}
+						{#if section.events.length > 0}
+							<section class="space-y-2" aria-labelledby={`favorites-section-${section.id}`}>
+								<div class="flex items-start justify-between gap-3">
+									<div>
+										<h3 id={`favorites-section-${section.id}`} class="text-[1rem] font-semibold text-text-default">
+											{section.label}
+										</h3>
+										<p class="meta-text">{section.description}</p>
+									</div>
+									<p class="rounded-badge bg-surface-subtle px-2 py-1 text-xs font-medium text-text-muted">
+										{section.events.length} Termine
+									</p>
+								</div>
+								<div class="space-y-3">
+									{#each section.events as event (event.id)}
+										<EventCard {event} />
+									{/each}
+								</div>
+							</section>
+						{/if}
 					{/each}
 				</div>
 			{/if}
