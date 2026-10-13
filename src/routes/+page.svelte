@@ -37,6 +37,16 @@
         { id: "calendar", label: "Kalender", description: "Monat und Tage" },
         { id: "map", label: "Karte", description: "Orte im Überblick" },
     ];
+    const discoveryShortcuts: {
+        id: DateFilterValue;
+        label: string;
+        description: string;
+    }[] = [
+        { id: "today", label: "Heute", description: "Termine für heute" },
+        { id: "week", label: "7 Tage", description: "Kurzfristig planen" },
+        { id: "month", label: "Monat", description: "Aktueller Monat" },
+        { id: "all", label: "Alle", description: "Gesamte Liste" },
+    ];
 
     let activeView = $state<EventView>("list");
     let showImages = $state(false);
@@ -348,6 +358,15 @@
         trackFeatureEvent("home", "date_filter_toggle", date);
     }
 
+    function handleDiscoveryShortcut(date: DateFilterValue) {
+        if (activeView !== "list") {
+            activeView = "list";
+            updateViewUrl("list");
+        }
+        eventStore.setDateFilter(date);
+        trackFeatureEvent("home", "near_term_shortcut", date);
+    }
+
     function handleCalendarDateSelect(date: Date) {
         selectedDate = date;
         trackFeatureEvent("home", "calendar_date_select", date.toLocaleDateString("de-DE"));
@@ -422,6 +441,55 @@
             Liste, Kalender und Karte liegen jetzt auf einer Seite. Wechsle die
             Ansicht, ohne Suche und Filter zu verlieren.
         </p>
+    </section>
+
+    <section
+        class="card space-y-3 p-4"
+        aria-labelledby="near-term-discovery-title"
+    >
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h2
+                    id="near-term-discovery-title"
+                    class="text-[1rem] font-semibold text-text-default"
+                >
+                    Schnell finden
+                </h2>
+                <p class="meta-text">
+                    Starte mit dem Zeitraum, der für die nächste Entscheidung zählt.
+                </p>
+            </div>
+            <p class="text-xs text-text-muted" aria-live="polite">
+                {$eventStore.events.length} Events sichtbar
+            </p>
+        </div>
+        <div
+            class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:flex-wrap md:overflow-visible"
+            role="group"
+            aria-label="Schnellauswahl Zeitraum"
+        >
+            {#each discoveryShortcuts as shortcut (shortcut.id)}
+                <button
+                    type="button"
+                    onclick={() => handleDiscoveryShortcut(shortcut.id)}
+                    aria-pressed={$eventStore.filters.date === shortcut.id}
+                    class="inline-flex min-w-[8.5rem] flex-col items-start rounded-control border px-3 py-2 text-left transition-colors md:min-w-0 {$eventStore.filters.date === shortcut.id
+                        ? 'border-action-primary bg-action-primary text-text-inverse'
+                        : 'border-border-default bg-surface-card text-text-default hover:bg-action-secondary'}"
+                >
+                    <span class="text-[0.95rem] font-semibold leading-tight">
+                        {shortcut.label}
+                    </span>
+                    <span
+                        class="mt-0.5 text-[0.75rem] leading-tight {$eventStore.filters.date === shortcut.id
+                            ? 'text-text-inverse/80'
+                            : 'text-text-muted'}"
+                    >
+                        {shortcut.description}
+                    </span>
+                </button>
+            {/each}
+        </div>
     </section>
 
     <!-- Filters -->
