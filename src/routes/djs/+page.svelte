@@ -1,11 +1,14 @@
 <script lang="ts">
+    import { browser } from "$app/environment";
     import { resolve } from "$app/paths";
     import { navigating } from "$app/state";
+    import { onMount } from "svelte";
     import SkeletonCard from "$lib/components/SkeletonCard.svelte";
     import DjCard from "$lib/components/DjCard.svelte";
     import DjFilterBar from "$lib/components/DjFilterBar.svelte";
     import { countEntitiesForDateFilters } from "$lib/utils/date-filters";
     import { getUpcomingCount } from "$lib/utils/dj-presentation";
+    import { parseDjUrlState, writeDjUrlState } from "$lib/djs/url-state";
     import type {
         DjProfileSummary,
         DjStyleKey,
@@ -33,6 +36,7 @@
     let activeStyle = $state<DjStyleKey | null>(null);
     let searchQuery = $state("");
     let activeDateFilter = $state<EntityDateFilter>("current-month");
+    let urlStateReady = $state(false);
     const djs = $derived((data.djs as DjProfileSummary[]) ?? []);
     const dateFilteredDjs = $derived(
         djs.toSorted((left, right) => {
@@ -91,6 +95,45 @@
                 djs.length === 0,
         ),
     );
+
+    onMount(() => {
+        restoreUrlStateFromLocation();
+        urlStateReady = true;
+
+        window.addEventListener("popstate", restoreUrlStateFromLocation);
+        return () => window.removeEventListener("popstate", restoreUrlStateFromLocation);
+    });
+
+    $effect(() => {
+        if (!browser || !urlStateReady) return;
+        syncUrlStateToLocation();
+    });
+
+    function restoreUrlStateFromLocation(): void {
+        if (!browser) return;
+
+        const parsed = parseDjUrlState(new URLSearchParams(window.location.search));
+        activeDateFilter = parsed.activeDateFilter;
+        activeStyle = parsed.activeStyle;
+        searchQuery = parsed.searchQuery;
+    }
+
+    function syncUrlStateToLocation(): void {
+        if (!browser) return;
+
+        const url = new URL(window.location.href);
+        const nextSearch = writeDjUrlState(url.searchParams, {
+            activeDateFilter,
+            activeStyle,
+            searchQuery,
+        }).toString();
+        const normalizedNextSearch = nextSearch ? `?${nextSearch}` : "";
+
+        if (normalizedNextSearch === window.location.search) return;
+
+        url.search = nextSearch;
+        window.history.replaceState({}, "", url.toString());
+    }
 
     function toggleStyle(style: DjStyleKey | null): void {
         activeStyle = activeStyle === style ? null : style;
