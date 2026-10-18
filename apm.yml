@@ -1,0 +1,44 @@
+name: rnt_mobile
+version: 1.0.0
+description: APM project for rnt_mobile
+author: Daniel de Kay
+# Which agent platforms to deploy to.
+# Resolution order: --target flag > this field > auto-detect from filesystem.
+# Accepted values: agent-skills, antigravity, claude, codex, copilot, cursor, gemini, grok-build, hermes, kiro, opencode, vscode, windsurf
+targets:
+  - agent-skills
+  - codex
+  - copilot
+  - cursor
+dependencies:
+  apm:
+    - anthropics/skills/skills/frontend-design#dbd4588f9e1033efb41dad4bef2f7947c8993d44
+    - itechmeat/llm-code/skills/openspec#7ae8a005245770a0fa1e10337b2eb10174c5886b
+    - ./.github/skills/rnt-mobile-release-deploy
+    # --- Skills: danieldekay/ai-ops · project-authored (SvelteKit + design system cluster) ---
+    - danieldekay/ai-ops/skills/comprehensive-svelte-component-development
+    - danieldekay/ai-ops/skills/design-system-implementation
+    - danieldekay/ai-ops/skills/dj-listing-show-all
+    - danieldekay/ai-ops/skills/dj-listing-toggle-implementation
+    - danieldekay/ai-ops/skills/enhance-organizer-venue-ui-implementation
+    - danieldekay/ai-ops/skills/implement-design-token-system
+    - danieldekay/ai-ops/skills/mock-xmlhttprequest-svelte-tests
+    - danieldekay/ai-ops/skills/pwa-install-update-detection
+    - danieldekay/ai-ops/skills/redesign-dj-cards-clean-ux
+    - danieldekay/ai-ops/skills/svelte-button-component-implementation
+    - danieldekay/ai-ops/skills/svelte-const-tag-placement
+    - danieldekay/ai-ops/skills/svelte-const-tag-placement-debugging
+    - danieldekay/ai-ops/skills/svelte-design-system-implementation
+    - danieldekay/ai-ops/skills/svelte-design-tokens-system
+    # --- Skills: danieldekay/ai-ops · project-authored (OpenSpec workflow — SvelteKit-flavored) ---
+    - danieldekay/ai-ops/skills/openspec-component-migration
+    - danieldekay/ai-ops/skills/openspec-comprehensive-component-development
+    - danieldekay/ai-ops/skills/openspec-comprehensive-development-workflow
+    - danieldekay/ai-ops/skills/openspec-comprehensive-implementation
+    - danieldekay/ai-ops/skills/openspec-enhanced-ui-implementation
+    - danieldekay/ai-ops/skills/openspec-implementation-workflow
+    - danieldekay/ai-ops/skills/openspec-spec-driven-development
+    - danieldekay/ai-ops/skills/openspec-svelte-component-implementation
+  mcp: []
+includes: auto
+scripts: {}

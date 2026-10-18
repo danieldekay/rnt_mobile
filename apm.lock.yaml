@@ -1,0 +1,880 @@
+lockfile_version: '1'
+apm_version: 0.32.0
+dependencies:
+- repo_url: _local/rnt-mobile-release-deploy
+  name: rnt-mobile-release-deploy
+  version: unknown
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/rnt-mobile-release-deploy
+  - .agents/skills/rnt-mobile-release-deploy/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/rnt-mobile-release-deploy/SKILL.md: sha256:fb241d7f223e5b1e29ffe6511b7954376cba98e279df2625925df81e81d88c88
+  source: local
+  local_path: ./.github/skills/rnt-mobile-release-deploy
+- repo_url: anthropics/skills
+  name: frontend-design
+  host: github.com
+  resolved_commit: dbd4588f9e1033efb41dad4bef2f7947c8993d44
+  resolved_ref: dbd4588f9e1033efb41dad4bef2f7947c8993d44
+  version: unknown
+  virtual_path: skills/frontend-design
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/frontend-design
+  - .agents/skills/frontend-design/LICENSE.txt
+  - .agents/skills/frontend-design/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/frontend-design/LICENSE.txt: sha256:0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594
+    .agents/skills/frontend-design/SKILL.md: sha256:d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3
+  content_hash: sha256:89496d5dd00f4810205f351759594fc2742bf8eea85a2f2b2d1de59f4bd91576
+- repo_url: danieldekay/ai-ops
+  name: comprehensive-svelte-component-development
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/comprehensive-svelte-component-development
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/comprehensive-svelte-component-development
+  - .agents/skills/comprehensive-svelte-component-development/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/comprehensive-svelte-component-development/SKILL.md: sha256:f6892d8452e313dbbfec8f840455786901ef974639711cce2ca0e400e497c6ba
+  content_hash: sha256:7a275eeb5ff55f8cec021a15cbb3224541423e3bc2f68b08e2ccfe96ba7b7e22
+- repo_url: danieldekay/ai-ops
+  name: design-system-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/design-system-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/design-system-implementation
+  - .agents/skills/design-system-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/design-system-implementation/SKILL.md: sha256:02228146185b89d5b859779a0310c728e6684f847b135b89c3f0c96177f4ab34
+  content_hash: sha256:28cb4a39b91e7ed500b23e1e5614949c7e0df156ab61d461b1c567bf7b89fb87
+- repo_url: danieldekay/ai-ops
+  name: dj-listing-show-all
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/dj-listing-show-all
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/dj-listing-show-all
+  - .agents/skills/dj-listing-show-all/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/dj-listing-show-all/SKILL.md: sha256:dddc1dc8b5816cc53afbf678f99aae3e8556f00d7a9a26a3b82b0819055ac918
+  content_hash: sha256:3cce2cdc4f1eb1b98221ad9882821d6b5789869cad1d1888ea3137c2d6967818
+- repo_url: danieldekay/ai-ops
+  name: dj-listing-toggle-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/dj-listing-toggle-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/dj-listing-toggle-implementation
+  - .agents/skills/dj-listing-toggle-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/dj-listing-toggle-implementation/SKILL.md: sha256:3ca47547b3ee3b5ae5554f055cf5b3890d0e930fb32a417371c4d873dc5e24b6
+  content_hash: sha256:8ad61bdf0e12a9fbabd6882e4ce14f07c3446e4a91f282d9f6ab5575f17a9d3d
+- repo_url: danieldekay/ai-ops
+  name: enhance-organizer-venue-ui-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/enhance-organizer-venue-ui-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/enhance-organizer-venue-ui-implementation
+  - .agents/skills/enhance-organizer-venue-ui-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/enhance-organizer-venue-ui-implementation/SKILL.md: sha256:024e4e01888840002134d1ea4829b2defb3c2491336e5bc1aec533535d957525
+  content_hash: sha256:f5fa8fbad0d909ab2af38cf7408b70eb01b7b16c4d72dda26bddd71c664a368e
+- repo_url: danieldekay/ai-ops
+  name: implement-design-token-system
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/implement-design-token-system
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/implement-design-token-system
+  - .agents/skills/implement-design-token-system/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/implement-design-token-system/SKILL.md: sha256:aed265563204e6498fccbbfbac0a1a9f094f78df70dd53cd595a39dae8126135
+  content_hash: sha256:f8149832304aa91e73391959a781aac8ea252aebcb5b1480aecee178d1196576
+- repo_url: danieldekay/ai-ops
+  name: mock-xmlhttprequest-svelte-tests
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/mock-xmlhttprequest-svelte-tests
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/mock-xmlhttprequest-svelte-tests
+  - .agents/skills/mock-xmlhttprequest-svelte-tests/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/mock-xmlhttprequest-svelte-tests/SKILL.md: sha256:0be28489da12762b77323600036809e9a5fa1f8f509f4d20a83680fc49633de5
+  content_hash: sha256:3155b79e8582e8edc6b907f3e16528495e1f99ae85b565fbda5aa2851d3d9eb0
+- repo_url: danieldekay/ai-ops
+  name: openspec-component-migration
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-component-migration
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-component-migration
+  - .agents/skills/openspec-component-migration/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-component-migration/SKILL.md: sha256:991df6d78ef50aaecab087061a2398f1869ca6cc9b9f1ec6fe16cf928e9daecf
+  content_hash: sha256:079cb3c322d52fdda72f8ce7b25a430b92fb9718545e03f31a0ad38aae4f9ce9
+- repo_url: danieldekay/ai-ops
+  name: openspec-comprehensive-component-development
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-comprehensive-component-development
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-comprehensive-component-development
+  - .agents/skills/openspec-comprehensive-component-development/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-comprehensive-component-development/SKILL.md: sha256:78eb818b17814985b1482766ef25ea8a0da3917fe80e03717762b17102698876
+  content_hash: sha256:dc00ca50bf217b23e1fcb3b82df85d32333e53fbbb1a88f4ee698b69c8d8ec1e
+- repo_url: danieldekay/ai-ops
+  name: openspec-comprehensive-development-workflow
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-comprehensive-development-workflow
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-comprehensive-development-workflow
+  - .agents/skills/openspec-comprehensive-development-workflow/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-comprehensive-development-workflow/SKILL.md: sha256:0ec25fcbd59cbfa680af317521c256dd047f1fcd697af513db4ce2520f50e5ec
+  content_hash: sha256:6ae6c43cc767ebc9a1d4f9dafed32967f9ea39ac78ac0ae5418b158227fb9b2f
+- repo_url: danieldekay/ai-ops
+  name: openspec-comprehensive-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-comprehensive-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-comprehensive-implementation
+  - .agents/skills/openspec-comprehensive-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-comprehensive-implementation/SKILL.md: sha256:e54c44cd1f661c4041dd4870d8c2353667d6b4759e33fcead0e8473541b63b5f
+  content_hash: sha256:27f6f615dad8422b555034c8a1c3602c96f5a21c1557f4a45bef30d985bdcb79
+- repo_url: danieldekay/ai-ops
+  name: openspec-enhanced-ui-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-enhanced-ui-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-enhanced-ui-implementation
+  - .agents/skills/openspec-enhanced-ui-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-enhanced-ui-implementation/SKILL.md: sha256:fca149ff88e8233d357d65e46a901c0a961926055676ee3a334c5e21aef1a7ee
+  content_hash: sha256:46719159039c4c299c3bf94637d3540bf8a4cbd82c5becd1880ff55f7547651c
+- repo_url: danieldekay/ai-ops
+  name: openspec-implementation-workflow
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-implementation-workflow
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-implementation-workflow
+  - .agents/skills/openspec-implementation-workflow/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-implementation-workflow/SKILL.md: sha256:9013dc51610039fe2ead3a410137d40cb6525150571ffa01304a5a983b87615e
+  content_hash: sha256:b68b511fab3b0fb83efddf982382787847035e28268cb8fc9abddf51f146579c
+- repo_url: danieldekay/ai-ops
+  name: openspec-spec-driven-development
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-spec-driven-development
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-spec-driven-development
+  - .agents/skills/openspec-spec-driven-development/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-spec-driven-development/SKILL.md: sha256:7193322a54d7570adf05c88f1e8580f2c9e2b589806fa0b860e18b9f55f2033d
+  content_hash: sha256:53d858045b21038c9e8c3530141d6be90897b8f5e1f81e18619d71dad43b3f2e
+- repo_url: danieldekay/ai-ops
+  name: openspec-svelte-component-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/openspec-svelte-component-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec-svelte-component-implementation
+  - .agents/skills/openspec-svelte-component-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/openspec-svelte-component-implementation/SKILL.md: sha256:38b4b9b858453f0d74541a2ac445b37082ac41ff745f9f2fcae692fcb7437b23
+  content_hash: sha256:662276d74a8f0701d6dfe0a61fd19f91353112b483afa9efb610a7d036f99e45
+- repo_url: danieldekay/ai-ops
+  name: pwa-install-update-detection
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/pwa-install-update-detection
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/pwa-install-update-detection
+  - .agents/skills/pwa-install-update-detection/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/pwa-install-update-detection/SKILL.md: sha256:50a58593f3d35907bfde2f11077692d1226869ad2693cf29573a93cb68df89d7
+  content_hash: sha256:de3b9337875ce5f90582aaac50129c6c3f0b72ce723bd427cc86edceaf30a911
+- repo_url: danieldekay/ai-ops
+  name: redesign-dj-cards-clean-ux
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/redesign-dj-cards-clean-ux
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/redesign-dj-cards-clean-ux
+  - .agents/skills/redesign-dj-cards-clean-ux/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/redesign-dj-cards-clean-ux/SKILL.md: sha256:f367cab8d260c112b01b44954f2a1ebbccf32dffb90f52a8d9db48695d2c8d53
+  content_hash: sha256:aaf52007adbffc58aaddf247d9f1990b4faa4ac85d586b12a52ab34115433cdc
+- repo_url: danieldekay/ai-ops
+  name: svelte-button-component-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/svelte-button-component-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/svelte-button-component-implementation
+  - .agents/skills/svelte-button-component-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/svelte-button-component-implementation/SKILL.md: sha256:01d38d628a34bb553a3663af7045cba430fd1eeccc018c9ff7eabc26bcd6e047
+  content_hash: sha256:7beaedfcd686c711fd8a8bd0af8e49dd440cd51b87540060140306ca8febb6ec
+- repo_url: danieldekay/ai-ops
+  name: svelte-const-tag-placement
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/svelte-const-tag-placement
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/svelte-const-tag-placement
+  - .agents/skills/svelte-const-tag-placement/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/svelte-const-tag-placement/SKILL.md: sha256:9609945294614cb06ec1ff024fe6bf6d96b27fcf61101c2c0ceb576668402b96
+  content_hash: sha256:f33d4b29307f0edd3086e719e769f46dbfcf843c85fbf843474e2b64ffcda026
+- repo_url: danieldekay/ai-ops
+  name: svelte-const-tag-placement-debugging
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/svelte-const-tag-placement-debugging
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/svelte-const-tag-placement-debugging
+  - .agents/skills/svelte-const-tag-placement-debugging/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/svelte-const-tag-placement-debugging/SKILL.md: sha256:c347e7820471c98f5cfde62e7f3fd0ca4ef7d38626995ebfdb5161fcf591499d
+  content_hash: sha256:09aa6f34a0b31f90af73f00698ca999c97112ac53e4316c6ba025c39ad02c81c
+- repo_url: danieldekay/ai-ops
+  name: svelte-design-system-implementation
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/svelte-design-system-implementation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/svelte-design-system-implementation
+  - .agents/skills/svelte-design-system-implementation/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/svelte-design-system-implementation/SKILL.md: sha256:38876d3f57f704df46d28387b1180f13451448b79f3390dc896f8ebe91790f5a
+  content_hash: sha256:c20175b2491c0d5a1d08a4fe52bf15c39109d3299f0e12179820a1ed34ff3f71
+- repo_url: danieldekay/ai-ops
+  name: svelte-design-tokens-system
+  host: github.com
+  resolved_commit: 4948babefe01c4b4b8d2b1b9f9079fa012b3cebf
+  version: unknown
+  virtual_path: skills/svelte-design-tokens-system
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/svelte-design-tokens-system
+  - .agents/skills/svelte-design-tokens-system/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/svelte-design-tokens-system/SKILL.md: sha256:b9be73f8ac1bb9bc4040d1a66c46cea20df5fd427958fa6b73647c70c25a5390
+  content_hash: sha256:f390283e4b5b4bf2168df5bf855ba539e9cec3c29bd7fe1c010fa7cbd7a4a40c
+- repo_url: itechmeat/llm-code
+  name: openspec
+  host: github.com
+  resolved_commit: 7ae8a005245770a0fa1e10337b2eb10174c5886b
+  resolved_ref: 7ae8a005245770a0fa1e10337b2eb10174c5886b
+  version: unknown
+  virtual_path: skills/openspec
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openspec
+  - .agents/skills/openspec/SKILL.md
+  - .agents/skills/openspec/references/artifact-core.md
+  - .agents/skills/openspec/references/experimental-release-plan.md
+  - .agents/skills/openspec/references/opsx-workflow.md
+  - .agents/skills/openspec/references/schema-customization.md
+  - .agents/skills/openspec/references/schema-workflow-gaps.md
+  - .agents/skills/openspec/references/setup-profiles.md
+  deployed_file_hashes:
+    .agents/skills/openspec/SKILL.md: sha256:30660c382337f02348ceeeef05a02382c4ca23d1e86969c280bbc8d01af3ac38
+    .agents/skills/openspec/references/artifact-core.md: sha256:ffcf291b7684adda856135b57cc4eb11f59382bfcb9c9a2d1f1d16547d1caa20
+    .agents/skills/openspec/references/experimental-release-plan.md: sha256:ab117590254ed6126f2e1a7dbc849fc513195c9ab6c9a1533b1d91a049b009be
+    .agents/skills/openspec/references/opsx-workflow.md: sha256:4e98c1059ef0ca6e8a71802798fe652516dd75d648cac5283925e65aa86223bc
+    .agents/skills/openspec/references/schema-customization.md: sha256:0e8dddb609a0d9ffd860e6968abd51aab15b50db7d89b7d6e06e88f1b3e13eac
+    .agents/skills/openspec/references/schema-workflow-gaps.md: sha256:928a77482c31e3b6fffe8ed8ac4cc2f39c72a8f2d78fd68e37ae211107988cc5
+    .agents/skills/openspec/references/setup-profiles.md: sha256:4c8f50da4b3357851e0af47251cb311d8a4ee93c239230487f09f98c46d1f52e
+  content_hash: sha256:602483148a96b3748ebfe3359c4409176779cc6cf302d573261ac965a16193dc
+deployments:
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/comprehensive-svelte-component-development
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/comprehensive-svelte-component-development
+  active_owner: danieldekay/ai-ops/skills/comprehensive-svelte-component-development
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/comprehensive-svelte-component-development/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/comprehensive-svelte-component-development
+  active_owner: danieldekay/ai-ops/skills/comprehensive-svelte-component-development
+  content_hash: sha256:f6892d8452e313dbbfec8f840455786901ef974639711cce2ca0e400e497c6ba
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/design-system-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/design-system-implementation
+  active_owner: danieldekay/ai-ops/skills/design-system-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/design-system-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/design-system-implementation
+  active_owner: danieldekay/ai-ops/skills/design-system-implementation
+  content_hash: sha256:02228146185b89d5b859779a0310c728e6684f847b135b89c3f0c96177f4ab34
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/dj-listing-show-all
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/dj-listing-show-all
+  active_owner: danieldekay/ai-ops/skills/dj-listing-show-all
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/dj-listing-show-all/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/dj-listing-show-all
+  active_owner: danieldekay/ai-ops/skills/dj-listing-show-all
+  content_hash: sha256:dddc1dc8b5816cc53afbf678f99aae3e8556f00d7a9a26a3b82b0819055ac918
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/dj-listing-toggle-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/dj-listing-toggle-implementation
+  active_owner: danieldekay/ai-ops/skills/dj-listing-toggle-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/dj-listing-toggle-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/dj-listing-toggle-implementation
+  active_owner: danieldekay/ai-ops/skills/dj-listing-toggle-implementation
+  content_hash: sha256:3ca47547b3ee3b5ae5554f055cf5b3890d0e930fb32a417371c4d873dc5e24b6
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/enhance-organizer-venue-ui-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/enhance-organizer-venue-ui-implementation
+  active_owner: danieldekay/ai-ops/skills/enhance-organizer-venue-ui-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/enhance-organizer-venue-ui-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/enhance-organizer-venue-ui-implementation
+  active_owner: danieldekay/ai-ops/skills/enhance-organizer-venue-ui-implementation
+  content_hash: sha256:024e4e01888840002134d1ea4829b2defb3c2491336e5bc1aec533535d957525
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/frontend-design
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/frontend-design
+  active_owner: anthropics/skills/skills/frontend-design
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/frontend-design/LICENSE.txt
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/frontend-design
+  active_owner: anthropics/skills/skills/frontend-design
+  content_hash: sha256:0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/frontend-design/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/frontend-design
+  active_owner: anthropics/skills/skills/frontend-design
+  content_hash: sha256:d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/implement-design-token-system
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/implement-design-token-system
+  active_owner: danieldekay/ai-ops/skills/implement-design-token-system
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/implement-design-token-system/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/implement-design-token-system
+  active_owner: danieldekay/ai-ops/skills/implement-design-token-system
+  content_hash: sha256:aed265563204e6498fccbbfbac0a1a9f094f78df70dd53cd595a39dae8126135
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/mock-xmlhttprequest-svelte-tests
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/mock-xmlhttprequest-svelte-tests
+  active_owner: danieldekay/ai-ops/skills/mock-xmlhttprequest-svelte-tests
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/mock-xmlhttprequest-svelte-tests/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/mock-xmlhttprequest-svelte-tests
+  active_owner: danieldekay/ai-ops/skills/mock-xmlhttprequest-svelte-tests
+  content_hash: sha256:0be28489da12762b77323600036809e9a5fa1f8f509f4d20a83680fc49633de5
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-component-migration
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-component-migration
+  active_owner: danieldekay/ai-ops/skills/openspec-component-migration
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-component-migration/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-component-migration
+  active_owner: danieldekay/ai-ops/skills/openspec-component-migration
+  content_hash: sha256:991df6d78ef50aaecab087061a2398f1869ca6cc9b9f1ec6fe16cf928e9daecf
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-comprehensive-component-development
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-comprehensive-component-development
+  active_owner: danieldekay/ai-ops/skills/openspec-comprehensive-component-development
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-comprehensive-component-development/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-comprehensive-component-development
+  active_owner: danieldekay/ai-ops/skills/openspec-comprehensive-component-development
+  content_hash: sha256:78eb818b17814985b1482766ef25ea8a0da3917fe80e03717762b17102698876
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-comprehensive-development-workflow
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-comprehensive-development-workflow
+  active_owner: danieldekay/ai-ops/skills/openspec-comprehensive-development-workflow
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-comprehensive-development-workflow/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-comprehensive-development-workflow
+  active_owner: danieldekay/ai-ops/skills/openspec-comprehensive-development-workflow
+  content_hash: sha256:0ec25fcbd59cbfa680af317521c256dd047f1fcd697af513db4ce2520f50e5ec
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-comprehensive-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-comprehensive-implementation
+  active_owner: danieldekay/ai-ops/skills/openspec-comprehensive-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-comprehensive-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-comprehensive-implementation
+  active_owner: danieldekay/ai-ops/skills/openspec-comprehensive-implementation
+  content_hash: sha256:e54c44cd1f661c4041dd4870d8c2353667d6b4759e33fcead0e8473541b63b5f
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-enhanced-ui-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-enhanced-ui-implementation
+  active_owner: danieldekay/ai-ops/skills/openspec-enhanced-ui-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-enhanced-ui-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-enhanced-ui-implementation
+  active_owner: danieldekay/ai-ops/skills/openspec-enhanced-ui-implementation
+  content_hash: sha256:fca149ff88e8233d357d65e46a901c0a961926055676ee3a334c5e21aef1a7ee
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-implementation-workflow
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-implementation-workflow
+  active_owner: danieldekay/ai-ops/skills/openspec-implementation-workflow
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-implementation-workflow/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-implementation-workflow
+  active_owner: danieldekay/ai-ops/skills/openspec-implementation-workflow
+  content_hash: sha256:9013dc51610039fe2ead3a410137d40cb6525150571ffa01304a5a983b87615e
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-spec-driven-development
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-spec-driven-development
+  active_owner: danieldekay/ai-ops/skills/openspec-spec-driven-development
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-spec-driven-development/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-spec-driven-development
+  active_owner: danieldekay/ai-ops/skills/openspec-spec-driven-development
+  content_hash: sha256:7193322a54d7570adf05c88f1e8580f2c9e2b589806fa0b860e18b9f55f2033d
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-svelte-component-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-svelte-component-implementation
+  active_owner: danieldekay/ai-ops/skills/openspec-svelte-component-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec-svelte-component-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/openspec-svelte-component-implementation
+  active_owner: danieldekay/ai-ops/skills/openspec-svelte-component-implementation
+  content_hash: sha256:38b4b9b858453f0d74541a2ac445b37082ac41ff745f9f2fcae692fcb7437b23
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: sha256:30660c382337f02348ceeeef05a02382c4ca23d1e86969c280bbc8d01af3ac38
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec/references/artifact-core.md
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: sha256:ffcf291b7684adda856135b57cc4eb11f59382bfcb9c9a2d1f1d16547d1caa20
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec/references/experimental-release-plan.md
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: sha256:ab117590254ed6126f2e1a7dbc849fc513195c9ab6c9a1533b1d91a049b009be
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec/references/opsx-workflow.md
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: sha256:4e98c1059ef0ca6e8a71802798fe652516dd75d648cac5283925e65aa86223bc
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec/references/schema-customization.md
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: sha256:0e8dddb609a0d9ffd860e6968abd51aab15b50db7d89b7d6e06e88f1b3e13eac
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec/references/schema-workflow-gaps.md
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: sha256:928a77482c31e3b6fffe8ed8ac4cc2f39c72a8f2d78fd68e37ae211107988cc5
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/openspec/references/setup-profiles.md
+  runtime: null
+  scope: project
+  owners:
+  - itechmeat/llm-code/skills/openspec
+  active_owner: itechmeat/llm-code/skills/openspec
+  content_hash: sha256:4c8f50da4b3357851e0af47251cb311d8a4ee93c239230487f09f98c46d1f52e
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/pwa-install-update-detection
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/pwa-install-update-detection
+  active_owner: danieldekay/ai-ops/skills/pwa-install-update-detection
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/pwa-install-update-detection/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/pwa-install-update-detection
+  active_owner: danieldekay/ai-ops/skills/pwa-install-update-detection
+  content_hash: sha256:50a58593f3d35907bfde2f11077692d1226869ad2693cf29573a93cb68df89d7
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/redesign-dj-cards-clean-ux
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/redesign-dj-cards-clean-ux
+  active_owner: danieldekay/ai-ops/skills/redesign-dj-cards-clean-ux
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/redesign-dj-cards-clean-ux/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/redesign-dj-cards-clean-ux
+  active_owner: danieldekay/ai-ops/skills/redesign-dj-cards-clean-ux
+  content_hash: sha256:f367cab8d260c112b01b44954f2a1ebbccf32dffb90f52a8d9db48695d2c8d53
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/rnt-mobile-release-deploy
+  runtime: null
+  scope: project
+  owners:
+  - ./.github/skills/rnt-mobile-release-deploy
+  active_owner: ./.github/skills/rnt-mobile-release-deploy
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/rnt-mobile-release-deploy/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./.github/skills/rnt-mobile-release-deploy
+  active_owner: ./.github/skills/rnt-mobile-release-deploy
+  content_hash: sha256:fb241d7f223e5b1e29ffe6511b7954376cba98e279df2625925df81e81d88c88
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-button-component-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-button-component-implementation
+  active_owner: danieldekay/ai-ops/skills/svelte-button-component-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-button-component-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-button-component-implementation
+  active_owner: danieldekay/ai-ops/skills/svelte-button-component-implementation
+  content_hash: sha256:01d38d628a34bb553a3663af7045cba430fd1eeccc018c9ff7eabc26bcd6e047
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-const-tag-placement
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-const-tag-placement
+  active_owner: danieldekay/ai-ops/skills/svelte-const-tag-placement
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-const-tag-placement-debugging
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-const-tag-placement-debugging
+  active_owner: danieldekay/ai-ops/skills/svelte-const-tag-placement-debugging
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-const-tag-placement-debugging/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-const-tag-placement-debugging
+  active_owner: danieldekay/ai-ops/skills/svelte-const-tag-placement-debugging
+  content_hash: sha256:c347e7820471c98f5cfde62e7f3fd0ca4ef7d38626995ebfdb5161fcf591499d
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-const-tag-placement/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-const-tag-placement
+  active_owner: danieldekay/ai-ops/skills/svelte-const-tag-placement
+  content_hash: sha256:9609945294614cb06ec1ff024fe6bf6d96b27fcf61101c2c0ceb576668402b96
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-design-system-implementation
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-design-system-implementation
+  active_owner: danieldekay/ai-ops/skills/svelte-design-system-implementation
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-design-system-implementation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-design-system-implementation
+  active_owner: danieldekay/ai-ops/skills/svelte-design-system-implementation
+  content_hash: sha256:38876d3f57f704df46d28387b1180f13451448b79f3390dc896f8ebe91790f5a
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-design-tokens-system
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-design-tokens-system
+  active_owner: danieldekay/ai-ops/skills/svelte-design-tokens-system
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/svelte-design-tokens-system/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - danieldekay/ai-ops/skills/svelte-design-tokens-system
+  active_owner: danieldekay/ai-ops/skills/svelte-design-tokens-system
+  content_hash: sha256:b9be73f8ac1bb9bc4040d1a66c46cea20df5fd427958fa6b73647c70c25a5390
