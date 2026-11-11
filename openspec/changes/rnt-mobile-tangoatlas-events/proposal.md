@@ -1,23 +1,29 @@
-# Proposal: TangoAtlas-backed RNT Mobile events and editing
+# Proposal: RNT Mobile 1.0 — TangoAtlas-backed calendar and organizer self-service
 
-Issue: https://github.com/danieldekay/rnt_mobile/issues/117
+**Release owner:** [RNT Mobile #117](https://github.com/danieldekay/rnt_mobile/issues/117)
+**Backend read:** [TangoAtlas #531](https://github.com/danieldekay/tangoatlas/issues/531)
+**Backend write:** [TangoAtlas #532](https://github.com/danieldekay/tangoatlas/issues/532)
+**Source scouting (independent):** [Hermes #20](https://github.com/danieldekay/hermes-custom-scripts/issues/20)
 
-## Outcome
-Retain the working static SvelteKit PWA's list/calendar/detail UX while replacing its WordPress Tribe Events data source with the generic TangoAtlas regional event occurrence API. Subsequently, an Authentik-signed-in organizer can propose/edit an event they own through TangoAtlas's permission-checked write interface.
+## Why
+The working Svelte 5/static Cloudflare PWA depends on WordPress/The Events Calendar as its event source. Organizers must duplicate entry on multiple websites and the paid plugin is undesirable. TangoAtlas's generic event, recurrence, relationship, ingestion, moderation and permission contracts should replace this backend, **not** trigger another RNT CMS.
 
-## Baseline
-- `src/lib/api/tribe.ts` fetches the WordPress Events API; `src/lib/stores/events.svelte.ts` and existing routes consume its data.
-- `worker.ts` serves Cloudflare Worker Assets; authenticated Worker/OIDC design already exists as #56.
-- TangoAtlas #531 owns the read API proof, #532 owns event edit authorization, #389 occurrences, #376 public API, #377 portal scope.
-- Hermes Scout #20 owns source discovery, not ingestion and not editing.
+## User-visible 1.0 outcome
+A visitor can browse Rhein-Neckar events, recurring milongas and venues/DJs from TangoAtlas. A non-technical organizer can sign in once with Authentik, **add an event** by pasting its source URL (when supported) or entering a few fields, and **edit an event they manage**. TangoAtlas's own permissions and moderation decide whether a change is accepted or pending. WordPress event source is retired from the Mobile production path **only after verified data coverage and a separately approved release**.
 
-## Phases
-1. Read-only test adapter pointing to TangoAtlas; preserve current display, search, calendar, map, offline/error behavior; no prod cutover.
-2. Authentik Worker session + TangoAtlas user authorization contract and one organizer edit/proposal form; preserve moderation and conflict feedback.
-3. Separate verified deployment/migration gate; WordPress remains until explicitly approved.
+## Bounded delivery sequence
+1. **A: Local read-only proof** — API adapter maps TangoAtlas generic events/occurrences into existing list/calendar/detail/filter/map/store. No production switch.
+2. **B: Authenticated one-off create/edit proof** — reuse existing Worker Authentik/OIDC #56, TangoAtlas #532 and existing UX patterns; short German organizer form, manual fallback, clear moderation status. No WordPress roles.
+3. **C: 1.0 recurrence and acceptance** — after #389, support recurring creation/editing and date exceptions; migrate/verify current and future calendar coverage, old links and rollback. Release only with explicit approval.
 
-## Deliberate non-goals
-No new RNT backend/database, no WordPress editing integration, no TangoAtlas event schema owned by mobile, no changes in TMD Mobile, no broad entity-management UI, no automatic cutover.
+## Relationships and constraints
+- **RNT Mobile:** interface, API adapter, Worker session, forms, local offline/presentation; no domain database, no permission authority, no AI ingestion.
+- **TangoAtlas:** canonical data, events and occurrences, entity links, accepted revisions, moderation, event write API and per-record authorization; portal read keys cannot perform writes.
+- **Hermes R&T Scout:** discovers regional original sources and forwards evidence; not a 1.0 release blocker.
+- **TMD Mobile:** unrelated experiment; NO changes.
 
-## Reconciliation preflight
-Read AGENTS.md, `openspec/config.yaml`, current source/tests/issues/PRs/planning branches. Reuse #56 sign-in and #106 organizer UX, and avoid implementing endpoints before TangoAtlas's agreed API specs. A planning branch is not a deploy authorization.
+## Non-goals
+No new RNT WordPress plugin, local event database, generic TangoAtlas admin frontend, complete historical migration, ticketing/RSVP, independent AI processor, broad autonomous scouting prerequisite, automatic deployment or paid-subscription cancellation.
+
+## Preflight
+Read AGENTS.md, openspec/config.yaml, existing code and pending OpenSpec/PRs/Beads, #56 and #106. Reconcile real current behavior, not stale docs. Use test-first bounded changes and one worktree per OpenSpec change. A planning branch is not implementation proof.
