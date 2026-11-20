@@ -27,3 +27,7 @@ No new RNT WordPress plugin, local event database, generic TangoAtlas admin fron
 
 ## Preflight
 Read AGENTS.md, openspec/config.yaml, existing code and pending OpenSpec/PRs/Beads, #56 and #106. Reconcile real current behavior, not stale docs. Use test-first bounded changes and one worktree per OpenSpec change. A planning branch is not implementation proof.
+
+## Strategy alignment — 20 November 2026
+
+The [cross-project maintenance-first risk policy](https://github.com/danieldekay/2ndBrain-projects/pull/6) prioritizes fewer human minutes maintaining correct local calendars. RNT Mobile 1.0 **does not depend on unattended Scout publication**: its acceptance is correct Atlas events and recurring occurrences (including overrides/cancellations), authorized organizer editing, pending/accepted/read-only states, data coverage and release verification. Deterministic occurrence generation is Atlas #389; rights/moderation are Atlas #532. Show source freshness/status where the API provides it, but don't create another permission/policy engine or generic review console in the mobile app. Scouted public-web cancellations and recurrence-rule changes remain proposals for Atlas adjudication.
