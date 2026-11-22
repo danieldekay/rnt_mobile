@@ -28,8 +28,20 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Test
+        run: npm run test:run
+
+      - name: Test smoke gate
+        run: npm run test:smoke
+
+      - name: Type check
+        run: npm run check
+
       - name: Build
         run: npm run build
+
+      - name: WordPress API preflight
+        run: npm run smoke:origin
 
       - name: Deploy
         env:
@@ -38,3 +50,9 @@ jobs:
           set -euo pipefail
           npx wrangler deploy \
             --message "GitHub Actions deploy ${GITHUB_SHA}"
+
+      - name: Production smoke test
+        run: |
+          set -euo pipefail
+          npm run smoke:origin
+          npm run smoke:mobile

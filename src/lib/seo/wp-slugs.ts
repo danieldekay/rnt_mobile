@@ -21,7 +21,10 @@ export async function fetchWpContentSlugs(
 			headers: { Accept: "application/json" },
 		});
 
-		if (!response.ok) break;
+		if (response.status === 400 && page > 1) break;
+		if (!response.ok) {
+			throw new Error(`Failed to fetch ${restPath} slugs: HTTP ${response.status} on page ${page}`);
+		}
 
 		const batch = (await response.json()) as WpSlugEntry[];
 		if (!Array.isArray(batch) || batch.length === 0) break;

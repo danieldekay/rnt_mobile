@@ -7,7 +7,7 @@ const CACHE_NAME = `rnt-cache-${version}`;
 const ASSETS = [
 	...build,
 	...prerendered,
-	// Core app-shell resources — cache-first strategy
+	// Core app-shell resources — precached for offline fallback
 	"/",
 	"/manifest.json",
 	"/favicon.ico",
@@ -43,7 +43,7 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
 	);
 });
 
-// Fetch: cache-first for app-shell, network-first for API/data
+// Fetch current navigation HTML; cache static assets and use network-first for API/data
 self.addEventListener("fetch", (event: FetchEvent) => {
 	const { request } = event;
 	const url = new URL(request.url);
@@ -60,7 +60,13 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 		return;
 	}
 
-	// App-shell assets: cache-first
+	// Refresh navigation HTML after deployments; keep cache as an offline fallback.
+	if (request.mode === "navigate") {
+		event.respondWith(navigationFirst(request));
+		return;
+	}
+
+	// Static app-shell assets: cache-first
 	if (ASSETS.includes(request.url)) {
 		event.respondWith(cacheFirst(request));
 		return;
@@ -73,14 +79,6 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 		event.respondWith(cacheNetwork(request));
 		return;
 	}
-
-	// Navigation requests: fall back to offline page
-	if (request.mode === "navigate") {
-		event.respondWith(
-			networkFirst(request).catch(() => caches.match("/offline")),
-		);
-		return;
-	}
 });
 
 // Cache-first strategy: serve from cache, fall back to network
@@ -91,9 +89,12 @@ async function cacheFirst(request: Request): Promise<Response> {
 }
 
 // Network-first strategy: try network, fall back to cache
-async function networkFirst(request: Request): Promise<Response> {
+async function networkFirst(
+	request: Request,
+	init?: RequestInit,
+): Promise<Response> {
 	try {
-		const networkResponse = await fetch(request);
+		const networkResponse = await fetch(request, init);
 		// Cache successful responses for next time
 		if (networkResponse.ok) {
 			const cache = await caches.open(CACHE_NAME);
@@ -104,6 +105,13 @@ async function networkFirst(request: Request): Promise<Response> {
 		const cached = await caches.match(request);
 		return cached || Response.error();
 	}
+}
+
+async function navigationFirst(request: Request): Promise<Response> {
+	const response = await networkFirst(request, { cache: "no-cache" });
+	if (response.type !== "error") return response;
+
+	return (await caches.match("/offline")) || response;
 }
 
 // Cache network response (fire-and-forget caching)

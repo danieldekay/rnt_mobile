@@ -1,5 +1,7 @@
 import { error } from "@sveltejs/kit";
+import { building } from "$app/environment";
 import { apiBase } from "$lib/api/resolve-api-base";
+import { prerenderFetch } from "$lib/api/prerender-fetch";
 import { fetchAnnouncementBySlug } from "$lib/api/posts";
 import { fetchAllEvents, fetchOrganizers } from "$lib/api/tribe";
 import { fetchWpContentSlugs } from "$lib/seo/wp-slugs";
@@ -118,6 +120,7 @@ function buildWordPressBackendUrl(postId: number): string {
 
 export const load: PageLoad = async ({ fetch, params }) => {
   const requestedSlug = params.slug.trim();
+  const apiFetch = building ? prerenderFetch : fetch;
 
   if (!requestedSlug) {
     throw error(404, "Ankuendigung nicht gefunden");
@@ -126,7 +129,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
   try {
     const post = (await fetchAnnouncementBySlug(
       requestedSlug,
-      fetch,
+      apiFetch,
     )) as BlogPost | null;
 
     if (!post) {
@@ -160,10 +163,10 @@ export const load: PageLoad = async ({ fetch, params }) => {
 
     const [events, organizers] = await Promise.all([
       dateRange
-        ? fetchAllEvents([], null, "all", fetch, EVENTS_API_BASE, dateRange)
+        ? fetchAllEvents([], null, "all", apiFetch, EVENTS_API_BASE, dateRange)
         : Promise.resolve([] as TribeEvent[]),
       organizerId !== null
-        ? fetchOrganizers(fetch)
+        ? fetchOrganizers(apiFetch)
         : Promise.resolve([] as TribeOrganizer[]),
     ]);
 
@@ -197,6 +200,6 @@ export const prerender = true;
 export const ssr = true;
 
 export const entries: EntryGenerator = async () => {
-	const slugs = await fetchWpContentSlugs("ankuendigung");
+	const slugs = await fetchWpContentSlugs("ankuendigung", prerenderFetch);
 	return slugs.map((slug) => ({ slug }));
 };

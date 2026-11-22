@@ -19,7 +19,7 @@ npm run check   # svelte-kit sync + svelte-check
 - **Components**: `src/lib/components/*.svelte`
 - **API**: `src/lib/api/tribe.ts` → fetches from `https://www.rhein-neckar-tango.de/wp-json/tribe/events/v1`
 - **Store**: `src/lib/stores/events.svelte.ts`
-- **Adapter**: `@sveltejs/adapter-static` with prerendering enabled (`handleHttpError: 'warn'`)
+- **Adapter**: `@sveltejs/adapter-static` with prerendering enabled (`handleHttpError: 'fail'`)
 
 ## TypeScript
 

@@ -8,6 +8,17 @@ export type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
     {
+        version: '0.5.1',
+        releasedAt: '2026-09-26',
+        headline: 'Termine und Inhalte wieder zuverlässig laden',
+        summary:
+            'Der Kalender zeigt nach einem Neustart des WordPress-Servers wieder Termine. Künftige Updates werden gestoppt, wenn Veranstaltungsdaten oder Seiten nicht vollständig geladen werden.',
+        highlights: [
+            'Veranstaltungen und ihre Details werden vor und nach einem App-Update geprüft.',
+            'Fehlende Ankündigungs- und Blogseiten stoppen das Update, statt unbemerkt zu verschwinden.'
+        ]
+    },
+    {
         version: '0.5.0',
         releasedAt: '2026-09-25',
         headline: 'Der richtige DJ zum richtigen Termin',
